@@ -82,7 +82,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .chip{padding:5px 13px;border-radius:20px;border:1.5px solid var(--border);background:#fff;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif;}
 .chip:hover{border-color:var(--accent);color:var(--accent);}
 .chip.on{background:var(--accent);color:#fff;border-color:var(--accent);}
-.prod-grid{flex:1;overflow-y:auto;padding:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;align-content:start;}
+.prod-grid{flex:1;overflow-y:auto;padding:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;align-content:start;}
 .prod-grid::-webkit-scrollbar{width:4px;}
 .prod-grid::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 .pcard{background:#fff;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .18s;overflow:hidden;box-shadow:var(--sh);display:flex;flex-direction:column;}
@@ -998,7 +998,13 @@ var SECTOR_SEEDS = {
     {name:'Câble HDMI 2m',price:600,cost:350,stock:20,lowStock:3,category:'Câbles'},
     {name:'Recharge Digicel 100',price:100,cost:95,stock:999,lowStock:0,category:'Services'},
     {name:'Powerbank 10000mAh',price:2500,cost:1600,stock:10,lowStock:2,category:'Accessoires'},
-    {name:'Protège-écran',price:500,cost:300,stock:30,lowStock:5,category:'Accessoires'}
+    {name:'Protège-écran iPhone',price:500,cost:300,stock:30,lowStock:5,category:'Accessoires'},
+    {name:'Recharge Natcom 100',price:100,cost:92,stock:999,lowStock:0,category:'Services'},
+    {name:'Câble USB-C 1m',price:300,cost:180,stock:40,lowStock:5,category:'Câbles'},
+    {name:'Adaptateur HDMI',price:700,cost:420,stock:12,lowStock:2,category:'Accessoires'},
+    {name:'Clé USB 32GB',price:900,cost:550,stock:18,lowStock:3,category:'Accessoires'},
+    {name:'Batterie iPhone',price:1800,cost:1100,stock:8,lowStock:2,category:'Pièces détachées'},
+    {name:'Écran Samsung A54',price:4500,cost:2800,stock:5,lowStock:1,category:'Pièces détachées'}
   ],
   restaurant:[
     {name:'Riz & Poulet',price:350,cost:180,stock:999,lowStock:0,category:'Plats principaux'},
@@ -1012,12 +1018,17 @@ var SECTOR_SEEDS = {
 
 function save(){ try{localStorage.setItem('konektem_app',JSON.stringify(S));}catch(e){} }
 function load(){
+  ['kays_v2','kays_v3','kes_ayisyen','kes_ayisyen_v2','konektem_v1'].forEach(function(k){
+    try{localStorage.removeItem(k);}catch(e){}
+  });
   var d=localStorage.getItem('konektem_app');
   if(d){ try{ var p=JSON.parse(d); S=Object.assign({},S,p); }catch(e){} }
   if(!S.connections) S.connections=[];
   if(!S.clients) S.clients=[];
   if(!S.tickets) S.tickets=[];
   if(!S.csvBuf) S.csvBuf=[];
+  S.activeCat='';
+  if(!S.settings.currency) S.settings.currency='HTG';
 }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).substr(2,5); }
 function fmt(n){ return Number(n).toLocaleString('fr-HT')+' '+(S.settings.currency||'HTG'); }
