@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Konektem – Caisse Intelligente</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g1:#0D1F2D;--g2:#0B3D2E;
+  --green:#22c55e;--green2:#16a34a;--green3:#4ade80;
+  --white:#fff;--white80:rgba(255,255,255,.8);--white50:rgba(255,255,255,.5);
+  --white20:rgba(255,255,255,.2);--white10:rgba(255,255,255,.1);--white06:rgba(255,255,255,.06);
+  --border:rgba(255,255,255,.12);
+  --gold:#f59e0b;--gold2:#fbbf24;--red:#ef4444;
+  --r:14px;--rsm:9px;--rxs:6px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--g1);color:var(--white);overflow-x:hidden;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 20% 0%,rgba(34,197,94,.15) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 100%,rgba(16,163,74,.12) 0%,transparent 60%),linear-gradient(160deg,var(--g1) 0%,#0a1f0f 50%,var(--g1) 100%);}
+section,nav,footer{position:relative;z-index:1;}
+
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:18px 5%;border-bottom:1px solid var(--border);backdrop-filter:blur(20px);background:rgba(13,31,45,.6);position:sticky;top:0;z-index:100;}
+.nav-logo{display:flex;align-items:center;gap:10px;}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.3px;}
+.logo-text .em{color:var(--green3);}
+.nav-links{display:flex;gap:28px;}
+.nav-links a{color:var(--white80);font-size:14px;font-weight:500;text-decoration:none;transition:color .2s;}
+.nav-links a:hover{color:var(--white);}
+.nav-cta{display:flex;gap:8px;}
+.btn-ghost{padding:8px 18px;border:1px solid var(--border);border-radius:var(--rxs);color:var(--white80);font-size:13px;font-weight:600;cursor:pointer;background:transparent;font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s;}
+.btn-ghost:hover{border-color:var(--green);color:var(--white);}
+.btn-primary{padding:9px 20px;border:none;border-radius:var(--rxs);background:var(--green);color:var(--g1);font-size:13px;font-weight:800;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s;}
+.btn-primary:hover{background:var(--green3);transform:translateY(-1px);}
+
+/* HERO */
+.hero{text-align:center;padding:90px 5% 60px;max-width:860px;margin:0 auto;}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;color:var(--green3);margin-bottom:28px;}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green3);}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(34px,6vw,66px);font-weight:800;line-height:1.08;letter-spacing:-1.5px;margin-bottom:22px;}
+.hero h1 .hl{color:var(--green3);}
+.hero-sub{font-size:clamp(15px,2.2vw,19px);color:var(--white80);line-height:1.6;max-width:600px;margin:0 auto 36px;}
+.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;}
+.btn-hero{padding:14px 30px;border-radius:var(--rsm);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all .25s;border:none;}
+.btn-hero.green{background:var(--green);color:var(--g1);}
+.btn-hero.green:hover{background:var(--green3);transform:translateY(-2px);box-shadow:0 12px 40px rgba(34,197,94,.3);}
+.btn-hero.outline{background:transparent;color:var(--white);border:1.5px solid var(--border);}
+.btn-hero.outline:hover{border-color:var(--green);color:var(--green3);}
+.hero-note{font-size:12px;color:var(--white50);}
+.hero-note span{color:var(--green3);font-weight:700;}
+
+/* PREVIEW */
+.preview-wrap{max-width:1000px;margin:0 auto;padding:0 5% 80px;position:relative;}
+.preview-glow{position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(ellipse,rgba(34,197,94,.2) 0%,transparent 70%);pointer-events:none;}
+.preview-frame{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.5);}
+.pf-bar{background:rgba(34,197,94,.9);height:46px;display:flex;align-items:center;padding:0 18px;gap:12px;}
+.pf-dots{display:flex;gap:6px;}
+.pf-dot{width:10px;height:10px;border-radius:50%;}
+.pf-title{color:rgba(255,255,255,.9);font-size:12px;font-weight:800;margin:0 auto;font-family:'Syne',sans-serif;}
+.pf-body{display:grid;grid-template-columns:1fr 270px;height:340px;}
+.pf-left{padding:14px;display:flex;flex-direction:column;gap:10px;border-right:1px solid var(--border);}
+.pf-search{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:11px;color:var(--white50);}
+.pf-cats{display:flex;gap:5px;}
+.pf-cat{padding:4px 11px;border-radius:20px;font-size:10px;font-weight:700;}
+.pf-cat.active{background:var(--green);color:var(--g1);}
+.pf-cat.inactive{background:rgba(255,255,255,.08);color:var(--white50);}
+.pf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;flex:1;}
+.pf-card{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;padding:8px 6px;text-align:center;display:flex;flex-direction:column;gap:4px;}
+.pf-card-img{height:38px;background:rgba(255,255,255,.05);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.pf-card-name{font-size:8px;font-weight:700;color:var(--white80);}
+.pf-card-price{font-size:10px;font-weight:800;color:var(--green3);}
+.pf-right{padding:12px;display:flex;flex-direction:column;gap:8px;}
+.pf-order-title{font-size:11px;font-weight:800;color:var(--white80);}
+.pf-items{display:flex;flex-direction:column;gap:5px;flex:1;}
+.pf-item{background:rgba(255,255,255,.06);border-radius:5px;padding:6px 8px;display:flex;align-items:center;gap:7px;}
+.pf-item-img{width:20px;height:20px;border-radius:3px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:10px;}
+.pf-item-name{font-size:10px;font-weight:700;flex:1;color:var(--white80);}
+.pf-item-price{font-size:10px;font-weight:800;color:var(--green3);}
+.pf-total{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:7px;padding:9px;display:flex;justify-content:space-between;align-items:center;}
+.pf-total-label{font-size:10px;font-weight:800;color:var(--white80);}
+.pf-total-val{font-size:15px;font-weight:800;color:var(--green3);font-family:'Syne',sans-serif;}
+.pf-paybtns{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.pf-pay{border:none;border-radius:4px;padding:6px;font-size:9px;font-weight:800;cursor:pointer;}
+.pf-pay.g{background:var(--green);color:var(--g1);}
+.pf-pay.b{background:rgba(37,99,235,.7);color:#fff;}
+.pf-pay.o{background:rgba(249,115,22,.7);color:#fff;}
+.pf-pay.p{background:rgba(124,58,237,.7);color:#fff;}
+
+/* TRIAL BANNER */
+.trial-banner{background:linear-gradient(135deg,rgba(34,197,94,.12),rgba(16,163,74,.06));border:1px solid rgba(34,197,94,.2);border-radius:var(--r);padding:26px 30px;max-width:900px;margin:0 auto 80px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+.tb-left h3{font-size:19px;font-weight:800;margin-bottom:5px;}
+.tb-left p{font-size:13px;color:var(--white80);line-height:1.5;}
+.tb-stats{display:flex;gap:22px;}
+.tb-stat .num{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--green3);}
+.tb-stat .lab{font-size:11px;color:var(--white50);margin-top:2px;}
+
+/* SECTION */
+.section{padding:80px 5%;max-width:1100px;margin:0 auto;}
+.section-badge{display:inline-block;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:700;color:var(--green3);letter-spacing:.5px;margin-bottom:16px;}
+.section h2{font-family:'Syne',sans-serif;font-size:clamp(26px,4vw,40px);font-weight:800;letter-spacing:-.8px;line-height:1.15;margin-bottom:14px;}
+.section-sub{font-size:15px;color:var(--white80);line-height:1.6;max-width:540px;margin-bottom:44px;}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:60px 0;}
+
+/* SECTORS */
+.sectors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:13px;}
+.sector-card{background:var(--white06);border:1px solid var(--border);border-radius:var(--r);padding:22px;transition:all .25s;}
+.sector-card:hover{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3);transform:translateY(-3px);}
+.sc-ico{width:46px;height:46px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:13px;}
+.sc-ico.g{background:rgba(34,197,94,.15);}
+.sc-ico.b{background:rgba(37,99,235,.15);}
+.sc-ico.p{background:rgba(124,58,237,.15);}
+.sc-ico.o{background:rgba(249,115,22,.15);}
+.sc-name{font-size:14px;font-weight:800;margin-bottom:5px;}
+.sc-desc{font-size:12px;color:var(--white50);line-height:1.5;}
+.sc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:11px;}
+.sc-tag{background:var(--white10);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;color:var(--white50);}
+
+/* FEATURES */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.feat-card{background:var(--white06);border:1px solid var(--border);border-radius:var(--r);padding:22px;transition:all .2s;}
+.feat-card:hover{border-color:rgba(34,197,94,.25);}
+.feat-icon{font-size:20px;margin-bottom:11px;}
+.feat-title{font-size:14px;font-weight:800;margin-bottom:5px;}
+.feat-desc{font-size:13px;color:var(--white50);line-height:1.6;}
+.feat-card.hl{background:rgba(34,197,94,.07);border-color:rgba(34,197,94,.25);}
+.feat-card.hl .feat-title{color:var(--green3);}
+
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;align-items:start;}
+.plan-card{background:var(--white06);border:1px solid var(--border);border-radius:var(--r);padding:26px;transition:all .2s;}
+.plan-card.featured{background:linear-gradient(135deg,rgba(34,197,94,.12),rgba(16,163,74,.06));border-color:rgba(34,197,94,.4);position:relative;}
+.plan-card.featured::before{content:'Recommandé';position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--green);color:var(--g1);font-size:11px;font-weight:800;padding:3px 13px;border-radius:20px;}
+.plan-name{font-size:12px;font-weight:700;color:var(--white50);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;}
+.plan-price{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;line-height:1;margin-bottom:4px;}
+.plan-price .curr{font-size:17px;vertical-align:top;margin-top:5px;display:inline-block;}
+.plan-price .per{font-size:13px;font-weight:400;color:var(--white50);}
+.plan-desc{font-size:13px;color:var(--white50);margin-bottom:20px;line-height:1.5;}
+.plan-feats{display:flex;flex-direction:column;gap:9px;margin-bottom:22px;}
+.pf-feat{display:flex;align-items:flex-start;gap:7px;font-size:13px;color:var(--white80);}
+.pf-check{width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.pf-check.g{background:rgba(34,197,94,.2);}
+.pf-check.gold{background:rgba(245,158,11,.2);}
+.pf-check.x{background:rgba(255,255,255,.08);}
+.pf-check svg{width:8px;height:8px;}
+.plan-btn{width:100%;padding:12px;border-radius:var(--rsm);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;border:none;transition:all .2s;}
+.plan-btn.free{background:var(--white10);color:var(--white);border:1px solid var(--border);}
+.plan-btn.free:hover{background:var(--white20);}
+.plan-btn.premium{background:var(--green);color:var(--g1);}
+.plan-btn.premium:hover{background:var(--green3);transform:translateY(-1px);box-shadow:0 8px 28px rgba(34,197,94,.3);}
+.plan-btn.enterprise{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--g1);}
+.plan-btn.enterprise:hover{opacity:.9;transform:translateY(-1px);}
+
+/* CTA & FOOTER */
+.cta-section{text-align:center;padding:80px 5% 100px;max-width:700px;margin:0 auto;}
+.cta-section h2{font-family:'Syne',sans-serif;font-size:clamp(26px,4vw,46px);font-weight:800;letter-spacing:-.8px;margin-bottom:16px;}
+.cta-section p{font-size:15px;color:var(--white80);margin-bottom:34px;line-height:1.6;}
+footer{border-top:1px solid var(--border);padding:38px 5%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+.footer-right{font-size:12px;color:var(--white50);}
+
+/* SCREEN OVERLAY */
+.screen{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);padding:16px;overflow-y:auto;}
+.screen.hidden{display:none;}
+
+/* AUTH CARD */
+.auth-card{background:linear-gradient(135deg,#0D1F2D,#0B3D2E);border:1px solid var(--border);border-radius:20px;padding:34px;width:100%;max-width:420px;box-shadow:0 40px 100px rgba(0,0,0,.6);position:relative;}
+.auth-logo{text-align:center;margin-bottom:22px;}
+.auth-title{font-size:21px;font-weight:800;font-family:'Syne',sans-serif;text-align:center;margin-bottom:5px;}
+.auth-sub{font-size:13px;color:var(--white50);text-align:center;margin-bottom:24px;}
+.auth-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+.auth-label{font-size:11px;font-weight:700;color:var(--white50);text-transform:uppercase;letter-spacing:.3px;}
+.auth-input{background:rgba(255,255,255,.07);border:1.5px solid var(--border);border-radius:var(--rxs);padding:11px 13px;color:var(--white);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;width:100%;}
+.auth-input:focus{border-color:var(--green);}
+.auth-input::placeholder{color:rgba(255,255,255,.22);}
+.auth-btn{width:100%;padding:13px;border:none;border-radius:var(--rsm);background:var(--green);color:var(--g1);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:4px;transition:all .2s;}
+.auth-btn:hover{background:var(--green3);}
+.auth-btn:disabled{opacity:.5;cursor:not-allowed;}
+.auth-switch{text-align:center;font-size:13px;color:var(--white50);margin-top:16px;}
+.auth-switch a{color:var(--green3);cursor:pointer;font-weight:700;}
+.auth-close{position:absolute;top:14px;right:14px;background:var(--white10);border:none;color:var(--white);width:27px;height:27px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.trial-info-box{background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(251,191,36,.05));border:1px solid rgba(245,158,11,.22);border-radius:9px;padding:11px 13px;display:flex;align-items:center;gap:9px;margin-bottom:16px;}
+.ti-text{flex:1;font-size:12px;color:rgba(255,255,255,.65);}
+.ti-text strong{display:block;font-size:13px;color:var(--gold2);margin-bottom:1px;}
+.ti-prog{height:4px;background:rgba(245,158,11,.2);border-radius:2px;margin-top:7px;overflow:hidden;}
+.ti-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;width:100%;}
+
+/* PREMIUM CARD */
+.premium-card{background:linear-gradient(135deg,#0D1F2D,#0a2a1a);border:1px solid rgba(34,197,94,.3);border-radius:20px;padding:34px;width:100%;max-width:500px;box-shadow:0 40px 100px rgba(0,0,0,.7);position:relative;}
+.pm-close{position:absolute;top:14px;right:14px;background:var(--white10);border:none;color:var(--white);width:27px;height:27px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.pm-badge{display:inline-block;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:11px;font-weight:800;padding:3px 13px;border-radius:20px;margin-bottom:11px;}
+.pm-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:5px;}
+.pm-sub{font-size:13px;color:var(--white50);margin-bottom:20px;}
+.pm-plans{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px;}
+.pm-plan{border:1.5px solid var(--border);border-radius:var(--rsm);padding:14px;cursor:pointer;transition:all .2s;}
+.pm-plan.sel{border-color:var(--green);background:rgba(34,197,94,.08);}
+.pm-plan-name{font-size:11px;font-weight:700;color:var(--white50);margin-bottom:3px;}
+.pm-plan-price{font-size:18px;font-weight:800;font-family:'Syne',sans-serif;}
+.pm-plan-per{font-size:11px;color:var(--white50);}
+.pm-plan-save{font-size:11px;color:var(--green3);font-weight:700;margin-top:3px;}
+.pm-feats{display:flex;flex-direction:column;gap:7px;margin-bottom:20px;}
+.pm-feat{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--white80);}
+.pm-ck{color:var(--green3);}
+.pm-btn{width:100%;padding:13px;border:none;border-radius:var(--rsm);background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;}
+.pm-btn:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(34,197,94,.4);}
+
+/* ════ CONTACT ENTREPRISE CARD ════ */
+.contact-card{background:linear-gradient(135deg,#0D1F2D,#0b2416);border:1px solid rgba(245,158,11,.25);border-radius:20px;padding:30px;width:100%;max-width:500px;box-shadow:0 40px 100px rgba(0,0,0,.7);position:relative;max-height:92vh;overflow-y:auto;}
+.contact-card::-webkit-scrollbar{width:3px;}
+.contact-card::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.cc-close{position:absolute;top:14px;right:14px;background:var(--white10);border:none;color:var(--white);width:27px;height:27px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.cc-badge{display:inline-block;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:11px;font-weight:800;padding:3px 13px;border-radius:20px;margin-bottom:11px;}
+.cc-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:5px;}
+.cc-sub{font-size:13px;color:var(--white50);margin-bottom:22px;line-height:1.5;}
+.cc-row{display:flex;gap:10px;}
+.cc-row .auth-field{flex:1;}
+.contact-result{display:none;padding:11px 13px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;line-height:1.5;}
+.contact-result.ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:#86efac;display:block;}
+.contact-result.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#fca5a5;display:block;}
+.cc-privacy{text-align:center;font-size:11px;color:rgba(255,255,255,.3);margin-top:10px;}
+.cc-submit{width:100%;padding:13px;border:none;border-radius:var(--rsm);background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:4px;transition:all .2s;}
+.cc-submit:hover{opacity:.9;transform:translateY(-1px);}
+.cc-submit:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .pf-grid{grid-template-columns:repeat(3,1fr);}
+  .sectors-grid,.features-grid{grid-template-columns:1fr 1fr;}
+  .pricing-grid{grid-template-columns:1fr 1fr;}
+  .nav-links{gap:16px;}
+}
+@media(max-width:768px){
+  .nav-links{display:none;}
+  .pf-body{grid-template-columns:1fr;height:auto;}
+  .pf-right{display:none;}
+  .pf-grid{grid-template-columns:repeat(4,1fr);}
+  .trial-banner{flex-direction:column;text-align:center;gap:14px;}
+  .tb-stats{justify-content:center;}
+  .pricing-grid{grid-template-columns:1fr;max-width:400px;margin:0 auto;}
+}
+@media(max-width:640px){
+  nav{padding:12px 4%;}
+  .nav-cta .btn-ghost{display:none;}
+  .hero{padding:56px 5% 32px;}
+  .hero h1{font-size:30px;letter-spacing:-1px;}
+  .hero-actions{flex-direction:column;align-items:center;}
+  .btn-hero{width:100%;max-width:300px;padding:13px;}
+  .pf-grid{grid-template-columns:repeat(3,1fr);gap:5px;}
+  .pf-card-img{height:30px;font-size:14px;}
+  .pf-card-name{font-size:7px;}
+  .section{padding:46px 5%;}
+  .section h2{font-size:24px;}
+  .section-sub{margin-bottom:26px;}
+  .sectors-grid{grid-template-columns:1fr 1fr;gap:9px;}
+  .sc-tags{display:none;}
+  .features-grid{grid-template-columns:1fr;}
+  .cta-section{padding:46px 5% 70px;}
+  footer{flex-direction:column;text-align:center;padding:22px 5%;}
+  .screen{align-items:flex-end;padding:0;}
+  .auth-card{border-radius:18px 18px 0 0;max-width:100%;max-height:92vh;overflow-y:auto;}
+  .premium-card,.contact-card{border-radius:18px 18px 0 0;max-width:100%;padding:22px 16px;}
+  .cc-row{flex-direction:column;gap:0;}
+  .pm-plans{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:380px){
+  .hero h1{font-size:25px;}
+  .pf-grid{grid-template-columns:repeat(2,1fr);}
+  .sectors-grid{grid-template-columns:1fr;}
+  .pm-plans{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <svg width="32" height="32" viewBox="0 0 34 34" fill="none">
+      <circle cx="17" cy="17" r="16" stroke="#22c55e" stroke-width="1.5" opacity=".4"/>
+      <path d="M5 17 A12 12 0 0 1 29 17" stroke="#22c55e" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M8 22 A12 12 0 0 0 26 22" stroke="#4ade80" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-dasharray="3 3"/>
+      <circle cx="17" cy="17" r="4" fill="#22c55e"/>
+      <circle cx="6" cy="17" r="2.5" fill="#4ade80" opacity=".8"/>
+      <circle cx="28" cy="17" r="2.5" fill="#4ade80" opacity=".8"/>
+      <line x1="8.5" y1="17" x2="13" y2="17" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="21" y1="17" x2="25.5" y2="17" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <div class="logo-text">Konekte<span class="em">m</span></div>
+  </div>
+  <div class="nav-links">
+    <a href="#fonctionnalites">Fonctionnalités</a>
+    <a href="#secteurs">Secteurs</a>
+    <a href="#tarifs">Tarifs</a>
+  </div>
+  <div class="nav-cta">
+    <button class="btn-ghost" onclick="showScreen('signin')">Se connecter</button>
+    <button class="btn-primary" onclick="showScreen('signup')">Essai gratuit</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span>Caisse intelligente haïtienne</div>
+  <h1>La caisse qui<br><span class="hl">connecte</span> votre boutique<br>au monde numérique</h1>
+  <p class="hero-sub">Gérez vos ventes, stock et clients depuis n'importe quel appareil. Adapté à chaque secteur.</p>
+  <div class="hero-actions">
+    <button class="btn-hero green" onclick="showScreen('signup')">Démarrer gratuitement →</button>
+    <button class="btn-hero outline" onclick="showScreen('preview')">Voir l'aperçu</button>
+  </div>
+  <p class="hero-note"><span>14 jours d'essai gratuit</span> · Aucune carte · Données locales</p>
+</section>
+
+<!-- PREVIEW -->
+<div class="preview-wrap">
+  <div class="preview-glow"></div>
+  <div class="preview-frame">
+    <div class="pf-bar">
+      <div class="pf-dots">
+        <div class="pf-dot" style="background:#FF5F57"></div>
+        <div class="pf-dot" style="background:#FFBD2E"></div>
+        <div class="pf-dot" style="background:#28CA42"></div>
+      </div>
+      <div class="pf-title">Konektem — Pharmacie Saint-Louis</div>
+    </div>
+    <div class="pf-body">
+      <div class="pf-left">
+        <div class="pf-search">🔍 Rechercher un article...</div>
+        <div class="pf-cats"><div class="pf-cat active">Médicaments</div><div class="pf-cat inactive">Vitamines</div><div class="pf-cat inactive">Hygiène</div><div class="pf-cat inactive">Bébé</div></div>
+        <div class="pf-grid">
+          <div class="pf-card"><div class="pf-card-img">💊</div><div class="pf-card-name">Paracétamol 500mg</div><div class="pf-card-price">50 HTG</div></div>
+          <div class="pf-card"><div class="pf-card-img">🧴</div><div class="pf-card-name">Ibuprofène 400mg</div><div class="pf-card-price">80 HTG</div></div>
+          <div class="pf-card" style="border-color:rgba(34,197,94,.4)"><div class="pf-card-img">💉</div><div class="pf-card-name">Vitamine C 1g</div><div class="pf-card-price">180 HTG</div></div>
+          <div class="pf-card"><div class="pf-card-img">🩹</div><div class="pf-card-name">Amoxicilline</div><div class="pf-card-price">120 HTG</div></div>
+          <div class="pf-card"><div class="pf-card-img">💊</div><div class="pf-card-name">Doliprane Sirop</div><div class="pf-card-price">250 HTG</div></div>
+          <div class="pf-card"><div class="pf-card-img">🧪</div><div class="pf-card-name">Zinc 50mg</div><div class="pf-card-price">90 HTG</div></div>
+          <div class="pf-card"><div class="pf-card-img">💊</div><div class="pf-card-name">Métronidazole</div><div class="pf-card-price">65 HTG</div></div>
+          <div class="pf-card" style="opacity:.4"><div class="pf-card-img">🔴</div><div class="pf-card-name">Ciprofloxacine</div><div class="pf-card-price" style="color:#f87171">Épuisé</div></div>
+        </div>
+      </div>
+      <div class="pf-right">
+        <div class="pf-order-title">Commande en cours</div>
+        <div class="pf-items">
+          <div class="pf-item"><div class="pf-item-img">💊</div><div class="pf-item-name">Paracétamol ×2</div><div class="pf-item-price">100 HTG</div></div>
+          <div class="pf-item"><div class="pf-item-img">💉</div><div class="pf-item-name">Vitamine C ×1</div><div class="pf-item-price">180 HTG</div></div>
+          <div class="pf-item" style="border:1px solid rgba(34,197,94,.3)"><div class="pf-item-img">🧪</div><div class="pf-item-name">Zinc ×3</div><div class="pf-item-price">270 HTG</div></div>
+        </div>
+        <div class="pf-total"><div class="pf-total-label">TOTAL</div><div class="pf-total-val">550 HTG</div></div>
+        <div class="pf-paybtns">
+          <div class="pf-pay g">💵 Espèces</div><div class="pf-pay b">💳 Carte</div>
+          <div class="pf-pay o">📱 MonCash</div><div class="pf-pay p">📝 Crédit</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRIAL BANNER -->
+<div style="padding:0 5%;max-width:1100px;margin:0 auto">
+  <div class="trial-banner">
+    <div class="tb-left">
+      <h3>🎁 14 jours d'essai gratuit — Sans carte bancaire</h3>
+      <p>Accédez à toutes les fonctionnalités Premium pendant 14 jours.</p>
+    </div>
+    <div class="tb-stats">
+      <div class="tb-stat"><div class="num">14</div><div class="lab">Jours gratuits</div></div>
+      <div class="tb-stat"><div class="num">∞</div><div class="lab">Articles</div></div>
+      <div class="tb-stat"><div class="num">4</div><div class="lab">Secteurs</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTEURS -->
+<section class="section" id="secteurs">
+  <div class="section-badge">SECTEURS</div>
+  <h2>Une application, tous les métiers</h2>
+  <p class="section-sub">Konektem s'adapte automatiquement à votre secteur d'activité.</p>
+  <div class="sectors-grid">
+    <div class="sector-card"><div class="sc-ico g">🛒</div><div class="sc-name">Marché & Épicerie</div><div class="sc-desc">Alimentation, boissons, produits du quotidien.</div><div class="sc-tags"><span class="sc-tag">Stock temps réel</span><span class="sc-tag">Photos produits</span></div></div>
+    <div class="sector-card"><div class="sc-ico b">💊</div><div class="sc-name">Pharmacie & Médecine</div><div class="sc-desc">DCI, dosage, péremption, ordonnance requise.</div><div class="sc-tags"><span class="sc-tag">DCI / Dosage</span><span class="sc-tag">Péremption</span></div></div>
+    <div class="sector-card"><div class="sc-ico p">📱</div><div class="sc-name">Électronique & Tech</div><div class="sc-desc">SKU, numéros de série, garanties, réparations.</div><div class="sc-tags"><span class="sc-tag">SKU / Référence</span><span class="sc-tag">Garanties</span></div></div>
+    <div class="sector-card"><div class="sc-ico o">🍽️</div><div class="sc-name">Restaurant & Alimentation</div><div class="sc-desc">Tables, menus, sur place / à emporter / livraison.</div><div class="sc-tags"><span class="sc-tag">Tables</span><span class="sc-tag">Menus</span></div></div>
+  </div>
+</section>
+
+<div class="divider" style="max-width:1100px;margin:0 auto"></div>
+
+<!-- FEATURES -->
+<section class="section" id="fonctionnalites">
+  <div class="section-badge">FONCTIONNALITÉS</div>
+  <h2>Tout ce qu'il vous faut pour vendre mieux</h2>
+  <p class="section-sub">Caisse, stock, clients et back-office dans une seule application.</p>
+  <div class="features-grid">
+    <div class="feat-card hl"><div class="feat-icon">🔗</div><div class="feat-title">Intégration Boutique API</div><div class="feat-desc">Connectez votre site — produits importés automatiquement avec photos et prix.</div></div>
+    <div class="feat-card"><div class="feat-icon">📷</div><div class="feat-title">Photos Réelles</div><div class="feat-desc">Téléchargez des vraies photos depuis votre téléphone ou ordinateur.</div></div>
+    <div class="feat-card"><div class="feat-icon">📊</div><div class="feat-title">Back Office Complet</div><div class="feat-desc">Rapports, graphiques, top produits, analyse par caissier.</div></div>
+    <div class="feat-card"><div class="feat-icon">📱</div><div class="feat-title">4 Modes de Paiement</div><div class="feat-desc">Espèces, carte, MonCash et crédit — tous les modes haïtiens.</div></div>
+    <div class="feat-card"><div class="feat-icon">🧾</div><div class="feat-title">Reçus Imprimables</div><div class="feat-desc">Reçus professionnels avec logo et message personnalisé.</div></div>
+    <div class="feat-card"><div class="feat-icon">👥</div><div class="feat-title">Clients & Équipe</div><div class="feat-desc">Carnet de clients, historique d'achats, suivi par caissier.</div></div>
+  </div>
+</section>
+
+<div class="divider" style="max-width:1100px;margin:0 auto"></div>
+
+<!-- TARIFS -->
+<section class="section" id="tarifs">
+  <div class="section-badge">TARIFS</div>
+  <h2>Simple et transparent</h2>
+  <p class="section-sub">Commencez gratuitement. Passez au Premium quand vous grandissez.</p>
+  <div class="pricing-grid">
+    <div class="plan-card">
+      <div class="plan-name">Essai Gratuit</div>
+      <div class="plan-price"><span class="curr">HTG</span> 0 <span class="per">/ 14 jours</span></div>
+      <div class="plan-desc">Toutes les fonctionnalités pendant 14 jours sans carte.</div>
+      <div class="plan-feats">
+        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Tous les secteurs</div>
+        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Jusqu'à 50 articles</div>
+        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Jusqu'à 30 ventes</div>
+        <div class="pf-feat"><div class="pf-check x"><svg viewBox="0 0 10 10"><path d="M2 2L8 8M8 2L2 8" stroke="#475569" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div><span style="color:var(--white50)">Intégration API boutique</span></div>
+      </div>
+      <button class="plan-btn free" onclick="showScreen('signup')">Commencer gratuitement</button>
+    </div>
+    <div class="plan-card featured">
+      <div class="plan-name">Premium</div>
+      <div class="plan-price"><span class="curr">HTG</span> 2,500 <span class="per">/ mois</span></div>
+      <div class="plan-desc">Articles illimités, tout inclus.</div>
+      <div class="plan-feats">
+        <div class="pf-feat"><div class="pf-check gold"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Articles illimités</div>
+        <div class="pf-feat"><div class="pf-check gold"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Ventes illimitées</div>
+        <div class="pf-feat"><div class="pf-check gold"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Intégration API boutique</div>
+        <div class="pf-feat"><div class="pf-check gold"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Back Office complet</div>
+        <div class="pf-feat"><div class="pf-check gold"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Support prioritaire WhatsApp</div>
+      </div>
+      <button class="plan-btn premium" onclick="showScreen('premium')">Passer au Premium →</button>
+    </div>
+    <div class="plan-card">
+      <div class="plan-name">Entreprise</div>
+      <div class="plan-price" style="font-size:24px">Sur mesure</div>
+      <div class="plan-desc">Pour chaînes et franchises avec plusieurs points de vente.</div>
+      <div class="plan-feats">
+        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Multi-boutiques</div>
+        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Tableau de bord centralisé</div>
+        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>API personnalisée</div>
+        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Formation & onboarding</div>
+        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>SLA garanti</div>
+      </div>
+      <!-- ★ BOUTON CONNECTÉ À SUPABASE -->
+      <button class="plan-btn enterprise" onclick="ouvrirContact()">Nous contacter</button>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Prêt à connecter votre boutique ?</h2>
+  <p>Rejoignez les commerçants haïtiens qui modernisent leur gestion de vente.</p>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <button class="btn-hero green" onclick="showScreen('signup')">Créer mon compte gratuit →</button>
+    <button class="btn-hero outline" onclick="showScreen('signin')">J'ai déjà un compte</button>
+  </div>
+</section>
+
+<footer>
+  <div style="display:flex;align-items:center;gap:8px">
+    <svg width="24" height="24" viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="16" stroke="#22c55e" stroke-width="1.5" opacity=".4"/><path d="M5 17 A12 12 0 0 1 29 17" stroke="#22c55e" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="17" cy="17" r="4" fill="#22c55e"/></svg>
+    <div class="logo-text" style="font-size:16px">Konekte<span class="em">m</span></div>
+  </div>
+  <div class="footer-right">© 2025 Konektem · Haïti · Tous droits réservés</div>
+</footer>
+
+<!-- MODAL: SIGN UP -->
+<div class="screen hidden" id="screen-signup">
+  <div class="auth-card">
+    <button class="auth-close" onclick="hideScreen('signup')">✕</button>
+    <div class="auth-logo"><svg width="40" height="40" viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="16" stroke="#22c55e" stroke-width="1.5" opacity=".4"/><path d="M5 17 A12 12 0 0 1 29 17" stroke="#22c55e" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="17" cy="17" r="4" fill="#22c55e"/><circle cx="6" cy="17" r="2.5" fill="#4ade80" opacity=".8"/><circle cx="28" cy="17" r="2.5" fill="#4ade80" opacity=".8"/><line x1="8.5" y1="17" x2="13" y2="17" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/><line x1="21" y1="17" x2="25.5" y2="17" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <div class="auth-title">Créer votre compte</div>
+    <div class="auth-sub">14 jours d'essai gratuit · Aucune carte requise</div>
+    <div class="trial-info-box"><span style="font-size:18px">🎁</span><div class="ti-text"><strong>Essai Premium — 14 jours gratuits</strong>Toutes les fonctionnalités incluses<div class="ti-prog"><div class="ti-fill"></div></div></div></div>
+    <div class="auth-field"><label class="auth-label">Nom complet</label><input class="auth-input" id="su-name" placeholder="Jean-Baptiste Pierre"></div>
+    <div class="auth-field"><label class="auth-label">Email</label><input class="auth-input" id="su-email" type="email" placeholder="jean@exemple.com"></div>
+    <div class="auth-field"><label class="auth-label">Mot de passe</label><input class="auth-input" id="su-pass" type="password" placeholder="8 caractères minimum"></div>
+    <button class="auth-btn" onclick="doSignup()">Créer mon compte gratuit →</button>
+    <div class="auth-switch">Déjà un compte ? <a onclick="switchAuth('signin')">Se connecter</a></div>
+  </div>
+</div>
+
+<!-- MODAL: SIGN IN -->
+<div class="screen hidden" id="screen-signin">
+  <div class="auth-card">
+    <button class="auth-close" onclick="hideScreen('signin')">✕</button>
+    <div class="auth-logo"><svg width="40" height="40" viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="16" stroke="#22c55e" stroke-width="1.5" opacity=".4"/><path d="M5 17 A12 12 0 0 1 29 17" stroke="#22c55e" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="17" cy="17" r="4" fill="#22c55e"/></svg></div>
+    <div class="auth-title">Bon retour !</div>
+    <div class="auth-sub">Connectez-vous à votre espace Konektem</div>
+    <div class="auth-field"><label class="auth-label">Email</label><input class="auth-input" id="si-email" type="email" placeholder="jean@exemple.com"></div>
+    <div class="auth-field"><label class="auth-label">Mot de passe</label><input class="auth-input" id="si-pass" type="password" placeholder="Votre mot de passe"></div>
+    <button class="auth-btn" onclick="doSignin()">Se connecter →</button>
+    <div class="auth-switch">Pas encore de compte ? <a onclick="switchAuth('signup')">Créer un compte</a></div>
+  </div>
+</div>
+
+<!-- MODAL: PREMIUM -->
+<div class="screen hidden" id="screen-premium">
+  <div class="premium-card">
+    <button class="pm-close" onclick="hideScreen('premium')">✕</button>
+    <div class="pm-badge">⭐ PREMIUM</div>
+    <div class="pm-title">Passez au niveau supérieur</div>
+    <div class="pm-sub">Articles illimités · API boutique · Back Office complet</div>
+    <div class="pm-plans">
+      <div class="pm-plan sel" onclick="selPlan(this,'2 500 HTG/mois')"><div class="pm-plan-name">Mensuel</div><div class="pm-plan-price">2 500 <span class="pm-plan-per">HTG/mois</span></div></div>
+      <div class="pm-plan" onclick="selPlan(this,'22 000 HTG/an')"><div class="pm-plan-name">Annuel</div><div class="pm-plan-price">22 000 <span class="pm-plan-per">HTG/an</span></div><div class="pm-plan-save">💰 Économisez 8 000 HTG</div></div>
+    </div>
+    <div class="pm-feats">
+      <div class="pm-feat"><span class="pm-ck">✓</span> Articles et ventes illimités</div>
+      <div class="pm-feat"><span class="pm-ck">✓</span> Intégration API boutique Piyay & sites</div>
+      <div class="pm-feat"><span class="pm-ck">✓</span> Back Office — rapports, graphiques</div>
+      <div class="pm-feat"><span class="pm-ck">✓</span> Import CSV illimité</div>
+      <div class="pm-feat"><span class="pm-ck">✓</span> Support prioritaire WhatsApp</div>
+    </div>
+    <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px;font-size:12px;color:rgba(255,255,255,.6);text-align:center;margin-bottom:13px">
+      💳 Paiement : <strong style="color:#fbbf24">MonCash · Carte · Virement</strong>
+    </div>
+    <button class="pm-btn" id="pm-btn">Activer Premium — 2 500 HTG/mois →</button>
+  </div>
+</div>
+
+<!-- MODAL: APERÇU -->
+<div class="screen hidden" id="screen-preview">
+  <div class="auth-card" style="max-width:460px">
+    <button class="auth-close" onclick="hideScreen('preview')">✕</button>
+    <div class="auth-title" style="margin-bottom:6px">Aperçu de Konektem</div>
+    <div class="auth-sub" style="margin-bottom:16px">Ce que vous obtenez dès l'inscription</div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:9px;padding:12px;display:flex;align-items:center;gap:10px"><span style="font-size:19px">🛒</span><div><div style="font-weight:700;font-size:13px;margin-bottom:1px">Caisse Point de Vente</div><div style="font-size:12px;color:rgba(255,255,255,.5)">Ventes rapides avec photos réelles</div></div></div>
+      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:9px;padding:12px;display:flex;align-items:center;gap:10px"><span style="font-size:19px">📦</span><div><div style="font-weight:700;font-size:13px;margin-bottom:1px">Gestion du Stock</div><div style="font-size:12px;color:rgba(255,255,255,.5)">Alertes stock bas, suivi temps réel</div></div></div>
+      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:9px;padding:12px;display:flex;align-items:center;gap:10px"><span style="font-size:19px">🔗</span><div><div style="font-weight:700;font-size:13px;margin-bottom:1px">Intégration API Boutique</div><div style="font-size:12px;color:rgba(255,255,255,.5)">Produits importés automatiquement</div></div></div>
+      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:9px;padding:12px;display:flex;align-items:center;gap:10px"><span style="font-size:19px">📊</span><div><div style="font-weight:700;font-size:13px;margin-bottom:1px">Back Office & Rapports</div><div style="font-size:12px;color:rgba(255,255,255,.5)">Graphiques, top produits, analyses</div></div></div>
+    </div>
+    <button class="auth-btn" style="margin-top:16px" onclick="hideScreen('preview');showScreen('signup')">Démarrer l'essai gratuit →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MODAL: CONTACT ENTREPRISE → SUPABASE
+════════════════════════════════════════ -->
+<div class="screen hidden" id="screen-contact">
+  <div class="contact-card">
+    <button class="cc-close" onclick="fermerContact()">✕</button>
+    <div class="cc-badge">🏢 ENTREPRISE</div>
+    <div class="cc-title">Contactez-nous</div>
+    <div class="cc-sub">Notre équipe vous répond dans les 24 heures pour discuter de vos besoins multi-boutiques.</div>
+
+    <!-- Résultat (succès/erreur) -->
+    <div id="contact-result" class="contact-result"></div>
+
+    <!-- Formulaire -->
+    <div class="cc-row">
+      <div class="auth-field"><label class="auth-label">Nom complet *</label><input class="auth-input" id="c-nom" placeholder="Jean-Baptiste Pierre"></div>
+      <div class="auth-field"><label class="auth-label">Email *</label><input class="auth-input" id="c-email" type="email" placeholder="jean@boutique.ht"></div>
+    </div>
+    <div class="cc-row">
+      <div class="auth-field"><label class="auth-label">Téléphone</label><input class="auth-input" id="c-tel" placeholder="509 XX XX XX XX"></div>
+      <div class="auth-field"><label class="auth-label">Entreprise</label><input class="auth-input" id="c-ent" placeholder="Nom de votre chaîne"></div>
+    </div>
+    <div class="auth-field">
+      <label class="auth-label">Nombre de boutiques</label>
+      <select class="auth-input" id="c-nb" style="cursor:pointer">
+        <option value="2-5">2 à 5 boutiques</option>
+        <option value="6-10">6 à 10 boutiques</option>
+        <option value="11-20">11 à 20 boutiques</option>
+        <option value="20+">Plus de 20 boutiques</option>
+      </select>
+    </div>
+    <div class="auth-field">
+      <label class="auth-label">Message / Besoins spécifiques</label>
+      <textarea class="auth-input" id="c-msg" placeholder="Décrivez vos besoins : secteur, intégrations souhaitées..." rows="3" style="resize:vertical;min-height:75px;font-family:'Plus Jakarta Sans',sans-serif"></textarea>
+    </div>
+    <button class="cc-submit" id="c-btn" onclick="soumettreContact()">Envoyer ma demande →</button>
+    <div class="cc-privacy">🔒 Données sécurisées via Supabase · Aucun spam</div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// SUPABASE — Configuration
+// ════════════════════════════════════════
+var SUPA_URL = 'https://mnpgapvltdrpztnjmeie.supabase.co';
+var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE';
+
+// Insérer un contact dans Supabase
+async function insertContact(data) {
+  var r = await fetch(SUPA_URL + '/rest/v1/contacts', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) {
+    var err = {};
+    try { err = await r.json(); } catch(e) {}
+    throw new Error(err.message || 'Erreur HTTP ' + r.status);
+  }
+  return true;
+}
+
+// Ouvrir le modal contact
+function ouvrirContact() {
+  ['c-nom','c-email','c-tel','c-ent','c-msg'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('contact-result').className = 'contact-result';
+  document.getElementById('c-btn').disabled = false;
+  document.getElementById('c-btn').textContent = 'Envoyer ma demande →';
+  showScreen('contact');
+}
+function fermerContact() { hideScreen('contact'); }
+
+// Soumettre → Supabase
+async function soumettreContact() {
+  var nom   = document.getElementById('c-nom').value.trim();
+  var email = document.getElementById('c-email').value.trim();
+  var tel   = document.getElementById('c-tel').value.trim();
+  var ent   = document.getElementById('c-ent').value.trim();
+  var nb    = document.getElementById('c-nb').value;
+  var msg   = document.getElementById('c-msg').value.trim();
+  var res   = document.getElementById('contact-result');
+  var btn   = document.getElementById('c-btn');
+
+  if (!nom || !email) {
+    res.className = 'contact-result err';
+    res.textContent = '⚠️ Nom et email sont obligatoires.';
+    return;
+  }
+  if (!email.includes('@') || !email.includes('.')) {
+    res.className = 'contact-result err';
+    res.textContent = '⚠️ Adresse email invalide.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Envoi en cours...';
+  res.className = 'contact-result';
+
+  try {
+    await insertContact({
+      nom:        nom,
+      email:      email,
+      telephone:  tel || null,
+      entreprise: ent || null,
+      message:    'Boutiques: ' + nb + (msg ? '. ' + msg : ''),
+      plan:       'Entreprise',
+      statut:     'nouveau'
+    });
+
+    res.className = 'contact-result ok';
+    res.textContent = '✅ Merci ' + nom + ' ! Nous vous contacterons dans les 24 heures.';
+    btn.textContent = '✅ Message envoyé !';
+    setTimeout(fermerContact, 3000);
+
+  } catch(e) {
+    res.className = 'contact-result err';
+    res.textContent = '❌ Erreur : ' + e.message;
+    btn.disabled = false;
+    btn.textContent = 'Envoyer ma demande →';
+  }
+}
+
+// ════════════════════════════════════════
+// NAVIGATION SCREENS
+// ════════════════════════════════════════
+function showScreen(id) {
+  document.getElementById('screen-' + id).classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function hideScreen(id) {
+  document.getElementById('screen-' + id).classList.add('hidden');
+  document.body.style.overflow = '';
+}
+function switchAuth(to) {
+  hideScreen(to === 'signup' ? 'signin' : 'signup');
+  showScreen(to);
+}
+document.querySelectorAll('.screen').forEach(function(s) {
+  s.addEventListener('click', function(e) {
+    if (e.target === s) { s.classList.add('hidden'); document.body.style.overflow = ''; }
+  });
+});
+
+// AUTH
+function doSignup() {
+  var name = document.getElementById('su-name').value.trim();
+  var email = document.getElementById('su-email').value.trim();
+  var pass = document.getElementById('su-pass').value;
+  if (!name || !email || !pass) { alert('Veuillez remplir tous les champs.'); return; }
+  if (pass.length < 8) { alert('Le mot de passe doit contenir au moins 8 caractères.'); return; }
+  localStorage.setItem('konektem_user', JSON.stringify({
+    name: name, email: email,
+    startDate: new Date().toISOString(), plan: 'trial', trialDays: 14
+  }));
+  hideScreen('signup');
+  setTimeout(function() { window.location.href = 'app.html'; }, 200);
+}
+function doSignin() {
+  var email = document.getElementById('si-email').value.trim();
+  var pass = document.getElementById('si-pass').value;
+  if (!email || !pass) { alert('Veuillez remplir tous les champs.'); return; }
+  var u = localStorage.getItem('konektem_user');
+  if (u && JSON.parse(u).email === email) {
+    hideScreen('signin');
+    setTimeout(function() { window.location.href = 'app.html'; }, 200);
+    return;
+  }
+  alert('Compte introuvable. Créez un compte gratuit d\'abord.');
+}
+
+// PREMIUM
+function selPlan(el, txt) {
+  document.querySelectorAll('.pm-plan').forEach(function(p) { p.classList.remove('sel'); });
+  el.classList.add('sel');
+  document.getElementById('pm-btn').textContent = 'Activer Premium — ' + txt + ' →';
+}
+</script>
+</body>
+</html>
