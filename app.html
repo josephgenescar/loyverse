@@ -18,7 +18,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
+body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
 
 /* ─── TRIAL BAR ─── */
 #trial-bar{background:linear-gradient(90deg,var(--gold-l),#fef9c3);border-bottom:1px solid rgba(245,158,11,.2);padding:8px 16px;display:flex;align-items:center;gap:10px;font-size:12px;flex-shrink:0;}
@@ -28,7 +28,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .tb-text strong{color:#78350f;}
 .tb-prog{width:80px;height:4px;background:rgba(245,158,11,.2);border-radius:2px;overflow:hidden;}
 .tb-fill{height:100%;background:linear-gradient(90deg,var(--gold),#fbbf24);border-radius:2px;}
-.tb-upgrade{padding:5px 12px;border-radius:var(--rxs);border:none;background:var(--gold);color:#fff;font-size:11px;font-weight:800;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;}
+.tb-upgrade{padding:5px 12px;border-radius:var(--rxs);border:none;background:var(--gold);color:#fff;font-size:11px;font-weight:800;cursor:pointer;font-family:sans-serif;white-space:nowrap;}
 .tb-upgrade:hover{background:#d97706;}
 .tb-close{background:none;border:none;color:#92400e;cursor:pointer;font-size:16px;padding:0 4px;}
 
@@ -36,13 +36,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .topbar{background:var(--accent-d);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,.2);}
 .tb-l{display:flex;align-items:center;gap:10px;}
 .menu-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.8);font-size:20px;padding:4px;}
-.app-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:#fff;letter-spacing:-.3px;}
+.app-logo{font-family:Syne,sans-serif;font-weight:800;font-size:17px;color:#fff;letter-spacing:-.3px;}
 .app-logo span{color:#86efac;}
 .sector-pill{background:rgba(255,255,255,.18);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:rgba(255,255,255,.9);}
 .tb-r{display:flex;align-items:center;gap:8px;}
 .topbar-clock{font-size:13px;font-weight:700;color:rgba(255,255,255,.8);}
 .cashier-pill{background:rgba(255,255,255,.15);border-radius:20px;padding:4px 11px;color:#fff;font-size:12px;font-weight:700;}
-.bo-btn{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:5px 12px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;}
+.bo-btn{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:5px 12px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:sans-serif;transition:all .15s;}
 .bo-btn:hover{background:rgba(255,255,255,.28);}
 .bo-btn.on{background:#fff;color:var(--accent-d);}
 
@@ -75,11 +75,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .pos-search{background:#fff;padding:10px 12px;border-bottom:1px solid var(--border);display:flex;gap:7px;}
 .srch{flex:1;display:flex;align-items:center;gap:7px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--rsm);padding:8px 11px;transition:border-color .15s;}
 .srch:focus-within{border-color:var(--accent);}
-.srch input{border:none;background:transparent;outline:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;flex:1;color:var(--text);}
+.srch input{border:none;background:transparent;outline:none;font-family:sans-serif;font-size:13px;flex:1;color:var(--text);}
 .srch input::placeholder{color:var(--text3);}
 .cat-bar{background:#fff;border-bottom:1px solid var(--border);padding:7px 12px;display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;}
 .cat-bar::-webkit-scrollbar{display:none;}
-.chip{padding:5px 13px;border-radius:20px;border:1.5px solid var(--border);background:#fff;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif;}
+.chip{padding:5px 13px;border-radius:20px;border:1.5px solid var(--border);background:#fff;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:sans-serif;}
 .chip:hover{border-color:var(--accent);color:var(--accent);}
 .chip.on{background:var(--accent);color:#fff;border-color:var(--accent);}
 .prod-grid{flex:1;overflow-y:auto;padding:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;align-content:start;}
@@ -130,17 +130,17 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .trow.main{color:var(--text);font-weight:800;font-size:14px;padding-top:5px;border-top:1px solid var(--border);}
 .trow.main .tv{color:var(--accent-d);}
 .disc-row{display:flex;gap:5px;}
-.disc-inp{flex:1;border:1.5px solid var(--border);border-radius:var(--rxs);padding:7px 9px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;outline:none;background:var(--bg);transition:border-color .15s;}
+.disc-inp{flex:1;border:1.5px solid var(--border);border-radius:var(--rxs);padding:7px 9px;font-family:sans-serif;font-size:12px;outline:none;background:var(--bg);transition:border-color .15s;}
 .disc-inp:focus{border-color:var(--accent);}
 .disc-inp::placeholder{color:var(--text3);}
 .pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
-.pbtn{padding:10px 6px;border-radius:var(--rxs);border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .15s;}
+.pbtn{padding:10px 6px;border-radius:var(--rxs);border:none;cursor:pointer;font-family:sans-serif;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .15s;}
 .pbtn:hover{opacity:.88;transform:translateY(-1px);}
 .pbtn.cash{background:#16a34a;color:#fff;}
 .pbtn.card{background:#1d4ed8;color:#fff;}
 .pbtn.moncash{background:#ea580c;color:#fff;}
 .pbtn.credit{background:#7c3aed;color:#fff;}
-.clear-btn{padding:8px;border-radius:var(--rxs);border:1.5px solid var(--red);background:#fff;color:var(--red);font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;}
+.clear-btn{padding:8px;border-radius:var(--rxs);border:1.5px solid var(--red);background:#fff;color:var(--red);font-size:12px;font-weight:700;cursor:pointer;font-family:sans-serif;transition:all .15s;}
 .clear-btn:hover{background:var(--red);color:#fff;}
 
 /* ─── GENERIC VIEW ─── */
@@ -173,15 +173,15 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .bdg-man{background:#f1f5f9;color:#475569;border:1px solid var(--border);}
 
 /* ─── BUTTONS ─── */
-.btn-g{padding:8px 15px;border-radius:var(--rxs);border:none;background:var(--accent);color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;}
+.btn-g{padding:8px 15px;border-radius:var(--rxs);border:none;background:var(--accent);color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:sans-serif;transition:all .15s;}
 .btn-g:hover{background:var(--accent-d);}
-.btn-o{padding:8px 13px;border-radius:var(--rxs);border:1.5px solid var(--border);background:#fff;color:var(--text2);font-weight:700;font-size:13px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;}
+.btn-o{padding:8px 13px;border-radius:var(--rxs);border:1.5px solid var(--border);background:#fff;color:var(--text2);font-weight:700;font-size:13px;cursor:pointer;font-family:sans-serif;transition:all .15s;}
 .btn-o:hover{border-color:var(--accent);color:var(--accent);}
-.abt{padding:4px 8px;border-radius:5px;border:1.5px solid var(--border);background:#fff;color:var(--text2);font-size:11px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;transition:all .15s;margin-right:3px;}
+.abt{padding:4px 8px;border-radius:5px;border:1.5px solid var(--border);background:#fff;color:var(--text2);font-size:11px;cursor:pointer;font-family:sans-serif;font-weight:600;transition:all .15s;margin-right:3px;}
 .abt:hover{border-color:var(--accent);color:var(--accent);}
 .abt.del:hover{border-color:var(--red);color:var(--red);}
 .fi-row{display:flex;gap:8px;align-items:center;margin-bottom:11px;flex-wrap:wrap;}
-.fi{border:1.5px solid var(--border);border-radius:var(--rxs);padding:7px 10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;background:#fff;transition:border-color .15s;}
+.fi{border:1.5px solid var(--border);border-radius:var(--rxs);padding:7px 10px;font-family:sans-serif;font-size:13px;outline:none;background:#fff;transition:border-color .15s;}
 .fi:focus{border-color:var(--accent);}
 
 /* ─── LIMIT WALL ─── */
@@ -189,7 +189,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .lw-icon{font-size:40px;margin-bottom:12px;}
 .lw-title{font-size:17px;font-weight:800;color:#78350f;margin-bottom:6px;}
 .lw-sub{font-size:13px;color:#92400e;margin-bottom:20px;line-height:1.5;}
-.lw-btn{padding:12px 24px;border:none;border-radius:var(--rsm);background:var(--gold);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;}
+.lw-btn{padding:12px 24px;border:none;border-radius:var(--rsm);background:var(--gold);color:#fff;font-family:sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;}
 .lw-btn:hover{background:#d97706;transform:translateY(-1px);}
 
 /* ─── KPI / BO ─── */
@@ -199,7 +199,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .kpi.bl{border-left-color:var(--blue);}
 .kpi.re{border-left-color:var(--red);}
 .kpi-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px;}
-.kpi-val{font-size:22px;font-weight:800;font-family:'Syne',sans-serif;}
+.kpi-val{font-size:22px;font-weight:800;font-family:Syne,sans-serif;}
 .kpi-sub{font-size:11px;color:var(--text3);margin-top:3px;}
 .sec-t{font-size:14px;font-weight:800;margin:13px 0 8px;}
 .chart-card{background:#fff;border-radius:var(--r);padding:15px;box-shadow:var(--sh);margin-bottom:13px;}
@@ -222,12 +222,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 /* ─── HISTORY ─── */
 .hcard{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:11px 14px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:all .15s;margin-bottom:7px;border-left:3px solid var(--accent);}
 .hcard:hover{box-shadow:var(--sh2);transform:translateX(2px);}
-.hc-num{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--accent);min-width:40px;}
+.hc-num{font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:var(--accent);min-width:40px;}
 .hc-info{flex:1;}
 .hc-date{font-size:11px;color:var(--text3);}
 .hc-items{font-size:13px;font-weight:700;margin-top:1px;}
 .hc-meth{font-size:11px;color:var(--text2);margin-top:1px;}
-.hc-tot{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--accent-d);}
+.hc-tot{font-family:Syne,sans-serif;font-size:15px;font-weight:800;color:var(--accent-d);}
 
 /* ─── TICKET ─── */
 .tcard{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:11px 14px;margin-bottom:7px;border:1.5px solid var(--border);transition:all .15s;}
@@ -245,10 +245,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .ig-ico{font-size:24px;}
 .ig-title{font-size:14px;font-weight:800;}
 .ig-sub{font-size:11px;color:var(--text2);margin-top:1px;}
-.ig-inp{border:1.5px solid var(--border);border-radius:var(--rxs);padding:8px 11px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;width:100%;margin-bottom:7px;background:#fff;transition:border-color .15s;}
+.ig-inp{border:1.5px solid var(--border);border-radius:var(--rxs);padding:8px 11px;font-family:sans-serif;font-size:13px;outline:none;width:100%;margin-bottom:7px;background:#fff;transition:border-color .15s;}
 .ig-inp:focus{border-color:var(--accent);}
 .ig-inp::placeholder{color:var(--text3);}
-.ig-btn{width:100%;padding:8px;border-radius:var(--rxs);border:none;background:var(--accent);color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;margin-bottom:5px;}
+.ig-btn{width:100%;padding:8px;border-radius:var(--rxs);border:none;background:var(--accent);color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:sans-serif;transition:all .15s;margin-bottom:5px;}
 .ig-btn:hover{background:var(--accent-d);}
 .ig-btn.sec{background:#fff;color:var(--accent);border:1.5px solid var(--accent);}
 .ig-btn.dng{background:#fff;color:var(--red);border:1.5px solid var(--red);}
@@ -262,9 +262,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .set-sec h3{font-size:12px;font-weight:800;padding-bottom:9px;border-bottom:1px solid var(--bg);margin-bottom:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;}
 .srow{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:5px 0;}
 .slbl{font-size:13px;color:var(--text2);font-weight:600;}
-.sinp{border:1.5px solid var(--border);border-radius:var(--rxs);padding:7px 10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;min-width:165px;text-align:right;transition:border-color .15s;}
+.sinp{border:1.5px solid var(--border);border-radius:var(--rxs);padding:7px 10px;font-family:sans-serif;font-size:13px;outline:none;min-width:165px;text-align:right;transition:border-color .15s;}
 .sinp:focus{border-color:var(--accent);}
-.ssel{border:1.5px solid var(--border);border-radius:var(--rxs);padding:7px 10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;background:#fff;cursor:pointer;}
+.ssel{border:1.5px solid var(--border);border-radius:var(--rxs);padding:7px 10px;font-family:sans-serif;font-size:13px;outline:none;background:#fff;cursor:pointer;}
 .tog{width:44px;height:24px;border-radius:12px;background:#cbd5e1;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
 .tog.on{background:var(--accent);}
 .tog::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
@@ -272,7 +272,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
 /* ─── BO TABS ─── */
 .bo-tabs{display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:13px;}
-.bo-tab{padding:7px 15px;border:none;background:transparent;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;}
+.bo-tab{padding:7px 15px;border:none;background:transparent;font-family:sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;}
 .bo-tab.on{color:var(--accent-d);border-bottom-color:var(--accent);}
 .bo-panel{display:none;}
 .bo-panel.on{display:block;}
@@ -285,18 +285,18 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .modal h3{font-size:15px;font-weight:800;margin-bottom:15px;}
 .fg{display:flex;flex-direction:column;gap:5px;margin-bottom:9px;}
 .flbl{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.3px;}
-.finp{border:1.5px solid var(--border);border-radius:var(--rxs);padding:8px 10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;transition:border-color .15s;width:100%;}
+.finp{border:1.5px solid var(--border);border-radius:var(--rxs);padding:8px 10px;font-family:sans-serif;font-size:13px;outline:none;transition:border-color .15s;width:100%;}
 .finp:focus{border-color:var(--accent);}
-.fsel{border:1.5px solid var(--border);border-radius:var(--rxs);padding:8px 10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;background:#fff;width:100%;cursor:pointer;}
+.fsel{border:1.5px solid var(--border);border-radius:var(--rxs);padding:8px 10px;font-family:sans-serif;font-size:13px;outline:none;background:#fff;width:100%;cursor:pointer;}
 .f2{display:flex;gap:9px;}
 .f2 .fg{flex:1;}
 .mfooter{display:flex;gap:7px;justify-content:flex-end;margin-top:17px;padding-top:13px;border-top:1px solid var(--bg);}
-.btn-cancel{padding:8px 15px;border-radius:var(--rxs);border:1.5px solid var(--border);background:#fff;color:var(--text2);font-size:13px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;}
+.btn-cancel{padding:8px 15px;border-radius:var(--rxs);border:1.5px solid var(--border);background:#fff;color:var(--text2);font-size:13px;cursor:pointer;font-family:sans-serif;font-weight:700;}
 .btn-cancel:hover{background:var(--bg);}
 
 /* ─── MODAL TABS ─── */
 .mtabs{display:flex;gap:2px;margin-bottom:13px;border-bottom:2px solid var(--border);}
-.mtab{padding:7px 13px;border:none;background:transparent;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;}
+.mtab{padding:7px 13px;border:none;background:transparent;font-family:sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;}
 .mtab.on{color:var(--accent-d);border-bottom-color:var(--accent);}
 .mtp{display:none;}
 .mtp.on{display:block;}
@@ -313,7 +313,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
 /* ─── RECEIPT ─── */
 .receipt{background:#fff;border:1px dashed #cbd5e1;border-radius:7px;padding:15px;font-family:'Courier New',monospace;font-size:12px;max-width:275px;margin:0 auto;}
-.r-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:var(--accent-d);text-align:center;}
+.r-logo{font-family:Syne,sans-serif;font-weight:800;font-size:15px;color:var(--accent-d);text-align:center;}
 .r-sub{font-size:10px;color:#666;text-align:center;margin-bottom:7px;}
 .r-div{border-top:1px dashed #cbd5e1;margin:6px 0;}
 .r-row{display:flex;justify-content:space-between;margin:2px 0;font-size:11px;}
@@ -324,20 +324,20 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .pm-card{background:linear-gradient(135deg,#0f172a,#0a2e1a);border:1px solid rgba(34,197,94,.3);border-radius:18px;padding:30px;width:min(500px,96vw);max-height:92vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,.7);position:relative;animation:mIn .2s ease;}
 .pm-cl{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.1);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
 .pm-bdg{display:inline-block;background:linear-gradient(135deg,var(--gold),#fbbf24);color:#000;font-size:11px;font-weight:800;padding:3px 13px;border-radius:20px;letter-spacing:.4px;margin-bottom:11px;}
-.pm-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#fff;margin-bottom:5px;}
+.pm-title{font-family:Syne,sans-serif;font-size:24px;font-weight:800;color:#fff;margin-bottom:5px;}
 .pm-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:22px;}
 .pm-plans{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px;}
 .pm-plan{border:1.5px solid rgba(255,255,255,.12);border-radius:var(--rsm);padding:14px;cursor:pointer;transition:all .2s;}
 .pm-plan.sel{border-color:var(--accent);background:rgba(34,197,94,.1);}
 .pm-pname{font-size:12px;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:3px;}
-.pm-pprice{font-size:19px;font-weight:800;color:#fff;font-family:'Syne',sans-serif;}
+.pm-pprice{font-size:19px;font-weight:800;color:#fff;font-family:Syne,sans-serif;}
 .pm-pper{font-size:11px;color:rgba(255,255,255,.4);}
 .pm-psave{font-size:11px;color:#86efac;font-weight:700;margin-top:3px;}
 .pm-feats{display:flex;flex-direction:column;gap:7px;margin-bottom:20px;}
 .pm-feat{display:flex;align-items:center;gap:7px;font-size:13px;color:rgba(255,255,255,.8);}
 .pm-ck{color:var(--accent);font-size:13px;}
 .pm-note{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:7px;padding:10px;font-size:12px;color:rgba(255,255,255,.6);text-align:center;margin-bottom:14px;}
-.pm-btn{width:100%;padding:13px;border:none;border-radius:var(--rsm);background:linear-gradient(135deg,var(--accent),var(--accent-d));color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;}
+.pm-btn{width:100%;padding:13px;border:none;border-radius:var(--rsm);background:linear-gradient(135deg,var(--accent),var(--accent-d));color:#fff;font-family:sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;}
 .pm-btn:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(34,197,94,.4);}
 
 /* ─── NOTIF ─── */
@@ -355,7 +355,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 /* ─── ONBOARDING ─── */
 #screen-ob{position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,#0d1f2d 0%,#0b3d2e 50%,#0d1f2d 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow-y:auto;}
 #screen-ob.hidden{display:none;}
-.ob-logo{font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:5px;text-align:center;}
+.ob-logo{font-family:Syne,sans-serif;font-size:34px;font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:5px;text-align:center;}
 .ob-logo span{color:#86efac;}
 .ob-tag{color:rgba(255,255,255,.5);font-size:14px;margin-bottom:36px;text-align:center;}
 .ob-dots{display:flex;gap:6px;justify-content:center;margin-bottom:22px;}
@@ -368,7 +368,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .ob-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:22px;line-height:1.5;}
 .ob-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
 .ob-lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.4px;}
-.ob-inp{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:7px;padding:11px 13px;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;width:100%;}
+.ob-inp{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:7px;padding:11px 13px;color:#fff;font-family:sans-serif;font-size:14px;outline:none;transition:border-color .2s;width:100%;}
 .ob-inp:focus{border-color:#86efac;}
 .ob-inp::placeholder{color:rgba(255,255,255,.2);}
 .sec-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
@@ -378,17 +378,17 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .sec-ico{font-size:28px;}
 .sec-name{font-size:13px;font-weight:700;color:#fff;}
 .sec-desc{font-size:11px;color:rgba(255,255,255,.4);line-height:1.3;}
-.ob-btn{width:100%;padding:13px;border-radius:7px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-d));color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:14px;transition:all .2s;}
+.ob-btn{width:100%;padding:13px;border-radius:7px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-d));color:#fff;font-family:sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:14px;transition:all .2s;}
 .ob-btn:hover{opacity:.9;transform:translateY(-1px);}
 .ob-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
-.ob-back{background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;margin-top:10px;display:block;text-align:center;width:100%;}
+.ob-back{background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;font-family:sans-serif;margin-top:10px;display:block;text-align:center;width:100%;}
 
 /* ══════════════════════════════════
    BOTTOM NAV (mobile POS)
 ══════════════════════════════════ */
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:60;background:#fff;border-top:1px solid var(--border);padding:0;box-shadow:0 -2px 12px rgba(0,0,0,.08);}
 .bn-items{display:flex;align-items:stretch;}
-.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:700;gap:3px;border:none;background:transparent;font-family:'Plus Jakarta Sans',sans-serif;transition:color .15s;position:relative;}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;cursor:pointer;color:var(--text3);font-size:10px;font-weight:700;gap:3px;border:none;background:transparent;font-family:sans-serif;transition:color .15s;position:relative;}
 .bn-item.on{color:var(--accent-d);}
 .bn-item .bn-ico{font-size:20px;line-height:1;}
 .bn-badge{position:absolute;top:4px;right:calc(50% - 18px);background:var(--accent);color:#fff;border-radius:20px;padding:1px 5px;font-size:9px;font-weight:800;line-height:1.4;}
@@ -572,11 +572,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .login-screen{position:fixed;inset:0;z-index:1001;background:linear-gradient(135deg,#0D1F2D,#0a2e1a);display:flex;align-items:center;justify-content:center;padding:20px;}
 .login-screen.hidden{display:none;}
 .login-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:30px;width:100%;max-width:340px;text-align:center;}
-.login-logo{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#fff;margin-bottom:4px;}
+.login-logo{font-family:Syne,sans-serif;font-size:28px;font-weight:800;color:#fff;margin-bottom:4px;}
 .login-logo span{color:#86efac;}
 .login-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:24px;}
 .cashier-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
-.cashier-btn{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:var(--rsm);padding:12px 16px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;gap:12px;transition:all .2s;text-align:left;}
+.cashier-btn{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:var(--rsm);padding:12px 16px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:sans-serif;display:flex;align-items:center;gap:12px;transition:all .2s;text-align:left;}
 .cashier-btn:hover{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.4);}
 .cashier-btn .cav{width:36px;height:36px;border-radius:50%;background:rgba(34,197,94,.2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#86efac;flex-shrink:0;}
 .cashier-btn .cn{flex:1;}
@@ -991,7 +991,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="login-logo">Konekte<span>m</span></div>
     <div class="login-sub" id="login-biz-name">Qui travaille aujourd'hui ?</div>
     <div class="cashier-list" id="cashier-list"></div>
-    <button style="width:100%;padding:11px;border:none;border-radius:var(--rsm);background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;" onclick="skipLogin()">Continuer sans sélectionner</button>
+    <button style="width:100%;padding:11px;border:none;border-radius:var(--rsm);background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;font-family:sans-serif;" onclick="skipLogin()">Continuer sans sélectionner</button>
   </div>
 </div>
 
@@ -1130,49 +1130,271 @@ function load(){
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).substr(2,5); }
 function fmt(n){ return Number(n).toLocaleString('fr-HT')+' '+(S.settings.currency||'HTG'); }
 
-// ── TRIAL ──
+// ════════════════════════════════════════
+// SYSTÈME ESSAI & PREMIUM
+// ════════════════════════════════════════
+
 function isPremium(){ return S.settings.plan==='premium'; }
+
+function isTrialExpired(){
+  if(isPremium()) return false;
+  if(!S.settings.trialStart) return false;
+  var diff=Math.floor((Date.now()-new Date(S.settings.trialStart).getTime())/86400000);
+  return diff >= TRIAL_DAYS;
+}
+
 function trialDaysLeft(){
   if(!S.settings.trialStart) return TRIAL_DAYS;
   var diff=Math.floor((Date.now()-new Date(S.settings.trialStart).getTime())/86400000);
   return Math.max(0,TRIAL_DAYS-diff);
 }
+
+function checkTrialOnStart(){
+  if(isPremium()) return;
+  if(isTrialExpired()) showExpiredWall();
+}
+
+function showExpiredWall(){
+  if(document.getElementById('expired-wall')) return;
+  var wall=document.createElement('div');
+  wall.id='expired-wall';
+  wall.style.cssText='position:fixed;inset:0;z-index:2000;background:linear-gradient(135deg,#0D1F2D,#0a2e1a);display:flex;align-items:center;justify-content:center;padding:20px;';
+  wall.innerHTML='<div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:32px;width:100%;max-width:380px;text-align:center;">'
+    +'<div style="font-size:46px;margin-bottom:14px;">⏰</div>'
+    +'<div style="font-family:Syne,sans-serif;font-size:20px;font-weight:800;color:#fff;margin-bottom:8px;">Essai terminé</div>'
+    +'<div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:22px;line-height:1.6;">Votre periode d essai de 14 jours est terminee.<br>Passez au Premium pour continuer.</div>'
+    +'<button onclick="showPremium()" style="width:100%;padding:13px;border:none;border-radius:10px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-family:sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px;">⭐ Passer Premium — 2 500 HTG/mois</button>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.3);">Paiement : MonCash · Carte · Virement</div>'
+    +'</div>';
+  document.body.appendChild(wall);
+}
+
 function checkArticleLimit(){
   if(isPremium()) return true;
-  if(S.products.length>=TRIAL_LIMIT_ARTICLES){ showLimitWall('articles'); return false; }
+  if(isTrialExpired()){ showExpiredWall(); return false; }
+  if(S.products.length>=TRIAL_LIMIT_ARTICLES){ showPremium(); notif('Limite essai atteinte — passez Premium !','err'); return false; }
   return true;
 }
+
 function checkSaleLimit(){
   if(isPremium()) return true;
-  if(S.sales.length>=TRIAL_LIMIT_SALES){ showLimitWall('ventes'); return false; }
+  if(isTrialExpired()){ showExpiredWall(); return false; }
+  if(S.sales.length>=TRIAL_LIMIT_SALES){ showPremium(); notif('Limite essai atteinte — passez Premium !','err'); return false; }
   return true;
 }
+
 function showLimitWall(type){
-  var area=document.getElementById(type==='articles'?'invBody':'ordItems');
-  if(!area) { showPremium(); return; }
   showPremium();
-  notif('Limite de l\'essai atteinte — passez Premium !','err');
+  notif('Limite essai atteinte !','err');
 }
+
 function updateTrialBar(){
   if(isPremium()){ document.getElementById('trial-bar').classList.add('hidden'); return; }
+  if(isTrialExpired()){
+    document.getElementById('trial-bar').classList.remove('hidden');
+    document.getElementById('trial-bar').style.background='linear-gradient(90deg,#fee2e2,#fecaca)';
+    document.getElementById('trial-days-txt').innerHTML='<span style="color:#991b1b;font-weight:800;">Essai expiré</span>';
+    document.getElementById('trial-fill').style.width='0%';
+    return;
+  }
   var days=trialDaysLeft();
   document.getElementById('trial-days-txt').textContent=days+' jour'+(days>1?'s':'')+' restant'+(days>1?'s':'');
   var pct=Math.round((days/TRIAL_DAYS)*100);
   document.getElementById('trial-fill').style.width=pct+'%';
   if(pct<30) document.getElementById('trial-fill').style.background='linear-gradient(90deg,#ef4444,#f87171)';
-  if(days===0){ document.getElementById('trial-bar').style.background='linear-gradient(90deg,#fee2e2,#fecaca)'; }
 }
+
 function showPremium(){ document.getElementById('premMov').classList.add('show'); }
+
 function selPlan(el,id,txt){
   document.querySelectorAll('.pm-plan').forEach(function(p){p.classList.remove('sel');});
   el.classList.add('sel'); S.selPlanId=id; S.selPlanTxt=txt;
   document.getElementById('pm-btn').textContent='Activer Premium — '+txt+' →';
 }
+
+// ════════════════════════════════════════
+// CONFIG PEMAN — Chanje selon plan ou
+// ════════════════════════════════════════
+var MONCASH_NUM   = '509-XXXX-XXXX';   // ← Mete nimewo MonCash ou
+var WHATSAPP_NUM  = '50936000000';      // ← Mete nimewo WhatsApp ou
+var PRIX_MENSUEL  = 2500;
+var PRIX_ANNUEL   = 22000;
+
+// ── ETAP 1: Montre enstriksyon peman ──
 function doPremium(){
-  S.settings.plan='premium'; save();
-  document.getElementById('trial-bar').classList.add('hidden');
+  var plan = S.selPlanId || 'mensuel';
+  var prix = plan === 'annuel' ? PRIX_ANNUEL : PRIX_MENSUEL;
+  var txt  = plan === 'annuel' ? prix+' HTG/an' : prix+' HTG/mois';
+  closeAllMov();
+
+  var el = document.getElementById('pay-step-mov');
+  if(el) el.remove();
+  var mov = document.createElement('div');
+  mov.id  = 'pay-step-mov';
+  mov.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;';
+
+  mov.innerHTML =
+    '<div style="background:#0a1f14;border:1px solid rgba(34,197,94,.3);border-radius:18px;padding:26px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;position:relative;">'+
+    '<button onclick="closePay()" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.1);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;">✕</button>'+
+    '<div style="text-align:center;margin-bottom:20px;">'+
+      '<div style="font-size:32px;margin-bottom:8px;">📱</div>'+
+      '<div style="font-family:Syne,sans-serif;font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">Payer via MonCash</div>'+
+      '<div style="font-size:13px;color:rgba(255,255,255,.5);">Plan '+txt+'</div>'+
+    '</div>'+
+
+    // ETAP 1
+    '<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;margin-bottom:10px;">'+
+      '<div style="font-size:11px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Etap 1 — Voye peman an</div>'+
+      '<div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.7;">'+
+        '1. Ouvri app MonCash ou<br>'+
+        '2. Ale nan <strong style="color:#fbbf24;">Envoyer de largent</strong><br>'+
+        '3. Antre nimewo : <strong style="font-size:16px;color:#4ade80;letter-spacing:1px;">'+MONCASH_NUM+'</strong><br>'+
+        '4. Antre montan : <strong style="color:#fbbf24;">'+prix+' HTG</strong><br>'+
+        '5. Mete nan mesaj : <strong style="color:#86efac;">KONEKTEM-PREMIUM</strong>'+
+      '</div>'+
+    '</div>'+
+
+    // ETAP 2
+    '<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;margin-bottom:10px;">'+
+      '<div style="font-size:11px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Etap 2 — Voye screenshot ba nou</div>'+
+      '<div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.7;">'+
+        'Apre peman an, voye screenshot konfimasyon an sou WhatsApp :<br>'+
+        '<a href="https://wa.me/'+WHATSAPP_NUM+'" target="_blank" style="display:inline-block;margin-top:8px;padding:9px 18px;background:#25D366;border-radius:8px;color:#fff;font-weight:700;font-size:13px;text-decoration:none;">'+
+        '💬 WhatsApp RIVAYO-TECH</a>'+
+      '</div>'+
+    '</div>'+
+
+    // ETAP 3
+    '<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;margin-bottom:16px;">'+
+      '<div style="font-size:11px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Etap 3 — Antre kod aktivasyon ou</div>'+
+      '<div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:10px;">Apre verifikasyon, nou ap voye yon kod 8 karaktè ba ou (ex: <code style="color:#fbbf24;">PREM-A3X7</code>)</div>'+
+      '<div style="display:flex;gap:8px;">'+
+        '<input id="activation-code-inp" placeholder="Antre kod la: PREM-XXXX" style="flex:1;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.15);border-radius:8px;padding:10px 12px;color:#fff;font-size:14px;font-family:monospace;outline:none;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">'+
+        '<button onclick="verifyCode()" style="padding:10px 16px;border:none;border-radius:8px;background:#22c55e;color:#fff;font-weight:800;cursor:pointer;font-size:14px;white-space:nowrap;">Valider</button>'+
+      '</div>'+
+      '<div id="code-result" style="margin-top:8px;font-size:12px;display:none;"></div>'+
+    '</div>'+
+    '<div style="font-size:11px;color:rgba(255,255,255,.3);text-align:center;">Ou ka aussi activer pita — kod la valid 7 jou</div>'+
+    '</div>';
+
+  mov.addEventListener('click', function(e){ if(e.target===mov) closePay(); });
+  document.body.appendChild(mov);
+}
+
+function closePay(){
+  var el = document.getElementById('pay-step-mov');
+  if(el) el.remove();
+}
+
+function closeAllMov(){
   closeMov('premMov');
-  notif('✅ Plan Premium activé ! Accès illimité.','ok');
+  closePay();
+}
+
+// ── VERIFIKASYON KOD ──
+// Kòd yo jenere pa ou epi voye ba kliyan via WhatsApp
+// Fòmat: PREM-XXXX (8 karaktè apre PREM-)
+// Ou ka chanje lòjik la si ou vle — pou kounye a li chèche nan yon tab lokal
+
+function genActivationCode(){
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var code = 'PREM-';
+  for(var i=0; i<4; i++) code += chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+
+function verifyCode(){
+  var inp = document.getElementById('activation-code-inp');
+  var res = document.getElementById('code-result');
+  var code = (inp.value||'').trim().toUpperCase();
+
+  if(!code || code.length < 8){
+    res.style.display='block';
+    res.style.color='#fca5a5';
+    res.textContent='Entrez un code valide (ex: PREM-A3X7)';
+    return;
+  }
+
+  // Verifikasyon kont Netlify Function
+  res.style.display='block';
+  res.style.color='#86efac';
+  res.textContent='Verification en cours...';
+
+  fetch('/.netlify/functions/verify-code', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      code: code,
+      email: (S.userEmail||''),
+      plan: S.selPlanId||'mensuel'
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.valid){
+      // ✅ CODE VALIDE → Aktive Premium
+      S.settings.plan = 'premium';
+      S.settings.premiumDate = new Date().toISOString();
+      S.settings.premiumCode = code;
+      S.settings.premiumPlan = S.selPlanId;
+      save();
+      closePay();
+      document.getElementById('trial-bar').classList.add('hidden');
+      var wall = document.getElementById('expired-wall');
+      if(wall) wall.remove();
+      notif('🎉 Premium activé ! Accès illimité.','ok');
+    } else {
+      res.style.color='#fca5a5';
+      res.textContent='Code incorrect ou expiré. Vérifiez le code reçu par WhatsApp.';
+    }
+  })
+  .catch(function(){
+    // Fallback: vérification locale si Netlify Function indisponible
+    if(verifyCodeLocal(code)){
+      S.settings.plan='premium';
+      S.settings.premiumDate=new Date().toISOString();
+      S.settings.premiumCode=code;
+      save();
+      closePay();
+      document.getElementById('trial-bar').classList.add('hidden');
+      var wall=document.getElementById('expired-wall');
+      if(wall) wall.remove();
+      notif('🎉 Premium activé ! Accès illimité.','ok');
+    } else {
+      res.style.color='#fca5a5';
+      res.textContent='Code invalide. Contactez-nous sur WhatsApp si problème.';
+    }
+  });
+}
+
+// Verifikasyon lokal (backup si Netlify indisponible)
+// Ou ka ajoute kòd yo manyèlman isi apre ou voye yo
+function verifyCodeLocal(code){
+  var validCodes = S.settings.validCodes || [];
+  return validCodes.indexOf(code) > -1;
+}
+
+// ── FONKSYON ADMIN: Ajoute kòd valid ──
+// Pou ou itilize nan konsòl navigatè:
+// addValidCode('PREM-A3X7')  → ajoute kòd la
+// listCodes()                → wè tout kòd valid yo
+function addValidCode(code){
+  if(!S.settings.validCodes) S.settings.validCodes=[];
+  code = code.toUpperCase();
+  if(S.settings.validCodes.indexOf(code)===-1){
+    S.settings.validCodes.push(code);
+    save();
+    console.log('Kòd ajoute:', code);
+    console.log('Tout kòd:', S.settings.validCodes);
+  }
+}
+function listCodes(){
+  console.log('Kòd valid yo:', S.settings.validCodes||[]);
+}
+function removeCode(code){
+  S.settings.validCodes=(S.settings.validCodes||[]).filter(function(c){return c!==code;});
+  save();
+  console.log('Kòd retire:', code);
 }
 
 // ── CLOCK ──
@@ -1227,6 +1449,7 @@ function startApp(){
   var app=document.getElementById('screen-app');
   app.style.display='flex'; app.style.flexDirection='column'; app.style.height='100%';
   updateTopbar(); updateTrialBar();
+  checkTrialOnStart();
   renderCatBar(); renderProds(); showView('vente');
   // Afficher l'écran de sélection caissier si activé
   if(S.settings.askLogin && (S.employees||[]).length > 0){
