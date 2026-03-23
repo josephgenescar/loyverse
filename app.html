@@ -638,8 +638,8 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
 <!-- ══════ APP ══════ -->
 <div id="screen-app" style="display:none;flex-direction:column;height:100%">
 
-  <!-- TRIAL BAR -->
-  <div id="trial-bar">
+  <!-- TRIAL BAR — caché par défaut, affiché par updateTrialBar() -->
+  <div id="trial-bar" class="hidden">
     <div class="tb-icon">⏳</div>
     <div class="tb-text"><strong id="trial-days-txt">14 jours restants</strong> dans votre essai gratuit</div>
     <div class="tb-prog"><div class="tb-fill" id="trial-fill" style="width:100%"></div></div>
@@ -1189,19 +1189,29 @@ function showLimitWall(type){
 }
 
 function updateTrialBar(){
-  if(isPremium()){ document.getElementById('trial-bar').classList.add('hidden'); return; }
+  var bar = document.getElementById('trial-bar');
+  if(!bar) return;
+  // Premium → cacher complètement
+  if(isPremium()){ bar.classList.add('hidden'); return; }
+  // Essai non démarré → cacher
+  if(!S.settings.trialStart){ bar.classList.add('hidden'); return; }
+  // Essai expiré → rouge
   if(isTrialExpired()){
-    document.getElementById('trial-bar').classList.remove('hidden');
-    document.getElementById('trial-bar').style.background='linear-gradient(90deg,#fee2e2,#fecaca)';
+    bar.classList.remove('hidden');
+    bar.style.background='linear-gradient(90deg,#fee2e2,#fecaca)';
     document.getElementById('trial-days-txt').innerHTML='<span style="color:#991b1b;font-weight:800;">Essai expiré</span>';
     document.getElementById('trial-fill').style.width='0%';
     return;
   }
-  var days=trialDaysLeft();
+  // Essai actif → afficher avec compteur
+  bar.classList.remove('hidden');
+  bar.style.background='';
+  var days = trialDaysLeft();
   document.getElementById('trial-days-txt').textContent=days+' jour'+(days>1?'s':'')+' restant'+(days>1?'s':'');
-  var pct=Math.round((days/TRIAL_DAYS)*100);
+  var pct = Math.round((days/TRIAL_DAYS)*100);
   document.getElementById('trial-fill').style.width=pct+'%';
   if(pct<30) document.getElementById('trial-fill').style.background='linear-gradient(90deg,#ef4444,#f87171)';
+  else document.getElementById('trial-fill').style.background='linear-gradient(90deg,var(--gold),#fbbf24)';
 }
 
 function showPremium(){ document.getElementById('premMov').classList.add('show'); }
@@ -1213,77 +1223,91 @@ function selPlan(el,id,txt){
 }
 
 // ════════════════════════════════════════
-// CONFIG PEMAN — Chanje selon plan ou
+// CONFIG PEMAN — Mete done reyèl ou ici
 // ════════════════════════════════════════
-var MONCASH_NUM   = '509-XXXX-XXXX';   // ← Mete nimewo MonCash ou
-var WHATSAPP_NUM  = '50936000000';      // ← Mete nimewo WhatsApp ou
-var PRIX_MENSUEL  = 2500;
-var PRIX_ANNUEL   = 22000;
+var MONCASH_NUM  = '509-XXXX-XXXX'; // ← Remplace ak nimewo MonCash ou
+var WHATSAPP_NUM = '50936000000';    // ← Remplace ak nimewo WhatsApp ou
+var PRIX_MENSUEL = 2500;
+var PRIX_ANNUEL  = 22000;
 
-// ── ETAP 1: Montre enstriksyon peman ──
 function doPremium(){
   var plan = S.selPlanId || 'mensuel';
   var prix = plan === 'annuel' ? PRIX_ANNUEL : PRIX_MENSUEL;
-  var txt  = plan === 'annuel' ? prix+' HTG/an' : prix+' HTG/mois';
-  closeAllMov();
+  var unite= plan === 'annuel' ? 'HTG/an' : 'HTG/mois';
 
-  var el = document.getElementById('pay-step-mov');
-  if(el) el.remove();
-  var mov = document.createElement('div');
-  mov.id  = 'pay-step-mov';
-  mov.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;';
+  // Fèmen premMov epi ouvri pay-step-mov
+  closeMov('premMov');
 
-  mov.innerHTML =
-    '<div style="background:#0a1f14;border:1px solid rgba(34,197,94,.3);border-radius:18px;padding:26px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;position:relative;">'+
-    '<button onclick="closePay()" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.1);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;">✕</button>'+
-    '<div style="text-align:center;margin-bottom:20px;">'+
-      '<div style="font-size:32px;margin-bottom:8px;">📱</div>'+
-      '<div style="font-family:Syne,sans-serif;font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">Payer via MonCash</div>'+
-      '<div style="font-size:13px;color:rgba(255,255,255,.5);">Plan '+txt+'</div>'+
-    '</div>'+
+  // Ti delè pou animasyon fèmen fin
+  setTimeout(function(){
+    var old = document.getElementById('pay-step-mov');
+    if(old) old.remove();
+
+    var mov = document.createElement('div');
+    mov.id  = 'pay-step-mov';
+    mov.style.cssText = [
+      'position:fixed','inset:0','z-index:600',
+      'background:rgba(0,0,0,.75)',
+      'display:flex','align-items:center','justify-content:center',
+      'padding:16px','overflow-y:auto'
+    ].join(';');
+
+    var html = '<div id="pay-inner" style="background:#0a1f14;border:1px solid rgba(34,197,94,.35);border-radius:18px;padding:26px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;position:relative;">';
+
+    // Header
+    html += '<button onclick="closePay()" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.12);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1;">✕</button>';
+    html += '<div style="text-align:center;margin-bottom:20px;">';
+    html += '<div style="font-size:34px;margin-bottom:8px;">📱</div>';
+    html += '<div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">Payer via MonCash</div>';
+    html += '<div style="font-size:13px;color:rgba(255,255,255,.5);">Plan : <strong style="color:#86efac;">'+prix+' '+unite+'</strong></div>';
+    html += '</div>';
 
     // ETAP 1
-    '<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;margin-bottom:10px;">'+
-      '<div style="font-size:11px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Etap 1 — Voye peman an</div>'+
-      '<div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.7;">'+
-        '1. Ouvri app MonCash ou<br>'+
-        '2. Ale nan <strong style="color:#fbbf24;">Envoyer de largent</strong><br>'+
-        '3. Antre nimewo : <strong style="font-size:16px;color:#4ade80;letter-spacing:1px;">'+MONCASH_NUM+'</strong><br>'+
-        '4. Antre montan : <strong style="color:#fbbf24;">'+prix+' HTG</strong><br>'+
-        '5. Mete nan mesaj : <strong style="color:#86efac;">KONEKTEM-PREMIUM</strong>'+
-      '</div>'+
-    '</div>'+
+    html += '<div style="border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;">';
+    html += '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:10px;">① VOYE PEMAN AN</div>';
+    html += '<div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.9;">';
+    html += '1. Ouvri app <strong style="color:#fff;">MonCash</strong><br>';
+    html += '2. Klike <strong style="color:#fbbf24;">Envoyer de largent</strong><br>';
+    html += '3. Nimewo : <span style="font-size:17px;font-weight:800;color:#4ade80;letter-spacing:2px;">'+MONCASH_NUM+'</span><br>';
+    html += '4. Montan : <strong style="color:#fbbf24;">'+prix+' HTG</strong><br>';
+    html += '5. Mesaj : <code style="background:rgba(255,255,255,.08);padding:2px 7px;border-radius:4px;color:#86efac;">KONEKTEM-PREMIUM</code>';
+    html += '</div></div>';
 
     // ETAP 2
-    '<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;margin-bottom:10px;">'+
-      '<div style="font-size:11px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Etap 2 — Voye screenshot ba nou</div>'+
-      '<div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.7;">'+
-        'Apre peman an, voye screenshot konfimasyon an sou WhatsApp :<br>'+
-        '<a href="https://wa.me/'+WHATSAPP_NUM+'" target="_blank" style="display:inline-block;margin-top:8px;padding:9px 18px;background:#25D366;border-radius:8px;color:#fff;font-weight:700;font-size:13px;text-decoration:none;">'+
-        '💬 WhatsApp RIVAYO-TECH</a>'+
-      '</div>'+
-    '</div>'+
+    html += '<div style="border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;">';
+    html += '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:10px;">② VOYE SCREENSHOT BA NOU</div>';
+    html += '<div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.6;margin-bottom:10px;">Apre peman, voye screenshot konfimasyon an sou WhatsApp pou nou verifye :</div>';
+    html += '<a href="https://wa.me/'+WHATSAPP_NUM+'?text=KONEKTEM+Premium+'+plan+'+'+prix+'HTG" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:#25D366;border-radius:9px;color:#fff;font-weight:800;font-size:14px;text-decoration:none;">💬 Voye sou WhatsApp</a>';
+    html += '</div>';
 
     // ETAP 3
-    '<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;margin-bottom:16px;">'+
-      '<div style="font-size:11px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Etap 3 — Antre kod aktivasyon ou</div>'+
-      '<div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:10px;">Apre verifikasyon, nou ap voye yon kod 8 karaktè ba ou (ex: <code style="color:#fbbf24;">PREM-A3X7</code>)</div>'+
-      '<div style="display:flex;gap:8px;">'+
-        '<input id="activation-code-inp" placeholder="Antre kod la: PREM-XXXX" style="flex:1;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.15);border-radius:8px;padding:10px 12px;color:#fff;font-size:14px;font-family:monospace;outline:none;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">'+
-        '<button onclick="verifyCode()" style="padding:10px 16px;border:none;border-radius:8px;background:#22c55e;color:#fff;font-weight:800;cursor:pointer;font-size:14px;white-space:nowrap;">Valider</button>'+
-      '</div>'+
-      '<div id="code-result" style="margin-top:8px;font-size:12px;display:none;"></div>'+
-    '</div>'+
-    '<div style="font-size:11px;color:rgba(255,255,255,.3);text-align:center;">Ou ka aussi activer pita — kod la valid 7 jou</div>'+
-    '</div>';
+    html += '<div style="border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:14px;">';
+    html += '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:10px;">③ ANTRE KÒD AKTIVASYON OU</div>';
+    html += '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:10px;">Apre verifikasyon peman, nou voye yon kòd 8 karaktè ba ou sou WhatsApp (ex: PREM-A3X7)</div>';
+    html += '<div style="display:flex;gap:8px;">';
+    html += '<input id="act-inp" placeholder="PREM-XXXX" maxlength="9" style="flex:1;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.15);border-radius:8px;padding:11px 12px;color:#fff;font-size:15px;font-family:monospace;outline:none;text-transform:uppercase;letter-spacing:2px;" oninput="this.value=this.value.toUpperCase();">';
+    html += '<button onclick="verifyCode()" style="padding:10px 18px;border:none;border-radius:8px;background:#22c55e;color:#fff;font-weight:800;cursor:pointer;font-size:14px;">Valide</button>';
+    html += '</div>';
+    html += '<div id="code-result" style="margin-top:8px;font-size:13px;display:none;padding:8px 10px;border-radius:6px;"></div>';
+    html += '</div>';
+    html += '<div style="font-size:11px;color:rgba(255,255,255,.25);text-align:center;">Kod la valid pou 7 jou apre ou resevwa li</div>';
+    html += '</div>';
 
-  mov.addEventListener('click', function(e){ if(e.target===mov) closePay(); });
-  document.body.appendChild(mov);
+    mov.innerHTML = html;
+    mov.addEventListener('click', function(e){ if(e.target===mov) closePay(); });
+    document.body.appendChild(mov);
+
+    // Focus sou input kòd la
+    setTimeout(function(){
+      var inp = document.getElementById('act-inp');
+      if(inp) inp.focus();
+    }, 300);
+  }, 150);
 }
 
 function closePay(){
   var el = document.getElementById('pay-step-mov');
-  if(el) el.remove();
+  if(el){ el.style.opacity='0'; setTimeout(function(){ if(el.parentNode) el.remove(); }, 200); }
 }
 
 function closeAllMov(){
@@ -1291,110 +1315,85 @@ function closeAllMov(){
   closePay();
 }
 
-// ── VERIFIKASYON KOD ──
-// Kòd yo jenere pa ou epi voye ba kliyan via WhatsApp
-// Fòmat: PREM-XXXX (8 karaktè apre PREM-)
-// Ou ka chanje lòjik la si ou vle — pou kounye a li chèche nan yon tab lokal
-
-function genActivationCode(){
-  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  var code = 'PREM-';
-  for(var i=0; i<4; i++) code += chars[Math.floor(Math.random()*chars.length)];
-  return code;
-}
-
+// ── VERIFIKASYON KÒD ──
 function verifyCode(){
-  var inp = document.getElementById('activation-code-inp');
+  var inp = document.getElementById('act-inp');
   var res = document.getElementById('code-result');
-  var code = (inp.value||'').trim().toUpperCase();
+  if(!inp || !res) return;
+  var code = inp.value.trim().toUpperCase();
 
-  if(!code || code.length < 8){
+  if(code.length < 8){
     res.style.display='block';
+    res.style.background='rgba(239,68,68,.15)';
     res.style.color='#fca5a5';
     res.textContent='Entrez un code valide (ex: PREM-A3X7)';
     return;
   }
 
-  // Verifikasyon kont Netlify Function
   res.style.display='block';
-  res.style.color='#86efac';
-  res.textContent='Verification en cours...';
+  res.style.background='rgba(255,255,255,.05)';
+  res.style.color='rgba(255,255,255,.6)';
+  res.textContent='Vérification...';
 
   fetch('/.netlify/functions/verify-code', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      code: code,
-      email: (S.userEmail||''),
-      plan: S.selPlanId||'mensuel'
-    })
+    body: JSON.stringify({ code:code, plan:S.selPlanId||'mensuel' })
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
-    if(data.valid){
-      // ✅ CODE VALIDE → Aktive Premium
-      S.settings.plan = 'premium';
-      S.settings.premiumDate = new Date().toISOString();
-      S.settings.premiumCode = code;
-      S.settings.premiumPlan = S.selPlanId;
-      save();
-      closePay();
-      document.getElementById('trial-bar').classList.add('hidden');
-      var wall = document.getElementById('expired-wall');
-      if(wall) wall.remove();
-      notif('🎉 Premium activé ! Accès illimité.','ok');
-    } else {
+    if(data.valid){ activatePremium(code); }
+    else {
+      res.style.background='rgba(239,68,68,.15)';
       res.style.color='#fca5a5';
-      res.textContent='Code incorrect ou expiré. Vérifiez le code reçu par WhatsApp.';
+      res.textContent='Code incorrect ou expiré. Vérifiez sur WhatsApp.';
     }
   })
   .catch(function(){
-    // Fallback: vérification locale si Netlify Function indisponible
-    if(verifyCodeLocal(code)){
-      S.settings.plan='premium';
-      S.settings.premiumDate=new Date().toISOString();
-      S.settings.premiumCode=code;
-      save();
-      closePay();
-      document.getElementById('trial-bar').classList.add('hidden');
-      var wall=document.getElementById('expired-wall');
-      if(wall) wall.remove();
-      notif('🎉 Premium activé ! Accès illimité.','ok');
-    } else {
+    // Fallback local si Netlify indisponible
+    if(verifyCodeLocal(code)){ activatePremium(code); }
+    else {
+      res.style.background='rgba(239,68,68,.15)';
       res.style.color='#fca5a5';
-      res.textContent='Code invalide. Contactez-nous sur WhatsApp si problème.';
+      res.textContent='Code invalide. Contactez-nous sur WhatsApp.';
     }
   });
 }
 
-// Verifikasyon lokal (backup si Netlify indisponible)
-// Ou ka ajoute kòd yo manyèlman isi apre ou voye yo
 function verifyCodeLocal(code){
-  var validCodes = S.settings.validCodes || [];
-  return validCodes.indexOf(code) > -1;
+  var valid = S.settings.validCodes || [];
+  return valid.indexOf(code) > -1;
 }
 
-// ── FONKSYON ADMIN: Ajoute kòd valid ──
-// Pou ou itilize nan konsòl navigatè:
-// addValidCode('PREM-A3X7')  → ajoute kòd la
-// listCodes()                → wè tout kòd valid yo
+function activatePremium(code){
+  S.settings.plan = 'premium';
+  S.settings.premiumDate = new Date().toISOString();
+  S.settings.premiumCode = code;
+  S.settings.premiumPlan = S.selPlanId || 'mensuel';
+  // Retire kòd la apre itilizasyon
+  S.settings.validCodes = (S.settings.validCodes||[]).filter(function(c){ return c!==code; });
+  save();
+  closePay();
+  // Retire mur ekspire si li egziste
+  var wall = document.getElementById('expired-wall');
+  if(wall) wall.remove();
+  document.getElementById('trial-bar').classList.add('hidden');
+  notif('🎉 Premium aktivé ! Tout aksè lib.','ok');
+}
+
+// ── FONKSYON ADMIN (itilize nan konsòl) ──
 function addValidCode(code){
   if(!S.settings.validCodes) S.settings.validCodes=[];
-  code = code.toUpperCase();
+  code=code.toUpperCase();
   if(S.settings.validCodes.indexOf(code)===-1){
-    S.settings.validCodes.push(code);
-    save();
-    console.log('Kòd ajoute:', code);
-    console.log('Tout kòd:', S.settings.validCodes);
+    S.settings.validCodes.push(code); save();
+    console.log('✅ Kòd ajoute:', code);
   }
 }
-function listCodes(){
-  console.log('Kòd valid yo:', S.settings.validCodes||[]);
-}
+function listCodes(){ console.table(S.settings.validCodes||[]); }
 function removeCode(code){
   S.settings.validCodes=(S.settings.validCodes||[]).filter(function(c){return c!==code;});
-  save();
-  console.log('Kòd retire:', code);
+  save(); console.log('🗑️ Kòd retire:', code);
 }
 
 // ── CLOCK ──
