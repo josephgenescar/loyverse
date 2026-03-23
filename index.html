@@ -691,30 +691,135 @@ document.querySelectorAll('.screen').forEach(function(s) {
 
 // AUTH
 function doSignup() {
-  var name = document.getElementById('su-name').value.trim();
+  var name  = document.getElementById('su-name').value.trim();
   var email = document.getElementById('su-email').value.trim();
-  var pass = document.getElementById('su-pass').value;
-  if (!name || !email || !pass) { alert('Veuillez remplir tous les champs.'); return; }
-  if (pass.length < 8) { alert('Le mot de passe doit contenir au moins 8 caractères.'); return; }
+  var pass  = document.getElementById('su-pass').value;
+
+  if (!name || !email || !pass) { showAuthErr('signup','Veuillez remplir tous les champs.'); return; }
+  if (pass.length < 8) { showAuthErr('signup','Mot de passe : 8 caractères minimum.'); return; }
+  if (!email.includes('@') || !email.includes('.')) { showAuthErr('signup','Adresse email invalide.'); return; }
+
+  // Vérifier si un compte existe déjà sur cet appareil
+  var existing = localStorage.getItem('konektem_user');
+  if (existing) {
+    var u = JSON.parse(existing);
+    // Compte existant → proposer de se connecter
+    showAuthErr('signup',
+      'Un compte existe déjà sur cet appareil (' + u.email + '). ' +
+      'Connectez-vous plutôt.'
+    );
+    // Surligner le lien "Se connecter"
+    setTimeout(function(){
+      document.querySelector('#screen-signup .auth-switch a').style.fontWeight='900';
+      document.querySelector('#screen-signup .auth-switch a').style.textDecoration='underline';
+    }, 100);
+    return;
+  }
+
+  // Nouveau compte — sauvegarder
   localStorage.setItem('konektem_user', JSON.stringify({
-    name: name, email: email,
+    name: name, email: email, pass: btoa(pass),
     startDate: new Date().toISOString(), plan: 'trial', trialDays: 14
   }));
   hideScreen('signup');
   setTimeout(function() { window.location.href = 'app.html'; }, 200);
 }
+
 function doSignin() {
   var email = document.getElementById('si-email').value.trim();
-  var pass = document.getElementById('si-pass').value;
-  if (!email || !pass) { alert('Veuillez remplir tous les champs.'); return; }
-  var u = localStorage.getItem('konektem_user');
-  if (u && JSON.parse(u).email === email) {
-    hideScreen('signin');
-    setTimeout(function() { window.location.href = 'app.html'; }, 200);
+  var pass  = document.getElementById('si-pass').value;
+
+  if (!email || !pass) { showAuthErr('signin','Veuillez remplir tous les champs.'); return; }
+
+  var stored = localStorage.getItem('konektem_user');
+  if (!stored) {
+    showAuthErr('signin',"Aucun compte trouvé. Créez un compte gratuit d'abord.");
     return;
   }
-  alert('Compte introuvable. Créez un compte gratuit d\'abord.');
+
+  var u = JSON.parse(stored);
+
+  // Vérifier email
+  if (u.email !== email) {
+    showAuthErr('signin','Email incorrect. Votre compte : ' + u.email.replace(/(.{2}).+(@.+)/, '$1***$2'));
+    return;
+  }
+
+  // Vérifier mot de passe si enregistré
+  if (u.pass && btoa(pass) !== u.pass) {
+    showAuthErr('signin','Mot de passe incorrect.');
+    return;
+  }
+
+  hideScreen('signin');
+  setTimeout(function() { window.location.href = 'app.html'; }, 200);
 }
+
+// Afficher erreur dans le formulaire (pas un alert)
+function showAuthErr(form, msg) {
+  var id = 'auth-err-' + form;
+  var el = document.getElementById(id);
+  if (!el) {
+    el = document.createElement('div');
+    el.id = id;
+    el.style.cssText = 'background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:9px 12px;font-size:13px;color:#fca5a5;margin-bottom:10px;line-height:1.5;';
+    // Insérer avant le bouton submit
+    var btn = document.querySelector('#screen-' + form + ' .auth-btn');
+    if (btn) btn.parentNode.insertBefore(el, btn);
+  }
+  el.textContent = '⚠️ ' + msg;
+  el.style.display = 'block';
+  setTimeout(function(){ el.style.display='none'; }, 5000);
+}
+
+// Vérifier si déjà connecté au chargement
+(function(){
+  var u = localStorage.getItem('konektem_user');
+  if(u){
+    try {
+      var user = JSON.parse(u);
+      // Remplacer le bouton "Essai gratuit" par "Accéder à mon compte"
+      var navBtns = document.querySelectorAll('.btn-primary');
+      navBtns.forEach(function(btn){
+        if(btn.textContent.indexOf('Essai') > -1 || btn.textContent.indexOf('gratuit') > -1){
+          btn.textContent = 'Mon compte →';
+          btn.onclick = function(){ window.location.href = 'app.html'; };
+        }
+      });
+      // Remplacer les boutons hero aussi
+      var heroBtns = document.querySelectorAll('.btn-hero.green');
+      heroBtns.forEach(function(btn){
+        if(btn.textContent.indexOf('Démarrer') > -1 || btn.textContent.indexOf('gratuit') > -1){
+          btn.textContent = 'Accéder à mon compte →';
+          btn.onclick = function(){ window.location.href = 'app.html'; };
+        }
+      });
+    } catch(e){}
+  }
+})();
+
+// Vérifier si déjà connecté au chargement
+(function(){
+  var u = localStorage.getItem('konektem_user');
+  if(!u) return;
+  try {
+    var user = JSON.parse(u);
+    // Bouton nav
+    document.querySelectorAll('.btn-primary').forEach(function(btn){
+      if(btn.textContent.indexOf('Essai') > -1 || btn.textContent.indexOf('gratuit') > -1){
+        btn.textContent = 'Mon compte';
+        btn.onclick = function(){ window.location.href = 'app.html'; };
+      }
+    });
+    // Bouton hero
+    document.querySelectorAll('.btn-hero.green').forEach(function(btn){
+      if(btn.textContent.indexOf('Démarrer') > -1 || btn.textContent.indexOf('gratuit') > -1){
+        btn.textContent = 'Accéder à mon compte';
+        btn.onclick = function(){ window.location.href = 'app.html'; };
+      }
+    });
+  } catch(e){}
+})();
 
 // PREMIUM
 function selPlan(el, txt) {
