@@ -628,7 +628,25 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
 .scan-manual input::placeholder{color:rgba(255,255,255,.3);}
 .scan-manual button{padding:10px 16px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;}
 /* ─── DARK MODE ─── */
-.dark-mode{--bg:#1a1a2e;--surface:#16213e;--border:#2a2a4a;--border2:#3a3a5a;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--accent-l:#0f2921;--accent-m:#1a3a2a;}
+.dark-mode{
+  --bg:#0f1a14;
+  --surface:#0a1510;
+  --border:#1a3a28;
+  --border2:#1f4530;
+  --text:#e8f5ee;
+  --text2:#9dc5b0;
+  --text3:#5a8a70;
+  --gold-l:#1a2a1a;
+  filter:none;
+}
+.dark-mode .topbar{background:linear-gradient(135deg,#0a1510,#091a0e);}
+.dark-mode .sidebar{background:#0a1510;}
+.dark-mode .pcard{background:#0f1a14;border-color:#1a3a28;}
+.dark-mode .modal{background:#0f1a14;}
+.dark-mode .dtable th{background:#0a2e1a;}
+.dark-mode .dtable td{border-color:#1a3a28;}
+.dark-mode .dtable tr:nth-child(even) td{background:#0a1a10;}
+.dark-mode input,.dark-mode select,.dark-mode textarea{background:#0a1510;color:#e8f5ee;border-color:#1a3a28;}
 
 </style>
 </head>
@@ -3253,13 +3271,13 @@ function openAchatModal(fournId){
     '<div class="fg"><label class="flbl">Note</label><input class="finp" id="ac-note" placeholder="Reference facture..."></div>'+
     '<div class="mfooter" id="achat-footer"></div>';
   mov.appendChild(inner2);
+  document.body.appendChild(mov);
   var bA2=document.createElement('button'); bA2.className='btn-cancel'; bA2.textContent='Annuler'; bA2.onclick=function(){mov.remove();};
   var bS2=document.createElement('button'); bS2.className='btn-g'; bS2.textContent='Enregistrer achat';
   (function(fid){bS2.onclick=function(){saveAchat(fid);};})(fournId);
   document.getElementById('achat-footer').appendChild(bA2);
   document.getElementById('achat-footer').appendChild(bS2);
   mov.addEventListener('click',function(e){if(e.target===mov)mov.remove();});
-  document.body.appendChild(mov);
 }
 
 function saveAchat(fournId){
@@ -3307,13 +3325,15 @@ function startInventairePhysique(){
     '<div style="font-size:13px;color:var(--text2);margin-bottom:12px;">Entrez les quantites reelles comptees.</div>'+
     '<table class="dtable"><thead><tr><th>Article</th><th>Systeme</th><th>Compte</th></tr></thead><tbody>'+rows+'</tbody></table>'+
     '<div class="mfooter" id="inv-phys-footer"></div>';
+  // Ajoute modal nan DOM ANVAN getElementById
   mov.appendChild(invInner);
+  document.body.appendChild(mov);
+  // Kounye a getElementById ka jwenn inv-phys-footer
   var bAI=document.createElement('button'); bAI.className='btn-cancel'; bAI.textContent='Annuler'; bAI.onclick=function(){mov.remove();};
   var bCI=document.createElement('button'); bCI.className='btn-g'; bCI.textContent='Appliquer corrections'; bCI.onclick=appliquerInventaire;
   document.getElementById('inv-phys-footer').appendChild(bAI);
   document.getElementById('inv-phys-footer').appendChild(bCI);
   mov.addEventListener('click',function(e){if(e.target===mov)mov.remove();});
-  document.body.appendChild(mov);
 }
 
 function highlightPhys(inp, stockSys){
