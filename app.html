@@ -648,6 +648,7 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
 .dark-mode .dtable tr:nth-child(even) td{background:#0a1a10;}
 .dark-mode input,.dark-mode select,.dark-mode textarea{background:#0a1510;color:#e8f5ee;border-color:#1a3a28;}
 
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -721,6 +722,7 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
     </div>
     <div class="tb-r">
       <button class="bo-btn" id="bo-btn" onclick="toggleBO()">📊 Back Office</button>
+      <button id="install-app-btn" onclick="installApp()" style="display:none;align-items:center;gap:5px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#4ade80;font-size:12px;font-weight:700;cursor:pointer;padding:5px 10px;border-radius:20px;font-family:'Plus Jakarta Sans',sans-serif;" title="Installer Konektem">⬇️ Installer</button>
       <button id="dark-mode-btn" onclick="toggleDarkMode()" style="background:none;border:none;color:rgba(255,255,255,.8);font-size:17px;cursor:pointer;padding:4px 6px;" title="Mode sombre">🌙</button>
       <div class="topbar-clock" id="clock">--:--</div>
       <div class="cashier-pill" id="cashier-pill">—</div>
@@ -1398,10 +1400,68 @@ function doPremium(){
   var prix = plan === 'annuel' ? PRIX_ANNUEL : PRIX_MENSUEL;
   var unite= plan === 'annuel' ? 'HTG/an' : 'HTG/mois';
 
-  // Fèmen premMov epi ouvri pay-step-mov
   closeMov('premMov');
 
-  // Ti delè pou animasyon fèmen fin
+  // ── Si kliyan gen email — itilize MonCash API otomatik ──
+  var userEmail = S.userEmail || (function(){
+    try{ return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }catch(e){return '';}
+  })();
+
+  if(userEmail){
+    // Montre modal chajman
+    showPayLoading(plan, prix, unite);
+    // Rele Netlify Function MonCash
+    fetch('/.netlify/functions/moncash-payment', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email: userEmail, plan: plan, amount: prix })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(data.success && data.redirectUrl){
+        // Redirije kliyan sou paj peman MonCash
+        window.location.href = data.redirectUrl;
+      } else {
+        closePayLoading();
+        notif('Erè MonCash: ' + (data.error||'Resesye pi ta'), 'err');
+        // Fallback: modal manuel
+        setTimeout(function(){ showManualPayModal(plan, prix, unite); }, 500);
+      }
+    })
+    .catch(function(){
+      closePayLoading();
+      // Netlify Function pa disponib — modal manuel
+      showManualPayModal(plan, prix, unite);
+    });
+    return;
+  }
+
+  // Pa gen email — modal manuel
+  showManualPayModal(plan, prix, unite);
+}
+
+function showPayLoading(plan, prix, unite){
+  var old = document.getElementById('pay-loading-mov');
+  if(old) old.remove();
+  var mov = document.createElement('div');
+  mov.id = 'pay-loading-mov';
+  mov.style.cssText = 'position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;';
+  mov.innerHTML = '<div style="text-align:center;color:#fff;">'
+    + '<div style="width:48px;height:48px;border:3px solid rgba(34,197,94,.3);border-top-color:#22c55e;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;"></div>'
+    + '<div style="font-size:16px;font-weight:700;margin-bottom:6px;">Koneksyon MonCash...</div>'
+    + '<div style="font-size:13px;color:rgba(255,255,255,.5);">Tanpri tann yon moman</div>'
+    + '</div>';
+  document.body.appendChild(mov);
+}
+
+function closePayLoading(){
+  var el = document.getElementById('pay-loading-mov');
+  if(el) el.remove();
+}
+
+function showManualPayModal(plan, prix, unite){
+  // Fèmen premMov epi ouvri pay-step-mov
+
   setTimeout(function(){
     var old = document.getElementById('pay-step-mov');
     if(old) old.remove();
@@ -1440,7 +1500,8 @@ function doPremium(){
     html += '<div style="border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;">';
     html += '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:10px;">② VOYE SCREENSHOT BA NOU</div>';
     html += '<div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.6;margin-bottom:10px;">Apre peman, voye screenshot konfimasyon an sou WhatsApp pou nou verifye :</div>';
-    html += '<a href="https://wa.me/'+WHATSAPP_NUM+'?text=KONEKTEM+Premium+'+plan+'+'+prix+'HTG" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:#25D366;border-radius:9px;color:#fff;font-weight:800;font-size:14px;text-decoration:none;">💬 Voye sou WhatsApp</a>';
+    var waHref = 'https://wa.me/'+WHATSAPP_NUM+'?text=KONEKTEM+Premium+'+plan+'+'+prix+'HTG';
+    html += '<a href="'+waHref+'" target="_blank" id="wa-pay-link" data-plan="'+plan+'" data-prix="'+prix+'" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:#25D366;border-radius:9px;color:#fff;font-weight:800;font-size:14px;text-decoration:none;" onclick="var el=this;recordPaymentIntent(el.dataset.plan,el.dataset.prix);">💬 Voye sou WhatsApp</a>';
     html += '</div>';
 
     // ETAP 3
@@ -1466,6 +1527,31 @@ function doPremium(){
       if(inp) inp.focus();
     }, 300);
   }, 150);
+}
+
+
+// ── Enrejistre entansyon peman nan Supabase ──
+function recordPaymentIntent(plan, montant){
+  var userEmail = S.userEmail || (function(){
+    try{ return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }catch(e){ return ''; }
+  })();
+  fetch('https://mnpgapvltdrpztnjmeie.supabase.co/rest/v1/konektem_payments', {
+    method: 'POST',
+    headers: {
+      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE',
+      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE',
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({
+      user_email: userEmail,
+      plan: plan,
+      amount: montant,
+      method: 'MonCash',
+      status: 'pending',
+      created_at: new Date().toISOString()
+    })
+  }).catch(function(){});
 }
 
 function closePay(){
@@ -1533,11 +1619,32 @@ function activatePremium(code){
   S.settings.premiumDate = new Date().toISOString();
   S.settings.premiumCode = code;
   S.settings.premiumPlan = S.selPlanId || 'mensuel';
-  // Retire kòd la apre itilizasyon
   S.settings.validCodes = (S.settings.validCodes||[]).filter(function(c){ return c!==code; });
   save();
+
+  // ── Sync Premium → Supabase ──
+  var userEmail = S.userEmail || (function(){
+    try{ return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }catch(e){ return ''; }
+  })();
+  if(userEmail){
+    fetch('https://mnpgapvltdrpztnjmeie.supabase.co/rest/v1/konektem_users?email=eq.'+encodeURIComponent(userEmail), {
+      method: 'PATCH',
+      headers: {
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        plan: 'premium',
+        status: 'active',
+        premium_code: code,
+        premium_date: new Date().toISOString(),
+        premium_plan: S.selPlanId||'mensuel'
+      })
+    }).catch(function(){});
+  }
+
   closePay();
-  // Retire mur ekspire si li egziste
   var wall = document.getElementById('expired-wall');
   if(wall) wall.remove();
   document.getElementById('trial-bar').classList.add('hidden');
@@ -1606,6 +1713,31 @@ function launchApp(){
 }
 
 // ── APP START ──
+function syncUserToSupabase(){
+  try {
+    var lu = JSON.parse(localStorage.getItem('konektem_user')||'{}');
+    var email = lu.email||'';
+    if(!email) return;
+    S.userEmail = email;
+    // Mettre à jour bizname et secteur depuis l'onboarding
+    fetch('https://mnpgapvltdrpztnjmeie.supabase.co/rest/v1/konektem_users?email=eq.'+encodeURIComponent(email), {
+      method: 'PATCH',
+      headers: {
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        bizname: S.settings.bizname||'',
+        secteur: S.settings.sector||'',
+        plan: S.settings.plan||'trial',
+        status: 'active',
+        last_seen: new Date().toISOString()
+      })
+    }).catch(function(){});
+  } catch(e){}
+}
+
 function startApp(){
   document.getElementById('screen-ob').classList.add('hidden');
   var app=document.getElementById('screen-app');
@@ -1613,6 +1745,7 @@ function startApp(){
   updateTopbar(); updateTrialBar();
   checkTrialOnStart();
   initDarkMode();
+  setTimeout(syncUserToSupabase, 2000);
   setTimeout(checkLowStockNotif, 3000);
   setTimeout(fetchExchangeRate, 1000);
   renderCatBar(); renderProds(); showView('vente');
@@ -3434,6 +3567,35 @@ function partagerRapport(){
   window.open(url,'_blank');
 }
 
+
+// ── PWA INSTALL PROMPT ──
+var deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  // Montre bouton download nan topbar
+  var btn = document.getElementById('install-app-btn');
+  if(btn) btn.style.display = 'inline-flex';
+});
+
+function installApp(){
+  if(!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(function(choice){
+    if(choice.outcome === 'accepted'){
+      notif('✅ Konektem ap enstale!', 'ok');
+      var btn = document.getElementById('install-app-btn');
+      if(btn) btn.style.display = 'none';
+    }
+    deferredInstallPrompt = null;
+  });
+}
+
+window.addEventListener('appinstalled', function(){
+  notif('✅ Konektem enstale kòm app!', 'ok');
+  deferredInstallPrompt = null;
+});
 
 // ── INIT ──
 load();

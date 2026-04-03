@@ -4,3 +4,34 @@
 
 [functions]
   node_bundler = "esbuild"
+
+# MonCash webhook URL pou Digicel
+[[redirects]]
+  from = "/webhook/moncash"
+  to = "/.netlify/functions/moncash-webhook"
+  status = 200
+
+# Return URL apre peman MonCash
+[[redirects]]
+  from = "/payment/return"
+  to = "/payment-return.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+# PWA headers
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Content-Type = "application/javascript"

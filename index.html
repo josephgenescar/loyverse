@@ -2,6 +2,10 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#16a34a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Konektem">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Konektem – Caisse Intelligente</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
@@ -716,11 +720,33 @@ function doSignup() {
     return;
   }
 
-  // Nouveau compte — sauvegarder
-  localStorage.setItem('konektem_user', JSON.stringify({
+  // Nouveau compte — sauvegarder localement
+  var userData = {
     name: name, email: email, pass: btoa(pass),
     startDate: new Date().toISOString(), plan: 'trial', trialDays: 14
-  }));
+  };
+  localStorage.setItem('konektem_user', JSON.stringify(userData));
+
+  // ── Enregistrer dans Supabase ──
+  fetch(SUPA_URL + '/rest/v1/konektem_users', {
+    method: 'POST',
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({
+      email: email,
+      bizname: name,
+      plan: 'trial',
+      status: 'active',
+      created_at: new Date().toISOString()
+    })
+  }).catch(function(){
+    // Echec Supabase — pas grave, compte local toujours créé
+  });
+
   hideScreen('signup');
   setTimeout(function() { window.location.href = 'app.html'; }, 200);
 }
@@ -826,6 +852,90 @@ function selPlan(el, txt) {
   document.querySelectorAll('.pm-plan').forEach(function(p) { p.classList.remove('sel'); });
   el.classList.add('sel');
   document.getElementById('pm-btn').textContent = 'Activer Premium — ' + txt + ' →';
+}
+</script>
+
+<!-- ── PWA INSTALL POPUP ── -->
+<div id="pwa-popup" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:999;width:calc(100% - 32px);max-width:400px;">
+  <div style="background:linear-gradient(135deg,#0D1F2D,#0a2e1a);border:1px solid rgba(34,197,94,.4);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,.4);">
+    <div style="font-size:36px;flex-shrink:0;">📱</div>
+    <div style="flex:1;">
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:2px;">Enstale Konektem</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.4;">Travay san entènèt tankou yon app natirèl</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+      <button onclick="triggerInstall()" style="padding:8px 14px;background:#22c55e;border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;">⬇️ Enstale</button>
+      <button onclick="dismissPWA()" style="padding:5px;background:none;border:none;color:rgba(255,255,255,.3);font-size:12px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">Pita</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var _deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  _deferredPrompt = e;
+  // Montre popup apre 3 segonn
+  if(!localStorage.getItem('pwa_dismissed')){
+    setTimeout(showPWAPopup, 3000);
+  }
+});
+
+function showPWAPopup(){
+  var el = document.getElementById('pwa-popup');
+  if(el){ el.style.display = 'block'; }
+}
+
+function triggerInstall(){
+  if(!_deferredPrompt) return;
+  _deferredPrompt.prompt();
+  _deferredPrompt.userChoice.then(function(choice){
+    dismissPWA();
+    if(choice.outcome === 'accepted'){
+      // Notifikasyon siksè
+      var el = document.getElementById('pwa-popup');
+      if(el){
+        el.innerHTML = '<div style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);border-radius:16px;padding:14px 18px;text-align:center;color:#4ade80;font-weight:700;">✅ Konektem ap enstale!</div>';
+        setTimeout(function(){ el.style.display='none'; }, 3000);
+      }
+    }
+    _deferredPrompt = null;
+  });
+}
+
+function dismissPWA(){
+  var el = document.getElementById('pwa-popup');
+  if(el) el.style.display = 'none';
+  localStorage.setItem('pwa_dismissed', '1');
+}
+
+window.addEventListener('appinstalled', function(){
+  dismissPWA();
+});
+
+// Pou iOS — montre enstwiksyon manyèl
+var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+var isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
+if(isIOS && !isInStandaloneMode && !localStorage.getItem('pwa_dismissed')){
+  setTimeout(function(){
+    var popup = document.getElementById('pwa-popup');
+    if(!popup) return;
+    popup.style.display = 'block';
+    popup.querySelector('div').innerHTML = '<div style="background:linear-gradient(135deg,#0D1F2D,#0a2e1a);border:1px solid rgba(34,197,94,.4);border-radius:16px;padding:16px;text-align:center;">'
+      + '<div style="font-size:28px;margin-bottom:8px;">📱</div>'
+      + '<div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:6px;">Enstale sou iPhone/iPad</div>'
+      + '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:12px;line-height:1.5">Klike <strong style="color:#fff">Partage</strong> puis <strong style="color:#fff">Ajouter ecran accueil</strong></div>'
+      + '<button onclick="dismissPWA()" style="padding:8px 20px;background:rgba(255,255,255,.1);border:none;border-radius:8px;color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;">Fermer</button>'
+      + '</div>';
+  }, 3000);
+}
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('/sw.js');
+  });
 }
 </script>
 </body>

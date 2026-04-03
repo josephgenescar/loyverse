@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peman — Konektem</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Syne:wght@800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#0D1F2D;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:40px 32px;width:100%;max-width:420px;text-align:center;}
+.ico{font-size:64px;margin-bottom:20px;}
+.title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:8px;}
+.sub{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:28px;line-height:1.6;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;transition:all .2s;}
+.btn-g{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;width:100%;justify-content:center;margin-bottom:10px;}
+.btn-g:hover{transform:translateY(-2px);}
+.btn-o{background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);width:100%;justify-content:center;}
+.status{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:600;padding:10px 16px;border-radius:8px;margin-bottom:20px;}
+.status.checking{background:rgba(255,190,0,.1);color:#fbbf24;}
+.status.success{background:rgba(34,197,94,.1);color:#4ade80;}
+.status.failed{background:rgba(255,71,87,.1);color:#ff6b6b;}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor;}
+.spinner{width:20px;height:20px;border:2px solid rgba(255,190,0,.3);border-top-color:#fbbf24;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.detail{background:rgba(255,255,255,.04);border-radius:10px;padding:14px;margin-bottom:20px;text-align:left;}
+.detail-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;}
+.detail-row span:first-child{color:rgba(255,255,255,.4);}
+.detail-row span:last-child{font-weight:600;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="ico" class="ico">⏳</div>
+  <div id="title" class="title">Verifikasyon peman...</div>
+  <div id="sub" class="sub">Tanpri tann pandan n ap verifye peman MonCash ou a.</div>
+  <div id="status" class="status checking">
+    <div class="spinner"></div>
+    Verifikasyon an kous...
+  </div>
+  <div id="detail" class="detail" style="display:none"></div>
+  <div id="actions" style="display:none">
+    <a href="/app.html" class="btn btn-g" id="app-btn">🚀 Ale nan app</a>
+    <a href="/index.html" class="btn btn-o">Retounen sou akèy</a>
+  </div>
+</div>
+
+<script>
+// Jwenn params URL
+var params = new URLSearchParams(window.location.search);
+var orderId = params.get('order') || '';
+var email   = params.get('email') || '';
+var plan    = params.get('plan')  || 'mensuel';
+
+function setUI(type, ico, title, sub, statusTxt){
+  document.getElementById('ico').textContent   = ico;
+  document.getElementById('title').textContent = title;
+  document.getElementById('sub').textContent   = sub;
+  var st = document.getElementById('status');
+  st.className = 'status ' + type;
+  st.innerHTML = type === 'checking'
+    ? '<div class="spinner"></div>' + statusTxt
+    : '<div class="dot"></div>' + statusTxt;
+}
+
+function showDetail(orderId, plan, amount){
+  var el = document.getElementById('detail');
+  el.style.display = 'block';
+  el.innerHTML = [
+    '<div class="detail-row"><span>Nimewo kòmand</span><span>' + orderId + '</span></div>',
+    '<div class="detail-row"><span>Plan</span><span>' + (plan === 'annuel' ? 'Annuel' : 'Mensuel') + '</span></div>',
+    amount ? '<div class="detail-row"><span>Montan</span><span>' + Number(amount).toLocaleString('fr-HT') + ' HTG</span></div>' : '',
+    '<div class="detail-row"><span>Méthode</span><span>MonCash</span></div>',
+    '<div class="detail-row"><span>Date</span><span>' + new Date().toLocaleDateString('fr-FR') + '</span></div>',
+  ].join('');
+}
+
+// Verifye peman via Netlify Function
+async function verifyPayment(){
+  if(!orderId){
+    setUI('failed','❌','Erè','Nimewo kòmand manke.',  'Echwe');
+    document.getElementById('actions').style.display = 'block';
+    return;
+  }
+
+  try {
+    var resp = await fetch('/.netlify/functions/moncash-payment?action=verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId, email, plan })
+    });
+    var data = await resp.json();
+
+    if(data.success && data.status === 'confirmed'){
+      // Peman konfime!
+      setUI('success','✅','Peman konfime!','Plan Premium ou aktive. Ou ka kòmanse itilize Konektem kounye a.','Peman konfime');
+      showDetail(orderId, plan, null);
+
+      // Aktive Premium nan localStorage tou
+      try {
+        var stored = localStorage.getItem('konektem_app');
+        if(stored){
+          var S = JSON.parse(stored);
+          S.settings.plan = 'premium';
+          S.settings.premiumDate = new Date().toISOString();
+          S.settings.premiumPlan = plan;
+          S.settings.premiumOrderId = orderId;
+          localStorage.setItem('konektem_app', JSON.stringify(S));
+        }
+      } catch(e){}
+
+      document.getElementById('actions').style.display = 'block';
+      document.getElementById('app-btn').textContent = '🚀 Ouvri Konektem Premium';
+
+    } else if(data.status === 'pending'){
+      // Toujou an atant — re-verifye nan 5s
+      setUI('checking','⏳','Peman an atant...','MonCash ap trete peman ou a. Sa ka pran 1-2 minit.','Toujou an atant...');
+      setTimeout(verifyPayment, 5000);
+
+    } else {
+      setUI('failed','❌','Peman echwe','Peman ou pa te konfime. Kontakte nou si ou panse sa se yon erè.','Peman echwe');
+      showDetail(orderId, plan, null);
+      document.getElementById('actions').style.display = 'block';
+    }
+
+  } catch(err){
+    // Si function pa disponib — montre page manual
+    setUI('failed','⚠️','Verifikasyon echwe','Nou pa ka verifye peman ou kounye a. Voye screenshot MonCash ou sou WhatsApp pou nou ka aktive ou manyèlman.','Koneksyon echwe');
+    document.getElementById('actions').style.display = 'block';
+  }
+}
+
+// Kòmanse verifikasyon
+verifyPayment();
+</script>
+</body>
+</html>

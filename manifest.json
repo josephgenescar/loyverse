@@ -1,18 +1,53 @@
 {
-  "name": "Konektem — Caisse Intelligente",
+  "name": "Konektem — Caisse Intelligente Haïti",
   "short_name": "Konektem",
-  "description": "Application POS pour commerçants haïtiens",
+  "description": "Aplikasyon POS pou komèsan ayisyen — vant, envantè, rapò",
   "start_url": "/app.html",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0D1F2D",
   "theme_color": "#16a34a",
   "orientation": "any",
+  "lang": "fr-HT",
+  "categories": ["business", "finance", "productivity"],
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><circle cx='96' cy='96' r='96' fill='%2316a34a'/><text y='.9em' x='50%' text-anchor='middle' font-size='120' fill='white'>K</text></svg>",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230D1F2D'/%3E%3Ccircle cx='256' cy='256' r='180' fill='%2316a34a' opacity='.15'/%3E%3Ctext y='.78em' x='50%25' text-anchor='middle' font-size='300' font-family='sans-serif' font-weight='900' fill='%2322c55e'%3EK%3C/text%3E%3C/svg%3E",
       "sizes": "192x192",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230D1F2D'/%3E%3Ccircle cx='256' cy='256' r='180' fill='%2316a34a' opacity='.15'/%3E%3Ctext y='.78em' x='50%25' text-anchor='middle' font-size='300' font-family='sans-serif' font-weight='900' fill='%2322c55e'%3EK%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Konektem Dashboard"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nouvelle vente",
+      "short_name": "Vente",
+      "description": "Ouvri kaisse POS dirèkteman",
+      "url": "/app.html#vente",
+      "icons": [{"src": "/icon-vente.svg", "sizes": "96x96"}]
+    },
+    {
+      "name": "Back Office",
+      "short_name": "Rapò",
+      "description": "Wè rapò ak statistik",
+      "url": "/app.html#backoffice"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
 }
