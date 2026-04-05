@@ -753,6 +753,7 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
         <div class="sb-item" onclick="startInventairePhysique()"><span class="ico">📋</span>Inventaire physique</div>
         <div class="sb-item" onclick="genRapportJournalier()"><span class="ico">📊</span>Rapport journalier</div>
         <div class="sb-div"></div>
+        <div class="sb-item" onclick="nav('monplan',this)"><span class="ico">⭐</span>Mon Abonnement</div>
         <div class="sb-item" onclick="nav('backup',this)"><span class="ico">💾</span>Backup / Restaurer</div>
         <div class="sb-item" onclick="nav('settings',this)"><span class="ico">⚙️</span>Paramètres</div>
         <div class="sb-item" onclick="nav('fonctionnalites',this)"><span class="ico">🔧</span>Fonctionnalités</div>
@@ -889,6 +890,12 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
         <div class="vbody">
           <table class="dtable"><thead><tr><th>Fournisseur</th><th>Téléphone</th><th>Email</th><th>Total Achats</th><th>Actions</th></tr></thead><tbody id="fourn-body"></tbody></table>
         </div>
+      </div>
+
+      <!-- ── MON ABONNEMENT ── -->
+      <div id="view-monplan" class="view">
+        <div class="vhdr"><h2>⭐ Mon Abonnement</h2></div>
+        <div class="vbody" id="monplan-body"></div>
       </div>
 
       <!-- ── BACKUP ── -->
@@ -1733,6 +1740,39 @@ function removeCode(code){
   save(); console.log('🗑️ Kòd retire:', code);
 }
 
+// ── METE A JOU AFICHAJ PRI ──
+function updatePriceDisplay(){
+  var fmtPri = function(n){ return n.toLocaleString('fr-HT'); };
+  // premMov — plan cards
+  var planMens = document.querySelector('.pm-plan[onclick*="mensuel"] .pm-pprice');
+  var planAnn  = document.querySelector('.pm-plan[onclick*="annuel"] .pm-pprice');
+  if(planMens) planMens.innerHTML = fmtPri(PRIX_MENSUEL) + ' <span class="pm-pper">HTG/mois</span>';
+  if(planAnn)  planAnn.innerHTML  = fmtPri(PRIX_ANNUEL)  + ' <span class="pm-pper">HTG/an</span>';
+  // Bouton Activer Premium
+  var pmBtn = document.getElementById('pm-btn');
+  if(pmBtn){
+    var curPlan = S.selPlanId || 'mensuel';
+    var curPrix = curPlan === 'annuel' ? PRIX_ANNUEL : PRIX_MENSUEL;
+    var curUnite = curPlan === 'annuel' ? 'HTG/an' : 'HTG/mois';
+    pmBtn.textContent = 'Activer Premium — ' + fmtPri(curPrix) + ' ' + curUnite + ' →';
+  }
+  // selPlan onclick update
+  var planCards = document.querySelectorAll('.pm-plan');
+  planCards.forEach(function(card){
+    var isMens = card.getAttribute('onclick') && card.getAttribute('onclick').includes('mensuel');
+    var prix   = isMens ? PRIX_MENSUEL : PRIX_ANNUEL;
+    var unite  = isMens ? 'HTG/mois' : 'HTG/an';
+    var txt    = fmtPri(prix) + ' ' + unite;
+    // Update onclick pou pase bon prix
+    card.setAttribute('onclick', "selPlan(this,'" + (isMens?'mensuel':'annuel') + "','" + txt + "')");
+  });
+  // Expired wall / renewal wall si egziste
+  var expBtn = document.querySelector('#expired-wall button');
+  if(expBtn && expBtn.textContent.includes('HTG')){
+    expBtn.textContent = '⭐ Passer Premium — ' + fmtPri(PRIX_MENSUEL) + ' HTG/mois';
+  }
+}
+
 // ── CLOCK ──
 function tick(){var n=new Date();var el=document.getElementById('clock');if(el)el.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
 setInterval(tick,1000);tick();
@@ -1819,9 +1859,11 @@ function syncUserToSupabase(){
       // ── SYNC PRI PLAN depi admin ──
       if(remote.price_mensuel && remote.price_mensuel !== PRIX_MENSUEL){
         PRIX_MENSUEL = remote.price_mensuel;
+        updatePriceDisplay();
       }
       if(remote.price_annuel && remote.price_annuel !== PRIX_ANNUEL){
         PRIX_ANNUEL = remote.price_annuel;
+        updatePriceDisplay();
       }
 
       // ── VERIFYE EXPIRAYSYON PREMIUM ──
@@ -1952,6 +1994,7 @@ function startApp(){
   checkTrialOnStart();
   initDarkMode();
   setTimeout(syncUserToSupabase, 2000);
+  updatePriceDisplay();
   setTimeout(checkLowStockNotif, 3000);
   setTimeout(fetchExchangeRate, 1000);
   renderCatBar(); renderProds(); showView('vente');
@@ -1997,7 +2040,7 @@ function nav(view,el){
 function showView(v){
   boOpen=false;
   document.getElementById('bo-btn').classList.remove('on');
-  var views=['articles','recu','tickets','clients','integration','employes','fournisseurs','backup','settings','fonctionnalites','backoffice'];
+  var views=['articles','recu','tickets','clients','integration','employes','fournisseurs','monplan','backup','settings','fonctionnalites','backoffice'];
   views.forEach(function(x){var el=document.getElementById('view-'+x);if(el){el.style.display='none';el.classList.remove('on');}});
   document.getElementById('view-pos').style.display=(v==='vente')?'flex':'none';
   if(v!=='vente'){var el=document.getElementById('view-'+v);if(el){el.style.display='flex';el.classList.add('on');}}
@@ -2008,6 +2051,7 @@ function showView(v){
   if(v==='integration') renderInteg();
   if(v==='employes') renderEmpGrid();
   if(v==='fournisseurs') renderFournisseurs();
+  if(v==='monplan') renderMonPlan();
   if(v==='backup') renderBackupInfo();
   if(v==='settings') renderSet();
   if(v==='backoffice'){renderBO();boOpen=true;document.getElementById('bo-btn').classList.add('on');}
@@ -3127,6 +3171,66 @@ function importBackup(inp){
     inp.value='';
   };
   reader.readAsText(file);
+}
+
+function renderMonPlan(){
+  var el = document.getElementById('monplan-body');
+  if(!el) return;
+  var plan     = S.settings.plan || 'trial';
+  var isPrem   = plan === 'premium';
+  var premDate = S.settings.premiumDate ? new Date(S.settings.premiumDate) : null;
+  var premPlan = S.settings.premiumPlan || 'mensuel';
+  var nbJou    = premPlan === 'annuel' ? 365 : 30;
+  var expDate  = premDate ? new Date(premDate.getTime() + nbJou*86400000) : null;
+  var joukExpire = expDate ? Math.max(0, Math.ceil((expDate - new Date()) / 86400000)) : 0;
+  var fmtD     = function(d){ return d ? d.toLocaleDateString('fr-FR') : '—'; };
+  var fmtP     = function(n){ return n.toLocaleString('fr-HT'); };
+
+  var html = '';
+
+  // ── Statut kounye a ──
+  html += '<div style="background:var(--surface);border:1.5px solid '+(isPrem?'var(--accent)':'var(--border)')
+    + ';border-radius:var(--r);padding:20px;margin-bottom:14px;">';
+  html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">';
+  html += '<div style="font-size:32px;">'+(isPrem?'⭐':'🕐')+'</div>';
+  html += '<div>';
+  html += '<div style="font-size:16px;font-weight:800;">'+(isPrem?'Plan Premium Actif':'Essai Gratuit')+'</div>';
+  html += '<div style="font-size:12px;color:var(--text2);">'+(isPrem
+    ? (premPlan==='annuel'?'Abonnement Annuel':'Abonnement Mensuel')
+    : 'Version limitée')+'</div>';
+  html += '</div></div>';
+
+  if(isPrem && expDate){
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
+    html += '<div style="background:var(--bg);border-radius:8px;padding:12px;"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">Date activation</div><div style="font-size:13px;font-weight:700;">'+fmtD(premDate)+'</div></div>';
+    html += '<div style="background:var(--bg);border-radius:8px;padding:12px;"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">Date expiration</div><div style="font-size:13px;font-weight:700;color:'+(joukExpire<7?'var(--red)':'var(--accent)')+';">'+fmtD(expDate)+'</div></div>';
+    html += '<div style="background:var(--bg);border-radius:8px;padding:12px;"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">Jou ki rete</div><div style="font-size:20px;font-weight:800;color:'+(joukExpire<7?'var(--red)':'var(--accent)')+';">'+joukExpire+' jou</div></div>';
+    html += '<div style="background:var(--bg);border-radius:8px;padding:12px;"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">Pri renouvèlman</div><div style="font-size:13px;font-weight:700;">'+fmtP(premPlan==='annuel'?PRIX_ANNUEL:PRIX_MENSUEL)+' HTG</div></div>';
+    html += '</div>';
+    if(joukExpire < 7){
+      html += '<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px;margin-top:10px;font-size:13px;color:var(--red);font-weight:700;">⚠️ Plan ou ap ekspire nan '+joukExpire+' jou — renouvle kounye a!</div>';
+    }
+  }
+  html += '</div>';
+
+  // ── Bouton renouvèlman / upgrade ──
+  if(isPrem){
+    html += '<button onclick="showPremium()" class="btn-g" style="width:100%;padding:13px;font-size:14px;margin-bottom:10px;">🔄 Renouvle / Chanje Plan</button>';
+  } else {
+    html += '<button onclick="showPremium()" class="btn-g" style="width:100%;padding:13px;font-size:14px;margin-bottom:10px;">⭐ Passer Premium</button>';
+  }
+
+  // ── Avantaj Premium ──
+  html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;">';
+  html += '<div style="font-size:13px;font-weight:700;margin-bottom:10px;">Avantaj Premium</div>';
+  var avantaj = ['Articles et ventes illimités','Export CSV & PDF rapports','Scan code-barres caméra','Backup & Restauration','Impression thermique 80mm','Support prioritaire WhatsApp'];
+  avantaj.forEach(function(a){
+    html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;color:var(--text2);border-bottom:1px solid var(--bg);">'
+      + '<span style="color:var(--accent);font-weight:700;">✓</span>' + a + '</div>';
+  });
+  html += '</div>';
+
+  el.innerHTML = html;
 }
 
 function renderBackupInfo(){

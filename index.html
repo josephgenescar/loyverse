@@ -509,8 +509,8 @@ footer{border-top:1px solid var(--border);padding:38px 5%;display:flex;align-ite
     <div class="pm-title">Passez au niveau supérieur</div>
     <div class="pm-sub">Articles illimités · API boutique · Back Office complet</div>
     <div class="pm-plans">
-      <div class="pm-plan sel" onclick="selPlan(this,'2 500 HTG/mois')"><div class="pm-plan-name">Mensuel</div><div class="pm-plan-price">2 500 <span class="pm-plan-per">HTG/mois</span></div></div>
-      <div class="pm-plan" onclick="selPlan(this,'22 000 HTG/an')"><div class="pm-plan-name">Annuel</div><div class="pm-plan-price">22 000 <span class="pm-plan-per">HTG/an</span></div><div class="pm-plan-save">💰 Économisez 8 000 HTG</div></div>
+      <div class="pm-plan sel" id="plan-mens-card" onclick="selPlan(this,'mensuel')"><div class="pm-plan-name">Mensuel</div><div class="pm-plan-price" id="landing-prix-mens">2 500 <span class="pm-plan-per">HTG/mois</span></div></div>
+      <div class="pm-plan" id="plan-ann-card" onclick="selPlan(this,'annuel')"><div class="pm-plan-name">Annuel</div><div class="pm-plan-price" id="landing-prix-ann">22 000 <span class="pm-plan-per">HTG/an</span></div><div class="pm-plan-save">💰 Économisez 8 000 HTG</div></div>
     </div>
     <div class="pm-feats">
       <div class="pm-feat"><span class="pm-ck">✓</span> Articles et ventes illimités</div>
@@ -850,20 +850,53 @@ function showAuthErr(form, msg) {
 // PREMIUM
 var landingSelPlan = 'mensuel';
 var landingSelPrix = 2500;
+var LANDING_PRIX_MENS    = 2500;
+var LANDING_PRIX_ANN     = 22000;
 var LANDING_MONCASH_NUM  = '509-XXXX-XXXX'; // ← Chanje ak nimewo ou
 var LANDING_WHATSAPP_NUM = '50936000000';    // ← Chanje ak WhatsApp ou
 
-function selPlan(el, txt) {
+// Tire pri depi Supabase pou montre pri admin te mete
+function loadLandingPrices(){
+  fetch('https://mnpgapvltdrpztnjmeie.supabase.co/rest/v1/konektem_users?select=price_mensuel,price_annuel&limit=1&price_mensuel=gt.0', {
+    headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE' }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(Array.isArray(data) && data.length > 0 && data[0].price_mensuel){
+      LANDING_PRIX_MENS = data[0].price_mensuel;
+      LANDING_PRIX_ANN  = data[0].price_annuel || 22000;
+      updateLandingPriceDisplay();
+    }
+  })
+  .catch(function(){});
+}
+
+function updateLandingPriceDisplay(){
+  var fmtP = function(n){ return n.toLocaleString('fr-HT'); };
+  var elM = document.getElementById('landing-prix-mens');
+  var elA = document.getElementById('landing-prix-ann');
+  if(elM) elM.innerHTML = fmtP(LANDING_PRIX_MENS) + ' <span class="pm-plan-per">HTG/mois</span>';
+  if(elA) elA.innerHTML = fmtP(LANDING_PRIX_ANN)  + ' <span class="pm-plan-per">HTG/an</span>';
+  var btn = document.getElementById('pm-btn');
+  if(btn){
+    var prix = landingSelPlan === 'annuel' ? LANDING_PRIX_ANN : LANDING_PRIX_MENS;
+    btn.textContent = 'Activer Premium — ' + fmtP(prix) + ' ' + (landingSelPlan==='annuel'?'HTG/an':'HTG/mois') + ' →';
+  }
+}
+
+function selPlan(el, planKey) {
   document.querySelectorAll('.pm-plan').forEach(function(p) { p.classList.remove('sel'); });
   el.classList.add('sel');
+  landingSelPlan = planKey;
+  landingSelPrix = planKey === 'annuel' ? LANDING_PRIX_ANN : LANDING_PRIX_MENS;
+  var fmtP = function(n){ return n.toLocaleString('fr-HT'); };
+  var txt = fmtP(landingSelPrix) + ' ' + (planKey==='annuel'?'HTG/an':'HTG/mois');
   document.getElementById('pm-btn').textContent = 'Activer Premium — ' + txt + ' →';
-  landingSelPlan = txt.includes('an') ? 'annuel' : 'mensuel';
-  landingSelPrix = landingSelPlan === 'annuel' ? 22000 : 2500;
 }
 
 function landingDoPremium(){
   var plan  = landingSelPlan;
-  var prix  = landingSelPrix;
+  var prix  = landingSelPlan === 'annuel' ? LANDING_PRIX_ANN : LANDING_PRIX_MENS;
   var unite = plan === 'annuel' ? 'HTG/an' : 'HTG/mois';
 
   // Kreye modal MonCash
@@ -1021,6 +1054,8 @@ if('serviceWorker' in navigator){
     navigator.serviceWorker.register('/sw.js');
   });
 }
+// Chaje pri depi Supabase
+loadLandingPrices();
 </script>
 </body>
 </html>
