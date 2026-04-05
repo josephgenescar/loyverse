@@ -1113,7 +1113,7 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
       <div class="pm-feat"><span class="pm-ck">✓</span> Photos produits illimitées</div>
       <div class="pm-feat"><span class="pm-ck">✓</span> Support prioritaire WhatsApp</div>
     </div>
-    <div class="pm-note">💳 Paiement : <strong style="color:#fbbf24">MonCash · Carte bancaire · Virement</strong></div>
+    <div class="pm-note">📱 Paiement : <strong style="color:#fbbf24">MonCash</strong></div>
     <button class="pm-btn" id="pm-btn" onclick="doPremium()">Activer Premium — 2 500 HTG/mois →</button>
   </div>
 </div>
@@ -1390,8 +1390,8 @@ function selPlan(el,id,txt){
 // ════════════════════════════════════════
 // CONFIG PEMAN — Mete done reyèl ou ici
 // ════════════════════════════════════════
-var MONCASH_NUM  = '509-XXXX-XXXX'; // ← Remplace ak nimewo MonCash ou
-var WHATSAPP_NUM = '50936000000';    // ← Remplace ak nimewo WhatsApp ou
+var MONCASH_NUM  = '509-4886-8964'; // ← Remplace ak nimewo MonCash ou
+var WHATSAPP_NUM = '50948868964';    // ← Remplace ak nimewo WhatsApp ou
 var PRIX_MENSUEL = 2500;
 var PRIX_ANNUEL  = 22000;
 
@@ -1400,16 +1400,20 @@ function doPremium(){
   var prix = plan === 'annuel' ? PRIX_ANNUEL : PRIX_MENSUEL;
   var unite= plan === 'annuel' ? 'HTG/an' : 'HTG/mois';
 
-  closeMov('premMov');
-
-  // ── Si kliyan gen email — itilize MonCash API otomatik ──
+  // ── Jwenn email kliyan ──
   var userEmail = S.userEmail || (function(){
     try{ return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }catch(e){return '';}
   })();
 
+  // Mete bouton nan loading state (san fèmen modal)
+  var pmBtn = document.getElementById('pm-btn');
+  if(pmBtn){
+    pmBtn.disabled = true;
+    pmBtn.textContent = '⏳ Connexion MonCash...';
+    pmBtn.style.opacity = '0.7';
+  }
+
   if(userEmail){
-    // Montre modal chajman
-    showPayLoading(plan, prix, unite);
     // Rele Netlify Function MonCash
     fetch('/.netlify/functions/moncash-payment', {
       method: 'POST',
@@ -1419,25 +1423,39 @@ function doPremium(){
     .then(function(r){ return r.json(); })
     .then(function(data){
       if(data.success && data.redirectUrl){
-        // Redirije kliyan sou paj peman MonCash
-        window.location.href = data.redirectUrl;
+        // Siksè — fèmen modal epi redirijé
+        if(pmBtn){ pmBtn.textContent = '✅ Redirection...'; }
+        closeMov('premMov');
+        setTimeout(function(){ window.location.href = data.redirectUrl; }, 300);
       } else {
-        closePayLoading();
-        notif('Erè MonCash: ' + (data.error||'Resesye pi ta'), 'err');
-        // Fallback: modal manuel
-        setTimeout(function(){ showManualPayModal(plan, prix, unite); }, 500);
+        // API echwe — reset bouton epi ouvri modal manuel
+        resetPmBtn(plan, prix);
+        closeMov('premMov');
+        notif('MonCash pa disponib — itilize peman manuel', 'err');
+        setTimeout(function(){ showManualPayModal(plan, prix, unite); }, 400);
       }
     })
     .catch(function(){
-      closePayLoading();
-      // Netlify Function pa disponib — modal manuel
+      // Pa gen Netlify Function (dev lokal oswa kle manke) — modal manuel
+      resetPmBtn(plan, prix);
+      closeMov('premMov');
       showManualPayModal(plan, prix, unite);
     });
     return;
   }
 
-  // Pa gen email — modal manuel
+  // Pa gen email — ale dirèkteman nan modal manuel
+  closeMov('premMov');
   showManualPayModal(plan, prix, unite);
+}
+
+function resetPmBtn(plan, prix){
+  var pmBtn = document.getElementById('pm-btn');
+  if(!pmBtn) return;
+  pmBtn.disabled = false;
+  pmBtn.style.opacity = '1';
+  var txt = (plan==='annuel') ? '22 000 HTG/an' : '2 500 HTG/mois';
+  pmBtn.textContent = 'Activer Premium — ' + txt + ' →';
 }
 
 function showPayLoading(plan, prix, unite){
@@ -1460,72 +1478,87 @@ function closePayLoading(){
 }
 
 function showManualPayModal(plan, prix, unite){
-  // Fèmen premMov epi ouvri pay-step-mov
-
   setTimeout(function(){
     var old = document.getElementById('pay-step-mov');
     if(old) old.remove();
 
     var mov = document.createElement('div');
     mov.id  = 'pay-step-mov';
-    mov.style.cssText = [
-      'position:fixed','inset:0','z-index:600',
-      'background:rgba(0,0,0,.75)',
-      'display:flex','align-items:center','justify-content:center',
-      'padding:16px','overflow-y:auto'
-    ].join(';');
+    mov.style.cssText = 'position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;';
 
-    var html = '<div id="pay-inner" style="background:#0a1f14;border:1px solid rgba(34,197,94,.35);border-radius:18px;padding:26px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;position:relative;">';
+    // Enrejistre peman an atant nan Supabase
+    var userEmail = S.userEmail||(function(){try{return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||'';}catch(e){return '';}})();
+    if(userEmail){ recordPaymentIntent(plan, prix); }
+
+    var inner = document.createElement('div');
+    inner.style.cssText = 'background:#0a1f14;border:1px solid rgba(34,197,94,.35);border-radius:18px;padding:26px;width:100%;max-width:400px;position:relative;';
+
+    // Bouton fèmen
+    var btnX = document.createElement('button');
+    btnX.style.cssText = 'position:absolute;top:12px;right:12px;background:rgba(255,255,255,.12);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;';
+    btnX.textContent = '✕';
+    btnX.onclick = closePay;
 
     // Header
-    html += '<button onclick="closePay()" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.12);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1;">✕</button>';
-    html += '<div style="text-align:center;margin-bottom:20px;">';
-    html += '<div style="font-size:34px;margin-bottom:8px;">📱</div>';
-    html += '<div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">Payer via MonCash</div>';
-    html += '<div style="font-size:13px;color:rgba(255,255,255,.5);">Plan : <strong style="color:#86efac;">'+prix+' '+unite+'</strong></div>';
-    html += '</div>';
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'text-align:center;margin-bottom:22px;';
+    hdr.innerHTML = '<div style="font-size:36px;margin-bottom:8px;">📱</div>'
+      + '<div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">Payer via MonCash</div>'
+      + '<div style="font-size:13px;color:rgba(255,255,255,.5);">Plan : <strong style="color:#86efac;">'+prix+' '+unite+'</strong></div>';
 
-    // ETAP 1
-    html += '<div style="border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;">';
-    html += '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:10px;">① VOYE PEMAN AN</div>';
-    html += '<div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.9;">';
-    html += '1. Ouvri app <strong style="color:#fff;">MonCash</strong><br>';
-    html += '2. Klike <strong style="color:#fbbf24;">Envoyer de largent</strong><br>';
-    html += '3. Nimewo : <span style="font-size:17px;font-weight:800;color:#4ade80;letter-spacing:2px;">'+MONCASH_NUM+'</span><br>';
-    html += '4. Montan : <strong style="color:#fbbf24;">'+prix+' HTG</strong><br>';
-    html += '5. Mesaj : <code style="background:rgba(255,255,255,.08);padding:2px 7px;border-radius:4px;color:#86efac;">KONEKTEM-PREMIUM</code>';
-    html += '</div></div>';
+    // ── SECTION 1: Enstriksyon MonCash ──
+    var sec1 = document.createElement('div');
+    sec1.style.cssText = 'border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;';
+    sec1.innerHTML = '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:12px;">① VOYE PEMAN NAN MONCASH</div>'
+      + '<div style="font-size:13px;color:rgba(255,255,255,.85);line-height:2;">'
+      + '1. Ouvri app <strong style="color:#fff;">MonCash</strong><br>'
+      + '2. Klike <strong style="color:#fbbf24;">Envoyer de largent</strong><br>'
+      + '3. Nimewo : <span style="font-size:19px;font-weight:800;color:#4ade80;letter-spacing:2px;display:block;margin:6px 0 4px;">'+MONCASH_NUM+'</span>'
+      + '4. Montan : <strong style="color:#fbbf24;font-size:16px;">'+prix+' HTG</strong>'
+      + '</div>';
 
-    // ETAP 2
-    html += '<div style="border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;">';
-    html += '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:10px;">② VOYE SCREENSHOT BA NOU</div>';
-    html += '<div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.6;margin-bottom:10px;">Apre peman, voye screenshot konfimasyon an sou WhatsApp pou nou verifye :</div>';
-    var waHref = 'https://wa.me/'+WHATSAPP_NUM+'?text=KONEKTEM+Premium+'+plan+'+'+prix+'HTG';
-    html += '<a href="'+waHref+'" target="_blank" id="wa-pay-link" data-plan="'+plan+'" data-prix="'+prix+'" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:#25D366;border-radius:9px;color:#fff;font-weight:800;font-size:14px;text-decoration:none;" onclick="var el=this;recordPaymentIntent(el.dataset.plan,el.dataset.prix);">💬 Voye sou WhatsApp</a>';
-    html += '</div>';
+    // ── SECTION 2: Voye screenshot WhatsApp ──
+    var waMsg = 'Bonjour RIVAYO-TECH, mwen voye ' + prix + ' HTG sou MonCash pou plan ' + plan + '. Screenshot nan attachment la.';
+    var waUrl = 'https://wa.me/' + WHATSAPP_NUM + '?text=' + encodeURIComponent(waMsg);
+    var sec2 = document.createElement('div');
+    sec2.style.cssText = 'border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;';
+    var waBtn = document.createElement('a');
+    waBtn.href = waUrl;
+    waBtn.target = '_blank';
+    waBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#25D366;border-radius:8px;color:#fff;font-weight:800;font-size:14px;text-decoration:none;';
+    waBtn.textContent = '② Voye screenshot sou WhatsApp';
+    waBtn.onclick = function(){ recordPaymentIntent(plan, prix); };
+    var sec2lbl = document.createElement('div');
+    sec2lbl.style.cssText = 'font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:10px;';
+    sec2lbl.textContent = '② VOYE SCREENSHOT BA NOU';
+    var sec2sub = document.createElement('div');
+    sec2sub.style.cssText = 'font-size:12px;color:rgba(255,255,255,.45);margin-bottom:10px;line-height:1.5;';
+    sec2sub.textContent = 'Apre peman, voye screenshot konfimasyon MonCash ou sou WhatsApp pou nou verifye:';
+    sec2.appendChild(sec2lbl);
+    sec2.appendChild(sec2sub);
+    sec2.appendChild(waBtn);
 
-    // ETAP 3
-    html += '<div style="border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:14px;">';
-    html += '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:10px;">③ ANTRE KÒD AKTIVASYON OU</div>';
-    html += '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:10px;">Apre verifikasyon peman, nou voye yon kòd 8 karaktè ba ou sou WhatsApp (ex: PREM-A3X7)</div>';
-    html += '<div style="display:flex;gap:8px;">';
-    html += '<input id="act-inp" placeholder="PREM-XXXX" maxlength="9" style="flex:1;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.15);border-radius:8px;padding:11px 12px;color:#fff;font-size:15px;font-family:monospace;outline:none;text-transform:uppercase;letter-spacing:2px;" oninput="this.value=this.value.toUpperCase();">';
-    html += '<button onclick="verifyCode()" style="padding:10px 18px;border:none;border-radius:8px;background:#22c55e;color:#fff;font-weight:800;cursor:pointer;font-size:14px;">Valide</button>';
-    html += '</div>';
-    html += '<div id="code-result" style="margin-top:8px;font-size:13px;display:none;padding:8px 10px;border-radius:6px;"></div>';
-    html += '</div>';
-    html += '<div style="font-size:11px;color:rgba(255,255,255,.25);text-align:center;">Kod la valid pou 7 jou apre ou resevwa li</div>';
-    html += '</div>';
+    // ── SECTION 3: Kòd aktivasyon ──
+    var sec3 = document.createElement('div');
+    sec3.style.cssText = 'border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;';
+    sec3.innerHTML = '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:8px;">③ ANTRE KÒD AKTIVASYON OU</div>'
+      + '<div style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:10px;line-height:1.5;">Apre nou verifye peman, nou voye kòd ba ou sou WhatsApp (ex: PREM-A3X7)</div>'
+      + '<div style="display:flex;gap:8px;">'
+      + '<input id="act-inp" placeholder="PREM-XXXX" maxlength="9" autocapitalize="characters" style="flex:1;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.15);border-radius:8px;padding:11px 12px;color:#fff;font-size:15px;font-family:monospace;outline:none;text-transform:uppercase;letter-spacing:2px;" oninput="this.value=this.value.toUpperCase();">'
+      + '<button id="act-btn" onclick="verifyCode()" style="padding:10px 18px;border:none;border-radius:8px;background:#22c55e;color:#fff;font-weight:800;cursor:pointer;font-size:14px;white-space:nowrap;">Valide</button>'
+      + '</div>'
+      + '<div id="code-result" style="margin-top:8px;font-size:13px;display:none;padding:8px 10px;border-radius:6px;"></div>';
 
-    mov.innerHTML = html;
+    inner.appendChild(btnX);
+    inner.appendChild(hdr);
+    inner.appendChild(sec1);
+    inner.appendChild(sec2);
+    inner.appendChild(sec3);
+    mov.appendChild(inner);
     mov.addEventListener('click', function(e){ if(e.target===mov) closePay(); });
     document.body.appendChild(mov);
 
-    // Focus sou input kòd la
-    setTimeout(function(){
-      var inp = document.getElementById('act-inp');
-      if(inp) inp.focus();
-    }, 300);
+    setTimeout(function(){ var inp=document.getElementById('act-inp'); if(inp) inp.focus(); }, 300);
   }, 150);
 }
 
@@ -1568,45 +1601,79 @@ function closeAllMov(){
 function verifyCode(){
   var inp = document.getElementById('act-inp');
   var res = document.getElementById('code-result');
+  var btn = document.getElementById('act-btn');
   if(!inp || !res) return;
   var code = inp.value.trim().toUpperCase();
 
-  if(code.length < 8){
-    res.style.display='block';
-    res.style.background='rgba(239,68,68,.15)';
-    res.style.color='#fca5a5';
-    res.textContent='Entrez un code valide (ex: PREM-A3X7)';
+  if(code.length < 8 || !code.startsWith('PREM-')){
+    showCodeResult('err', 'Fòma enkòrèk — egzanp: PREM-A3X7');
     return;
   }
 
-  res.style.display='block';
-  res.style.background='rgba(255,255,255,.05)';
-  res.style.color='rgba(255,255,255,.6)';
-  res.textContent='Vérification...';
+  showCodeResult('loading', 'Verifikasyon...');
+  if(btn){ btn.disabled=true; btn.textContent='...'; }
 
-  fetch('/.netlify/functions/verify-code', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ code:code, plan:S.selPlanId||'mensuel' })
+  var userEmail = S.userEmail||(function(){
+    try{return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||'';}catch(e){return '';}
+  })();
+
+  // ── Verifye via Supabase fonksyon mark_code_used ──
+  fetch('https://mnpgapvltdrpztnjmeie.supabase.co/rest/v1/rpc/mark_code_used', {
+    method: 'POST',
+    headers: {
+      'apikey':        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE',
+      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE',
+      'Content-Type':  'application/json'
+    },
+    body: JSON.stringify({ p_code: code, p_email: userEmail })
   })
   .then(function(r){ return r.json(); })
-  .then(function(data){
-    if(data.valid){ activatePremium(code); }
-    else {
-      res.style.background='rgba(239,68,68,.15)';
-      res.style.color='#fca5a5';
-      res.textContent='Code incorrect ou expiré. Vérifiez sur WhatsApp.';
+  .then(function(valid){
+    if(btn){ btn.disabled=false; btn.textContent='Valide'; }
+    if(valid === true){
+      // Supabase konfime kòd la — aktive lokal tou
+      activatePremium(code);
+    } else {
+      showCodeResult('err', 'Kòd enkòrèk oswa deja itilize. Kontakte nou sou WhatsApp.');
     }
   })
   .catch(function(){
-    // Fallback local si Netlify indisponible
-    if(verifyCodeLocal(code)){ activatePremium(code); }
-    else {
-      res.style.background='rgba(239,68,68,.15)';
-      res.style.color='#fca5a5';
-      res.textContent='Code invalide. Contactez-nous sur WhatsApp.';
-    }
+    // Fallback — Netlify Function si Supabase echwe
+    fetch('/.netlify/functions/verify-code', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ code:code, plan:S.selPlanId||'mensuel' })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(btn){ btn.disabled=false; btn.textContent='Valide'; }
+      if(data.valid){ activatePremium(code); }
+      else showCodeResult('err', 'Kòd invalide. Kontakte nou sou WhatsApp.');
+    })
+    .catch(function(){
+      if(btn){ btn.disabled=false; btn.textContent='Valide'; }
+      // Dènye fallback — verifikasyon lokal
+      if(verifyCodeLocal(code)){ activatePremium(code); }
+      else showCodeResult('err', 'Kòd invalide. Kontakte nou sou WhatsApp.');
+    });
   });
+}
+
+function showCodeResult(type, msg){
+  var res = document.getElementById('code-result');
+  if(!res) return;
+  res.style.display = 'block';
+  if(type==='loading'){
+    res.style.background = 'rgba(255,255,255,.05)';
+    res.style.color = 'rgba(255,255,255,.5)';
+  } else if(type==='err'){
+    res.style.background = 'rgba(239,68,68,.12)';
+    res.style.color = '#fca5a5';
+  } else {
+    res.style.background = 'rgba(34,197,94,.12)';
+    res.style.color = '#86efac';
+  }
+  res.textContent = msg;
 }
 
 function verifyCodeLocal(code){
@@ -1713,29 +1780,116 @@ function launchApp(){
 }
 
 // ── APP START ──
+// ════════════════════════════════════════
+// SYNC SUPABASE — tire + pouse done
+// Chèche plan, statut, ban depi admin
+// ════════════════════════════════════════
+var SUPA_URL_APP = 'https://mnpgapvltdrpztnjmeie.supabase.co';
+var SUPA_KEY_APP = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE';
+
 function syncUserToSupabase(){
   try {
     var lu = JSON.parse(localStorage.getItem('konektem_user')||'{}');
     var email = lu.email||'';
     if(!email) return;
     S.userEmail = email;
-    // Mettre à jour bizname et secteur depuis l'onboarding
-    fetch('https://mnpgapvltdrpztnjmeie.supabase.co/rest/v1/konektem_users?email=eq.'+encodeURIComponent(email), {
-      method: 'PATCH',
+
+    // ── ETAP 1: Tire done kliyan depi Supabase ──
+    fetch(SUPA_URL_APP+'/rest/v1/konektem_users?email=eq.'+encodeURIComponent(email)+'&select=plan,status,trial_days,premium_date,premium_plan,message_global', {
       headers: {
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        bizname: S.settings.bizname||'',
-        secteur: S.settings.sector||'',
-        plan: S.settings.plan||'trial',
-        status: 'active',
-        last_seen: new Date().toISOString()
-      })
-    }).catch(function(){});
+        'apikey': SUPA_KEY_APP,
+        'Authorization': 'Bearer '+SUPA_KEY_APP
+      }
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(!Array.isArray(data) || data.length === 0){
+        // Kliyan pa nan Supabase — kreye li
+        pushUserToSupabase(email);
+        return;
+      }
+      var remote = data[0];
+
+      // ── VERIFYE BAN ──
+      if(remote.status === 'banned'){
+        showBannedWall();
+        return;
+      }
+
+      // ── SYNC PLAN depi admin ──
+      if(remote.plan === 'premium' && S.settings.plan !== 'premium'){
+        // Admin te aktive Premium — mete a jou lokal
+        S.settings.plan = 'premium';
+        S.settings.premiumDate = remote.premium_date || new Date().toISOString();
+        S.settings.premiumPlan = remote.premium_plan || 'mensuel';
+        save();
+        // Retire mur ekspire
+        var wall = document.getElementById('expired-wall');
+        if(wall) wall.remove();
+        document.getElementById('trial-bar').classList.add('hidden');
+        notif('⭐ Premium aktivé pa admin — Mèsi!', 'ok');
+        updateTrialBar();
+      }
+
+      // ── SYNC TRIAL DAYS depi admin ──
+      if(remote.trial_days && remote.trial_days !== TRIAL_DAYS){
+        TRIAL_DAYS = remote.trial_days;
+        updateTrialBar();
+      }
+
+      // ── MESAJ GLOBAL depi admin ──
+      if(remote.message_global && remote.message_global !== S.settings.lastGlobalMsg){
+        S.settings.lastGlobalMsg = remote.message_global;
+        save();
+        notif('📢 ' + remote.message_global, 'inf');
+      }
+
+      // ── ETAP 2: Pouse done lokal → Supabase ──
+      pushUserToSupabase(email);
+    })
+    .catch(function(){
+      // Offline oswa erè — jis pouse done lokal
+      pushUserToSupabase(email);
+    });
   } catch(e){}
+}
+
+function pushUserToSupabase(email){
+  var body = JSON.stringify({
+    email:      email,
+    bizname:    S.settings.bizname||'',
+    secteur:    S.settings.sector||'',
+    plan:       S.settings.plan||'trial',
+    status:     'active',
+    last_seen:  new Date().toISOString(),
+    trial_start: S.settings.trialStart||null
+  });
+  // Upsert — kreye si pa egziste, mete a jou si egziste
+  fetch(SUPA_URL_APP+'/rest/v1/konektem_users', {
+    method: 'POST',
+    headers: {
+      'apikey':        SUPA_KEY_APP,
+      'Authorization': 'Bearer '+SUPA_KEY_APP,
+      'Content-Type':  'application/json',
+      'Prefer':        'resolution=merge-duplicates,return=minimal'
+    },
+    body: body
+  }).catch(function(){});
+}
+
+function showBannedWall(){
+  if(document.getElementById('banned-wall')) return;
+  var wall = document.createElement('div');
+  wall.id = 'banned-wall';
+  wall.style.cssText = 'position:fixed;inset:0;z-index:3000;background:#0D1F2D;display:flex;align-items:center;justify-content:center;padding:20px;';
+  var inner = document.createElement('div');
+  inner.style.cssText = 'text-align:center;max-width:360px;';
+  inner.innerHTML = '<div style="font-size:48px;margin-bottom:16px;">🚫</div>'
+    + '<div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:8px;">Kont bloke</div>'
+    + '<div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:20px;">Kont ou te bloke pa administratè Konektem. Kontakte sipò pou plis enfòmasyon.</div>'
+    + '<a href="https://wa.me/'+WHATSAPP_NUM+'" target="_blank" style="display:inline-block;padding:11px 24px;background:#25D366;border-radius:8px;color:#fff;font-weight:800;font-size:14px;text-decoration:none;">💬 Kontakte Sipò</a>';
+  wall.appendChild(inner);
+  document.body.appendChild(wall);
 }
 
 function startApp(){
