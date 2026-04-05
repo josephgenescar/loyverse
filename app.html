@@ -774,7 +774,8 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
       <div id="view-pos" style="display:flex;flex:1;overflow:hidden">
         <div class="pos-left">
           <div class="pos-search">
-            <div class="srch"><span style="color:var(--text3)">🔍</span><input id="posQ" placeholder="Rechercher article, référence..." oninput="filterProds()"></div>
+            <div class="srch"><span style="color:var(--text3)">🔍</span><input id="posQ" placeholder="Rechercher article, code-barres..." oninput="filterProds()"></div>
+            <button onclick="openScanner()" title="Scanner code-barres" style="flex-shrink:0;width:38px;height:38px;border-radius:8px;border:1.5px solid var(--accent-m);background:var(--accent-l);color:var(--accent);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">📷</button>
           </div>
           <div class="cat-bar" id="catBar"></div>
           <div class="prod-grid" id="prodGrid"></div>
@@ -1092,7 +1093,7 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
         <option value="Propriétaire">Propriétaire</option>
       </select>
     </div>
-    <div class="fg"><label class="flbl">Téléphone (optionnel)</label><input class="finp" id="emp-tel" placeholder="509 XX XX XX XX"></div>
+    <div class="fg"><label class="flbl">Téléphone (optionnel)</label><input class="finp" id="emp-tel" placeholder="509 48868964"></div>
     <div class="fg"><label class="flbl">Note (optionnel)</label><input class="finp" id="emp-note" placeholder="Ex: travaille lundi-vendredi"></div>
     <div class="mfooter">
       <button class="btn-cancel" onclick="closeMov('empMov')">Annuler</button>
@@ -1109,8 +1110,8 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
     <div class="pm-title">Passez au niveau supérieur</div>
     <div class="pm-sub">Articles illimités · API boutique · Back Office complet</div>
     <div class="pm-plans">
-      <div class="pm-plan sel" onclick="selPlan(this,'mensuel','2 500 HTG/mois')"><div class="pm-pname">Mensuel</div><div class="pm-pprice">2 500 <span class="pm-pper">HTG/mois</span></div></div>
-      <div class="pm-plan" onclick="selPlan(this,'annuel','22 000 HTG/an')"><div class="pm-pname">Annuel</div><div class="pm-pprice">22 000 <span class="pm-pper">HTG/an</span></div><div class="pm-psave">💰 Économisez 8 000 HTG</div></div>
+      <div class="pm-plan sel" onclick="selPlan(this,'mensuel','3 000 HTG/mois')"><div class="pm-pname">Mensuel</div><div class="pm-pprice">3 000 <span class="pm-pper">HTG/mois</span></div></div>
+      <div class="pm-plan" onclick="selPlan(this,'annuel','25 000 HTG/an')"><div class="pm-pname">Annuel</div><div class="pm-pprice">25 000 <span class="pm-pper">HTG/an</span></div><div class="pm-psave">💰 Économisez 8 000 HTG</div></div>
     </div>
     <div class="pm-feats">
       <div class="pm-feat"><span class="pm-ck">✓</span> Articles et ventes illimités</div>
@@ -1328,17 +1329,47 @@ function checkTrialOnStart(){
 
 function showExpiredWall(){
   if(document.getElementById('expired-wall')) return;
-  var wall=document.createElement('div');
-  wall.id='expired-wall';
-  wall.style.cssText='position:fixed;inset:0;z-index:2000;background:linear-gradient(135deg,#0D1F2D,#0a2e1a);display:flex;align-items:center;justify-content:center;padding:20px;';
-  wall.innerHTML='<div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:32px;width:100%;max-width:380px;text-align:center;">'
-    +'<div style="font-size:46px;margin-bottom:14px;">⏰</div>'
-    +'<div style="font-family:Syne,sans-serif;font-size:20px;font-weight:800;color:#fff;margin-bottom:8px;">Essai terminé</div>'
-    +'<div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:22px;line-height:1.6;">Votre periode d essai de 14 jours est terminee.<br>Passez au Premium pour continuer.</div>'
-    +'<button onclick="showPremium()" style="width:100%;padding:13px;border:none;border-radius:10px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-family:sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px;">⭐ Passer Premium — 2 500 HTG/mois</button>'
-    +'<div style="font-size:11px;color:rgba(255,255,255,.3);">Paiement : MonCash · Carte · Virement</div>'
-    +'</div>';
+  var wall = document.createElement('div');
+  wall.id  = 'expired-wall';
+  // Bloke tout evènman klike anba — kliyan pa ka bypass
+  wall.style.cssText = 'position:fixed;inset:0;z-index:2000;background:linear-gradient(135deg,#0D1F2D,#0a2e1a);display:flex;align-items:center;justify-content:center;padding:20px;';
+  wall.addEventListener('click', function(e){ e.stopPropagation(); });
+
+  var prix = PRIX_MENSUEL || 3000;
+  var inner = document.createElement('div');
+  inner.style.cssText = 'background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:32px;width:100%;max-width:380px;text-align:center;';
+
+  // Header
+  var h = document.createElement('div');
+  h.innerHTML = '<div style="font-size:50px;margin-bottom:14px;">⏰</div>'
+    + '<div style="font-family:Syne,sans-serif;font-size:22px;font-weight:800;color:#fff;margin-bottom:10px;">Essai termine</div>'
+    + '<div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px;line-height:1.6;">Votre periode d essai de 14 jours est termine.<br>Passez au Premium pour continuer a utiliser Konektem.</div>';
+
+  // Bouton peman
+  var btn = document.createElement('button');
+  btn.id = 'expired-pay-btn';
+  btn.style.cssText = 'width:100%;padding:15px;border:none;border-radius:10px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-family:sans-serif;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px;';
+  btn.textContent = '⭐ Passer Premium — Payer via MonCash';
+  btn.onclick = function(e){
+    e.stopPropagation();
+    // Kache expired-wall avan ouvri modal (z-index fix)
+    wall.style.display = 'none';
+    showManualPayModal('mensuel', PRIX_MENSUEL, 'HTG/mois');
+  };
+
+  // Note peman
+  var note = document.createElement('div');
+  note.style.cssText = 'font-size:12px;color:rgba(255,255,255,.3);margin-top:4px;';
+  note.textContent = '📱 MonCash · Envoyez et recevez votre code activation';
+
+  inner.appendChild(h);
+  inner.appendChild(btn);
+  inner.appendChild(note);
+  wall.appendChild(inner);
   document.body.appendChild(wall);
+
+  // Bloke scroll anba
+  document.body.style.overflow = 'hidden';
 }
 
 function checkArticleLimit(){
@@ -1397,10 +1428,10 @@ function selPlan(el,id,txt){
 // ════════════════════════════════════════
 // CONFIG PEMAN — Mete done reyèl ou ici
 // ════════════════════════════════════════
-var MONCASH_NUM  = '509-XXXX-XXXX'; // ← Remplace ak nimewo MonCash ou
-var WHATSAPP_NUM = '50936000000';    // ← Remplace ak nimewo WhatsApp ou
-var PRIX_MENSUEL = 2500;
-var PRIX_ANNUEL  = 22000;
+var MONCASH_NUM  = '509-4886-8964'; // ← Remplace ak nimewo MonCash ou
+var WHATSAPP_NUM = '50948868964';    // ← Remplace ak nimewo WhatsApp ou
+var PRIX_MENSUEL = 3000;
+var PRIX_ANNUEL  = 25000;
 
 function doPremium(){
   var plan = S.selPlanId || 'mensuel';
@@ -1461,7 +1492,7 @@ function resetPmBtn(plan, prix){
   if(!pmBtn) return;
   pmBtn.disabled = false;
   pmBtn.style.opacity = '1';
-  var txt = (plan==='annuel') ? '22 000 HTG/an' : '2 500 HTG/mois';
+  var txt = (plan==='annuel') ? '25 000 HTG/an' : '3 000 HTG/mois';
   pmBtn.textContent = 'Activer Premium — ' + txt + ' →';
 }
 
@@ -3173,18 +3204,34 @@ function importBackup(inp){
   reader.readAsText(file);
 }
 
+var _monplanTimer = null;
+
 function renderMonPlan(){
   var el = document.getElementById('monplan-body');
   if(!el) return;
+  if(_monplanTimer) clearInterval(_monplanTimer);
+
   var plan     = S.settings.plan || 'trial';
   var isPrem   = plan === 'premium';
   var premDate = S.settings.premiumDate ? new Date(S.settings.premiumDate) : null;
   var premPlan = S.settings.premiumPlan || 'mensuel';
   var nbJou    = premPlan === 'annuel' ? 365 : 30;
   var expDate  = premDate ? new Date(premDate.getTime() + nbJou*86400000) : null;
-  var joukExpire = expDate ? Math.max(0, Math.ceil((expDate - new Date()) / 86400000)) : 0;
-  var fmtD     = function(d){ return d ? d.toLocaleDateString('fr-FR') : '—'; };
-  var fmtP     = function(n){ return n.toLocaleString('fr-HT'); };
+  // Kalkile an tan reyèl
+  var getTimeLeft = function(){
+    if(!expDate) return null;
+    var diff = expDate - new Date();
+    if(diff <= 0) return { expired:true, jou:0, è:0, min:0, sek:0 };
+    var jou = Math.floor(diff/86400000);
+    var è   = Math.floor((diff%86400000)/3600000);
+    var min = Math.floor((diff%3600000)/60000);
+    var sek = Math.floor((diff%60000)/1000);
+    return { expired:false, jou:jou, è:è, min:min, sek:sek };
+  };
+  var fmtD = function(d){ return d ? d.toLocaleDateString('fr-FR') : '—'; };
+  var fmtP = function(n){ return n.toLocaleString('fr-HT'); };
+  var tl = getTimeLeft();
+  var joukExpire = tl ? tl.jou : 0;
 
   var html = '';
 
@@ -3204,7 +3251,7 @@ function renderMonPlan(){
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
     html += '<div style="background:var(--bg);border-radius:8px;padding:12px;"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">Date activation</div><div style="font-size:13px;font-weight:700;">'+fmtD(premDate)+'</div></div>';
     html += '<div style="background:var(--bg);border-radius:8px;padding:12px;"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">Date expiration</div><div style="font-size:13px;font-weight:700;color:'+(joukExpire<7?'var(--red)':'var(--accent)')+';">'+fmtD(expDate)+'</div></div>';
-    html += '<div style="background:var(--bg);border-radius:8px;padding:12px;"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">Jou ki rete</div><div style="font-size:20px;font-weight:800;color:'+(joukExpire<7?'var(--red)':'var(--accent)')+';">'+joukExpire+' jou</div></div>';
+    html += '<div id="monplan-countdown" style="background:var(--bg);border-radius:8px;padding:12px;"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">Tan ki rete</div><div id="countdown-display" style="font-size:14px;font-weight:800;color:'+(joukExpire<7?'var(--red)':'var(--accent)')+';">'+joukExpire+' jou</div></div>';
     html += '<div style="background:var(--bg);border-radius:8px;padding:12px;"><div style="font-size:11px;color:var(--text3);margin-bottom:3px;">Pri renouvèlman</div><div style="font-size:13px;font-weight:700;">'+fmtP(premPlan==='annuel'?PRIX_ANNUEL:PRIX_MENSUEL)+' HTG</div></div>';
     html += '</div>';
     if(joukExpire < 7){
@@ -3231,6 +3278,25 @@ function renderMonPlan(){
   html += '</div>';
 
   el.innerHTML = html;
+
+  // ── Kòntdakont an tan reyèl (mete a jou chak segonn) ──
+  if(expDate && isPrem){
+    _monplanTimer = setInterval(function(){
+      var tl2 = getTimeLeft();
+      var disp = document.getElementById('countdown-display');
+      if(!disp){ clearInterval(_monplanTimer); return; }
+      if(tl2.expired){
+        disp.textContent = 'Ekspire';
+        disp.style.color = 'var(--red)';
+        clearInterval(_monplanTimer);
+      } else if(tl2.jou > 0){
+        disp.textContent = tl2.jou + ' jou, ' + String(tl2.è).padStart(2,'0') + 'h' + String(tl2.min).padStart(2,'0') + 'm';
+      } else {
+        disp.textContent = String(tl2.è).padStart(2,'0') + ':' + String(tl2.min).padStart(2,'0') + ':' + String(tl2.sek).padStart(2,'0');
+        disp.style.color = 'var(--red)';
+      }
+    }, 1000);
+  }
 }
 
 function renderBackupInfo(){
