@@ -522,7 +522,7 @@ footer{border-top:1px solid var(--border);padding:38px 5%;display:flex;align-ite
     <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px;font-size:12px;color:rgba(255,255,255,.6);text-align:center;margin-bottom:13px">
       💳 Paiement : <strong style="color:#fbbf24">MonCash · Carte · Virement</strong>
     </div>
-    <button class="pm-btn" id="pm-btn">Activer Premium — 2 500 HTG/mois →</button>
+    <button class="pm-btn" id="pm-btn" onclick="landingDoPremium()">Activer Premium — 2 500 HTG/mois →</button>
   </div>
 </div>
 
@@ -848,10 +848,94 @@ function showAuthErr(form, msg) {
 })();
 
 // PREMIUM
+var landingSelPlan = 'mensuel';
+var landingSelPrix = 2500;
+var LANDING_MONCASH_NUM  = '509-XXXX-XXXX'; // ← Chanje ak nimewo ou
+var LANDING_WHATSAPP_NUM = '50936000000';    // ← Chanje ak WhatsApp ou
+
 function selPlan(el, txt) {
   document.querySelectorAll('.pm-plan').forEach(function(p) { p.classList.remove('sel'); });
   el.classList.add('sel');
   document.getElementById('pm-btn').textContent = 'Activer Premium — ' + txt + ' →';
+  landingSelPlan = txt.includes('an') ? 'annuel' : 'mensuel';
+  landingSelPrix = landingSelPlan === 'annuel' ? 22000 : 2500;
+}
+
+function landingDoPremium(){
+  var plan  = landingSelPlan;
+  var prix  = landingSelPrix;
+  var unite = plan === 'annuel' ? 'HTG/an' : 'HTG/mois';
+
+  // Kreye modal MonCash
+  var old = document.getElementById('landing-pay-mov');
+  if(old) old.remove();
+
+  var mov = document.createElement('div');
+  mov.id = 'landing-pay-mov';
+  mov.style.cssText = 'position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;';
+
+  var inner = document.createElement('div');
+  inner.style.cssText = 'background:#0a1f14;border:1px solid rgba(34,197,94,.35);border-radius:18px;padding:26px;width:100%;max-width:400px;position:relative;';
+
+  // Bouton fèmen
+  var btnX = document.createElement('button');
+  btnX.style.cssText = 'position:absolute;top:12px;right:12px;background:rgba(255,255,255,.12);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;';
+  btnX.textContent = '✕';
+  btnX.onclick = function(){ mov.remove(); };
+
+  // Header
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'text-align:center;margin-bottom:20px;';
+  hdr.innerHTML = '<div style="font-size:36px;margin-bottom:8px;">📱</div>'
+    + '<div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">Payer via MonCash</div>'
+    + '<div style="font-size:13px;color:rgba(255,255,255,.5);">Plan : <strong style="color:#86efac;">'+ prix +' '+ unite +'</strong></div>';
+
+  // Section 1 — Enstriksyon
+  var sec1 = document.createElement('div');
+  sec1.style.cssText = 'border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;';
+  sec1.innerHTML = '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:12px;">① VOYE PEMAN NAN MONCASH</div>'
+    + '<div style="font-size:13px;color:rgba(255,255,255,.85);line-height:2;">'
+    + '1. Ouvri app <strong style="color:#fff;">MonCash</strong><br>'
+    + '2. Klike <strong style="color:#fbbf24;">Envoyer de largent</strong><br>'
+    + '3. Nimewo : <span style="font-size:19px;font-weight:800;color:#4ade80;letter-spacing:2px;display:block;margin:6px 0 4px;">'+ LANDING_MONCASH_NUM +'</span>'
+    + '4. Montan : <strong style="color:#fbbf24;font-size:16px;">'+ prix +' HTG</strong>'
+    + '</div>';
+
+  // Section 2 — WhatsApp screenshot
+  var sec2 = document.createElement('div');
+  sec2.style.cssText = 'border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;';
+  var waMsg = 'Bonjour, mwen voye ' + prix + ' HTG pou plan Konektem ' + plan;
+  var waUrl = 'https://wa.me/' + LANDING_WHATSAPP_NUM + '?text=' + encodeURIComponent(waMsg);
+  var waLbl = document.createElement('div');
+  waLbl.style.cssText = 'font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:8px;';
+  waLbl.textContent = '② VOYE SCREENSHOT BA NOU';
+  var waSub = document.createElement('div');
+  waSub.style.cssText = 'font-size:12px;color:rgba(255,255,255,.45);margin-bottom:10px;';
+  waSub.textContent = 'Apre peman, voye screenshot sou WhatsApp pou nou verifye:';
+  var waBtn = document.createElement('a');
+  waBtn.href = waUrl;
+  waBtn.target = '_blank';
+  waBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#25D366;border-radius:8px;color:#fff;font-weight:800;font-size:14px;text-decoration:none;';
+  waBtn.textContent = '💬 Voye screenshot sou WhatsApp';
+  sec2.appendChild(waLbl); sec2.appendChild(waSub); sec2.appendChild(waBtn);
+
+  // Section 3 — Kòd + note enskri
+  var sec3 = document.createElement('div');
+  sec3.style.cssText = 'border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:14px;background:rgba(34,197,94,.05);';
+  sec3.innerHTML = '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:6px;">③ KREYE KÒT OU ESKE OU PA GEN YON KÒT</div>'
+    + '<div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.5;margin-bottom:10px;">Apre ou peye epi nou verifye, kreye kont ou gratis — Admin ap aktive Premium ou otomatikman.</div>'
+    + '<button id="landing-signup-btn" style="width:100%;padding:11px;border:none;border-radius:8px;background:#22c55e;color:#fff;font-weight:800;font-size:13px;cursor:pointer;">Kreye kont gratis →</button>';
+
+  inner.appendChild(btnX);
+  inner.appendChild(hdr);
+  inner.appendChild(sec1);
+  inner.appendChild(sec2);
+  inner.appendChild(sec3);
+  mov.appendChild(inner);
+  mov.addEventListener('click', function(e){ if(e.target===mov) mov.remove(); });
+  document.body.appendChild(mov);
+  var lsBtn = document.getElementById('landing-signup-btn');
+  if(lsBtn) lsBtn.onclick = function(){ mov.remove(); showScreen('signup'); };
 }
 </script>
 

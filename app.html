@@ -1390,8 +1390,8 @@ function selPlan(el,id,txt){
 // ════════════════════════════════════════
 // CONFIG PEMAN — Mete done reyèl ou ici
 // ════════════════════════════════════════
-var MONCASH_NUM  = '509-4886-8964'; // ← Remplace ak nimewo MonCash ou
-var WHATSAPP_NUM = '50948868964';    // ← Remplace ak nimewo WhatsApp ou
+var MONCASH_NUM  = '509-XXXX-XXXX'; // ← Remplace ak nimewo MonCash ou
+var WHATSAPP_NUM = '50936000000';    // ← Remplace ak nimewo WhatsApp ou
 var PRIX_MENSUEL = 2500;
 var PRIX_ANNUEL  = 22000;
 
@@ -1795,7 +1795,7 @@ function syncUserToSupabase(){
     S.userEmail = email;
 
     // ── ETAP 1: Tire done kliyan depi Supabase ──
-    fetch(SUPA_URL_APP+'/rest/v1/konektem_users?email=eq.'+encodeURIComponent(email)+'&select=plan,status,trial_days,premium_date,premium_plan,message_global', {
+    fetch(SUPA_URL_APP+'/rest/v1/konektem_users?email=eq.'+encodeURIComponent(email)+'&select=plan,status,trial_days,premium_date,premium_plan,message_global,price_mensuel,price_annuel', {
       headers: {
         'apikey': SUPA_KEY_APP,
         'Authorization': 'Bearer '+SUPA_KEY_APP
@@ -1814,6 +1814,33 @@ function syncUserToSupabase(){
       if(remote.status === 'banned'){
         showBannedWall();
         return;
+      }
+
+      // ── SYNC PRI PLAN depi admin ──
+      if(remote.price_mensuel && remote.price_mensuel !== PRIX_MENSUEL){
+        PRIX_MENSUEL = remote.price_mensuel;
+      }
+      if(remote.price_annuel && remote.price_annuel !== PRIX_ANNUEL){
+        PRIX_ANNUEL = remote.price_annuel;
+      }
+
+      // ── VERIFYE EXPIRAYSYON PREMIUM ──
+      if(remote.plan === 'premium' && remote.premium_date){
+        var premPlan = remote.premium_plan || 'mensuel';
+        var premDate = new Date(remote.premium_date);
+        var nbJou    = premPlan === 'annuel' ? 365 : 30;
+        var expDate  = new Date(premDate.getTime() + nbJou * 86400000);
+        if(expDate < new Date()){
+          // Premium ekspire — retounen trial
+          remote.plan = 'expired_premium';
+          // Notif + mur renouvèlman
+          if(S.settings.plan === 'premium'){
+            S.settings.plan = 'trial';
+            S.settings.trialStart = new Date().toISOString();
+            save();
+            showRenewalWall(premPlan);
+          }
+        }
       }
 
       // ── SYNC PLAN depi admin ──
@@ -1875,6 +1902,31 @@ function pushUserToSupabase(email){
     },
     body: body
   }).catch(function(){});
+}
+
+function showRenewalWall(plan){
+  if(document.getElementById('renewal-wall')) return;
+  var wall = document.createElement('div');
+  wall.id = 'renewal-wall';
+  wall.style.cssText = 'position:fixed;inset:0;z-index:2000;background:linear-gradient(135deg,#0D1F2D,#0a1f14);display:flex;align-items:center;justify-content:center;padding:20px;';
+  var inner = document.createElement('div');
+  inner.style.cssText = 'background:rgba(255,255,255,.05);border:1px solid rgba(245,158,11,.3);border-radius:20px;padding:32px;width:100%;max-width:380px;text-align:center;';
+  inner.innerHTML = '<div style="font-size:46px;margin-bottom:14px;">⏰</div>'
+    + '<div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:8px;">Plan '+(plan==='annuel'?'Annuel':'Mensuel')+' ekspire</div>'
+    + '<div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:6px;line-height:1.6;">Plan Premium ou ekspire. Renouvle pou kontinye san limit.</div>'
+    + '<div style="font-size:22px;font-weight:800;color:#fbbf24;margin-bottom:20px;">'+(plan==='annuel'?'22 000':'2 500')+' HTG/'+(plan==='annuel'?'an':'mois')+'</div>'
+    + '<button id="renewal-btn" style="width:100%;padding:13px;border:none;border-radius:10px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:800;font-size:14px;cursor:pointer;margin-bottom:8px;">🔄 Renouvle Premium</button>'
+    + '<button id="dismiss-renewal-btn" style="width:100%;padding:9px;border:none;border-radius:8px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;">Utiliser version gratuite</button>';
+  wall.appendChild(inner);
+  document.body.appendChild(wall);
+  document.getElementById('dismiss-renewal-btn').onclick = function(){ wall.remove(); };
+  // Bouton renouvèlman
+  document.getElementById('renewal-btn').onclick = function(){
+    wall.remove();
+    S.selPlanId = plan;
+    S.selPlanTxt = plan === 'annuel' ? '22 000 HTG/an' : '2 500 HTG/mois';
+    showManualPayModal(plan, plan==='annuel'?PRIX_ANNUEL:PRIX_MENSUEL, plan==='annuel'?'HTG/an':'HTG/mois');
+  };
 }
 
 function showBannedWall(){
