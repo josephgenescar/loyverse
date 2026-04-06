@@ -807,7 +807,7 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
               <button class="pbtn cash" onclick="showRenduBox()">💵 Espèces</button>
               <button class="pbtn card" onclick="checkout('Carte')">💳 Carte</button>
               <button class="pbtn moncash" onclick="checkout('MonCash')">📱 MonCash</button>
-              <button class="pbtn credit" onclick="checkout('Crédit')">📝 Crédit</button>
+              <button class="pbtn credit" onclick="checkoutCredit()">📝 Crédit</button>
             </div>
             <button class="clear-btn" onclick="clearOrd()">🗑️ Vider la commande</button>
           </div>
@@ -1093,7 +1093,7 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
         <option value="Propriétaire">Propriétaire</option>
       </select>
     </div>
-    <div class="fg"><label class="flbl">Téléphone (optionnel)</label><input class="finp" id="emp-tel" placeholder="509 48868964"></div>
+    <div class="fg"><label class="flbl">Téléphone (optionnel)</label><input class="finp" id="emp-tel" placeholder="509 XX XX XX XX"></div>
     <div class="fg"><label class="flbl">Note (optionnel)</label><input class="finp" id="emp-note" placeholder="Ex: travaille lundi-vendredi"></div>
     <div class="mfooter">
       <button class="btn-cancel" onclick="closeMov('empMov')">Annuler</button>
@@ -1110,8 +1110,8 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
     <div class="pm-title">Passez au niveau supérieur</div>
     <div class="pm-sub">Articles illimités · API boutique · Back Office complet</div>
     <div class="pm-plans">
-      <div class="pm-plan sel" onclick="selPlan(this,'mensuel','3 000 HTG/mois')"><div class="pm-pname">Mensuel</div><div class="pm-pprice">3 000 <span class="pm-pper">HTG/mois</span></div></div>
-      <div class="pm-plan" onclick="selPlan(this,'annuel','25 000 HTG/an')"><div class="pm-pname">Annuel</div><div class="pm-pprice">25 000 <span class="pm-pper">HTG/an</span></div><div class="pm-psave">💰 Économisez 8 000 HTG</div></div>
+      <div class="pm-plan sel" onclick="selPlan(this,'mensuel','2 500 HTG/mois')"><div class="pm-pname">Mensuel</div><div class="pm-pprice">2 500 <span class="pm-pper">HTG/mois</span></div></div>
+      <div class="pm-plan" onclick="selPlan(this,'annuel','22 000 HTG/an')"><div class="pm-pname">Annuel</div><div class="pm-pprice">22 000 <span class="pm-pper">HTG/an</span></div><div class="pm-psave">💰 Économisez 8 000 HTG</div></div>
     </div>
     <div class="pm-feats">
       <div class="pm-feat"><span class="pm-ck">✓</span> Articles et ventes illimités</div>
@@ -1205,7 +1205,7 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
       <button class="pbtn cash" onclick="checkoutCashMobile()">💵 Espèces</button>
       <button class="pbtn card" onclick="checkout('Carte');closeCartSheet()">💳 Carte</button>
       <button class="pbtn moncash" onclick="checkout('MonCash');closeCartSheet()">📱 MonCash</button>
-      <button class="pbtn credit" onclick="checkout('Crédit');closeCartSheet()">📝 Crédit</button>
+      <button class="pbtn credit" onclick="checkoutCredit();closeCartSheet()">📝 Crédit</button>
     </div>
     <button class="clear-btn" style="width:100%;margin-top:6px" onclick="clearOrd();closeCartSheet()">🗑️ Vider le panier</button>
   </div>
@@ -1335,7 +1335,7 @@ function showExpiredWall(){
   wall.style.cssText = 'position:fixed;inset:0;z-index:2000;background:linear-gradient(135deg,#0D1F2D,#0a2e1a);display:flex;align-items:center;justify-content:center;padding:20px;';
   wall.addEventListener('click', function(e){ e.stopPropagation(); });
 
-  var prix = PRIX_MENSUEL || 3000;
+  var prix = PRIX_MENSUEL || 2500;
   var inner = document.createElement('div');
   inner.style.cssText = 'background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:32px;width:100%;max-width:380px;text-align:center;';
 
@@ -1428,10 +1428,10 @@ function selPlan(el,id,txt){
 // ════════════════════════════════════════
 // CONFIG PEMAN — Mete done reyèl ou ici
 // ════════════════════════════════════════
-var MONCASH_NUM  = '509-4886-8964'; // ← Remplace ak nimewo MonCash ou
+var MONCASH_NUM  = '509 4886-8964'; // ← Remplace ak nimewo MonCash ou
 var WHATSAPP_NUM = '50948868964';    // ← Remplace ak nimewo WhatsApp ou
-var PRIX_MENSUEL = 3000;
-var PRIX_ANNUEL  = 25000;
+var PRIX_MENSUEL = 2500;
+var PRIX_ANNUEL  = 22000;
 
 function doPremium(){
   var plan = S.selPlanId || 'mensuel';
@@ -1492,7 +1492,7 @@ function resetPmBtn(plan, prix){
   if(!pmBtn) return;
   pmBtn.disabled = false;
   pmBtn.style.opacity = '1';
-  var txt = (plan==='annuel') ? '25 000 HTG/an' : '3 000 HTG/mois';
+  var txt = (plan==='annuel') ? '22 000 HTG/an' : '2 500 HTG/mois';
   pmBtn.textContent = 'Activer Premium — ' + txt + ' →';
 }
 
@@ -1984,22 +1984,43 @@ function showRenewalWall(plan){
   wall.style.cssText = 'position:fixed;inset:0;z-index:2000;background:linear-gradient(135deg,#0D1F2D,#0a1f14);display:flex;align-items:center;justify-content:center;padding:20px;';
   var inner = document.createElement('div');
   inner.style.cssText = 'background:rgba(255,255,255,.05);border:1px solid rgba(245,158,11,.3);border-radius:20px;padding:32px;width:100%;max-width:380px;text-align:center;';
-  inner.innerHTML = '<div style="font-size:46px;margin-bottom:14px;">⏰</div>'
+  // Bloke klike deyò
+  wall.addEventListener('click', function(e){ e.stopPropagation(); });
+  document.body.style.overflow = 'hidden';
+
+  var h = document.createElement('div');
+  h.innerHTML = '<div style="font-size:46px;margin-bottom:14px;">⏰</div>'
     + '<div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:8px;">Plan '+(plan==='annuel'?'Annuel':'Mensuel')+' ekspire</div>'
-    + '<div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:6px;line-height:1.6;">Plan Premium ou ekspire. Renouvle pou kontinye san limit.</div>'
-    + '<div style="font-size:22px;font-weight:800;color:#fbbf24;margin-bottom:20px;">'+(plan==='annuel'?'22 000':'2 500')+' HTG/'+(plan==='annuel'?'an':'mois')+'</div>'
-    + '<button id="renewal-btn" style="width:100%;padding:13px;border:none;border-radius:10px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:800;font-size:14px;cursor:pointer;margin-bottom:8px;">🔄 Renouvle Premium</button>'
-    + '<button id="dismiss-renewal-btn" style="width:100%;padding:9px;border:none;border-radius:8px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;">Utiliser version gratuite</button>';
-  wall.appendChild(inner);
-  document.body.appendChild(wall);
-  document.getElementById('dismiss-renewal-btn').onclick = function(){ wall.remove(); };
-  // Bouton renouvèlman
-  document.getElementById('renewal-btn').onclick = function(){
-    wall.remove();
+    + '<div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:16px;line-height:1.6;">Plan Premium ou ekspire. Renouvle pou kontinye san limit.</div>';
+
+  var btn = document.createElement('button');
+  btn.style.cssText = 'width:100%;padding:14px;border:none;border-radius:10px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:800;font-size:15px;cursor:pointer;';
+  btn.textContent = '🔄 Renouvle Premium — Payer via MonCash';
+  btn.onclick = function(e){
+    e.stopPropagation();
+    wall.style.display = 'none';
+    document.body.style.overflow = '';
     S.selPlanId = plan;
-    S.selPlanTxt = plan === 'annuel' ? '22 000 HTG/an' : '2 500 HTG/mois';
     showManualPayModal(plan, plan==='annuel'?PRIX_ANNUEL:PRIX_MENSUEL, plan==='annuel'?'HTG/an':'HTG/mois');
   };
+
+  var note = document.createElement('div');
+  note.style.cssText = 'font-size:11px;color:rgba(255,255,255,.25);margin-top:10px;';
+  note.textContent = '📱 MonCash · Envoyez le paiement et recevez votre code';
+
+  inner.appendChild(h);
+  inner.appendChild(btn);
+  inner.appendChild(note);
+  wall.appendChild(inner);
+  document.body.appendChild(wall);
+
+  // Push notifikasyon si pèmisyon disponib
+  if('Notification' in window && Notification.permission === 'granted'){
+    new Notification('Konektem — Abonnement expiré', {
+      body: 'Votre plan ' + (plan==='annuel'?'Annuel':'Mensuel') + ' est expiré. Renouvelez pour continuer.',
+      icon: '/manifest.json'
+    });
+  }
 }
 
 function showBannedWall(){
@@ -2265,6 +2286,87 @@ function setExactCs(){
 }
 
 // Checkout espèces — vérifie montant reçu
+function checkoutCredit(){
+  if(!S.cart.length){ notif('Le panier est vide !','err'); return; }
+  if(!checkSaleLimit()) return;
+
+  // Modal pou mande non kliyan
+  var old = document.getElementById('credit-client-mov');
+  if(old) old.remove();
+
+  var mov = document.createElement('div');
+  mov.id  = 'credit-client-mov';
+  mov.className = 'mov show';
+
+  var inner = document.createElement('div');
+  inner.className = 'modal';
+  inner.style.maxWidth = '420px';
+
+  var sub = S.cart.reduce(function(a,x){return a+x.price*x.qty;},0);
+  var dp  = parseFloat(document.getElementById('discInp').value)||0;
+  var disc= sub*(dp/100);
+  var tax = (sub-disc)*(parseFloat(S.settings.tax)||0)/100;
+  var tot = sub-disc+tax;
+
+  inner.innerHTML = '<h3>📝 Vente à Crédit</h3>'
+    + '<div style="background:var(--accent-l);border:1px solid var(--accent-m);border-radius:8px;padding:10px 12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">'
+    + '<span style="font-size:13px;color:var(--text2);">Montant dû</span>'
+    + '<span style="font-size:18px;font-weight:800;color:var(--accent-d);">'+fmt(tot)+'</span></div>'
+    + '<div class="fg"><label class="flbl">Nom du client *</label>'
+    + '<input class="finp" id="credit-client-nom" placeholder="Ex: Jean Pierre" list="clients-list" autocomplete="off">'
+    + '<datalist id="clients-list">'
+    + S.clients.map(function(cl){ return '<option value="'+cl.name+'">'+(cl.tel?cl.name+' — '+cl.tel:cl.name)+'</option>'; }).join('')
+    + '</datalist></div>'
+    + '<div class="fg"><label class="flbl">Téléphone</label>'
+    + '<input class="finp" id="credit-client-tel" placeholder="509..."></div>'
+    + '<div class="fg"><label class="flbl">Note (optionnel)</label>'
+    + '<input class="finp" id="credit-client-note" placeholder="Ex: doit payer vendredi..."></div>'
+    + '<div class="mfooter" id="credit-footer"></div>';
+
+  mov.appendChild(inner);
+  document.body.appendChild(mov);
+
+  // Pré-remplir si client existe dans la liste
+  document.getElementById('credit-client-nom').addEventListener('input', function(){
+    var nom = this.value.trim();
+    var cl  = S.clients.find(function(c){ return c.name.toLowerCase()===nom.toLowerCase(); });
+    if(cl && cl.tel) document.getElementById('credit-client-tel').value = cl.tel;
+  });
+
+  var btnA = document.createElement('button');
+  btnA.className='btn-cancel'; btnA.textContent='Annuler';
+  btnA.onclick=function(){mov.remove();};
+
+  var btnC = document.createElement('button');
+  btnC.className='btn-g'; btnC.textContent='✅ Confirmer crédit';
+  btnC.onclick=function(){
+    var nom = document.getElementById('credit-client-nom').value.trim();
+    var tel = document.getElementById('credit-client-tel').value.trim();
+    var note= document.getElementById('credit-client-note').value.trim();
+    if(!nom){ notif('Entrez le nom du client','err'); return; }
+
+    // Sove kliyan si nouvo
+    var clExist = S.clients.find(function(cl){ return cl.name.toLowerCase()===nom.toLowerCase(); });
+    var clientId = clExist ? clExist.id : null;
+    if(!clExist && nom){
+      var newCl = {id:uid(), name:nom, tel:tel, addr:'', note:note, createdAt:new Date().toISOString()};
+      if(!S.clients) S.clients=[];
+      S.clients.push(newCl);
+      clientId = newCl.id;
+    }
+
+    mov.remove();
+    // Pase nan checkout ak info kliyan
+    checkout('Crédit', null, 0, {nom:nom, tel:tel, note:note, clientId:clientId});
+  };
+
+  document.getElementById('credit-footer').appendChild(btnA);
+  document.getElementById('credit-footer').appendChild(btnC);
+  mov.addEventListener('click',function(e){if(e.target===mov)mov.remove();});
+
+  setTimeout(function(){ document.getElementById('credit-client-nom').focus(); },200);
+}
+
 function checkoutCash(){
   if(!S.cart.length){ notif('Le panier est vide !','err'); return; }
   var tot=getTotalActuel();
@@ -2312,7 +2414,7 @@ function clearOrd(){
 }
 
 // ── CHECKOUT ──
-function checkout(method, montantRecu, rendu){
+function checkout(method, montantRecu, rendu, clientInfo){
   if(!S.cart.length){notif('Le panier est vide !','err');return;}
   if(!checkSaleLimit()) return;
   var sub=S.cart.reduce(function(a,x){return a+x.price*x.qty;},0);
@@ -2324,7 +2426,11 @@ function checkout(method, montantRecu, rendu){
     items:S.cart.slice(), subtotal:sub, discount:disc, tax:tax, total:total,
     method:method, cashier:S.settings.cashier||'Caissier',
     montantRecu: montantRecu||null,
-    rendu: rendu||0
+    rendu: rendu||0,
+    clientNom:  clientInfo ? clientInfo.nom  : null,
+    clientTel:  clientInfo ? clientInfo.tel  : null,
+    clientNote: clientInfo ? clientInfo.note : null,
+    clientId:   clientInfo ? clientInfo.clientId : null
   };
   S.sales.unshift(sale); save();
   if(S.settings.showReceipt) showRecu(sale);
@@ -2347,6 +2453,7 @@ function showRecu(sale){
   var ds=d.toLocaleDateString('fr-FR')+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
   var h='<div class="receipt"><div class="r-logo">'+(S.settings.bizname||'Konektem')+'</div>'
     +'<div class="r-sub">'+ds+' · Vente #'+sale.num+'</div><div class="r-sub">Caissier: '+sale.cashier+'</div>'
+    +(sale.clientNom?'<div class="r-sub" style="font-weight:700">Client: '+sale.clientNom+(sale.clientTel?' · '+sale.clientTel:'')+'</div>':'')
     +'<div class="r-div"></div>';
   sale.items.forEach(function(i){h+='<div class="r-row"><span>'+i.name+' ×'+i.qty+'</span><span>'+fmt(i.price*i.qty)+'</span></div>';});
   h+='<div class="r-div"></div><div class="r-row"><span>Sous-total</span><span>'+fmt(sale.subtotal)+'</span></div>'
@@ -2354,6 +2461,7 @@ function showRecu(sale){
     +(sale.tax?'<div class="r-row"><span>Taxe</span><span>'+fmt(sale.tax)+'</span></div>':'')
     +'<div class="r-div"></div><div class="r-row r-tot"><span>TOTAL</span><span>'+fmt(sale.total)+'</span></div>'
     +'<div class="r-row"><span>Paiement</span><span>'+sale.method+'</span></div>'
+    +(sale.clientNom&&sale.method==='Crédit'?'<div class="r-row" style="border-top:1px dashed #ddd;margin-top:4px;padding-top:4px;"><span style="font-weight:700">Doit payer</span><span style="font-weight:700;color:#ef4444;">'+fmt(sale.total)+'</span></div>'+( sale.clientNote?'<div class="r-row"><span>Note</span><span>'+sale.clientNote+'</span></div>':''):'')
     +(sale.montantRecu?'<div class="r-row"><span>Reçu</span><span>'+fmt(sale.montantRecu)+'</span></div>':'')
     +(sale.rendu>0?'<div class="r-row r-tot" style="color:#16a34a"><span>Rendu</span><span>'+fmt(sale.rendu)+'</span></div>':'')
     +'<div class="r-div"></div><div class="r-foot">'+(S.settings.receiptmsg||'Merci pour votre confiance !')+'</div></div>';
