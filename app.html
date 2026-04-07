@@ -1134,17 +1134,36 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
 
 <!-- SCAN BARCODE -->
 <div class="scan-overlay hidden" id="scanOverlay">
-  <div style="color:#fff;font-size:18px;font-weight:800;font-family:'Syne',sans-serif;">📷 Scanner Code-barres</div>
-  <div class="scan-frame">
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;width:300px;margin-bottom:12px;">
+    <div style="color:#fff;font-size:17px;font-weight:800;font-family:'Syne',sans-serif;">📷 Scanner Barcode</div>
+    <button onclick="closeScanner()" style="background:rgba(255,255,255,.12);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;">✕</button>
+  </div>
+
+  <!-- Vidéo caméra -->
+  <div class="scan-frame" id="scan-frame-box">
     <video id="scanVideo" autoplay playsinline muted></video>
     <div class="scan-line"></div>
   </div>
-  <div class="scan-result" id="scanResult">Pointez la caméra vers un code-barres...</div>
-  <div class="scan-manual">
-    <input id="scanManualInp" placeholder="Ou entrez le code manuellement..." onkeydown="if(event.key==='Enter')scanManualLookup()">
-    <button onclick="scanManualLookup()">OK</button>
+
+  <!-- Statut caméra -->
+  <div id="scanStatus" style="font-size:12px;color:rgba(255,255,255,.4);margin-top:8px;text-align:center;"></div>
+
+  <!-- Input manuel -->
+  <div style="width:300px;margin-top:14px;">
+    <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:1px;text-align:center;margin-bottom:8px;">OU ENTREZ LE CODE MANUELLEMENT</div>
+    <div style="display:flex;gap:8px;">
+      <input id="scanManualInp" placeholder="Ex: 8718452023523 ou nom article"
+        type="text"
+        style="flex:1;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:8px;padding:11px 13px;color:#fff;font-size:15px;font-family:monospace;outline:none;"
+        onkeydown="if(event.key==='Enter')scanManualLookup()"
+        oninput="scanLiveSearch(this.value)">
+      <button onclick="scanManualLookup()" style="padding:11px 16px;background:#22c55e;border:none;border-radius:8px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;">OK</button>
+    </div>
   </div>
-  <button class="scan-close" onclick="closeScanner()">✕ Fermer</button>
+
+  <!-- ZONE REZILTA — toujou vizib -->
+  <div id="scanResult" style="width:300px;margin-top:12px;min-height:48px;"></div>
 </div>
 
 
@@ -1885,9 +1904,13 @@ function syncUserToSupabase(){
       }
       var remote = data[0];
 
-      // ── VERIFYE BAN ──
+      // ── VERIFYE BAN oswa LOCK ──
       if(remote.status === 'banned'){
         showBannedWall();
+        return;
+      }
+      if(remote.status === 'locked'){
+        showLockedWall();
         return;
       }
 
@@ -1960,13 +1983,15 @@ function syncUserToSupabase(){
 
 function pushUserToSupabase(email){
   var body = JSON.stringify({
-    email:      email,
-    bizname:    S.settings.bizname||'',
-    secteur:    S.settings.sector||'',
-    plan:       S.settings.plan||'trial',
-    status:     'active',
-    last_seen:  new Date().toISOString(),
-    trial_start: S.settings.trialStart||null
+    email:       email,
+    bizname:     S.settings.bizname||'',
+    secteur:     S.settings.sector||'',
+    plan:        S.settings.plan||'trial',
+    status:      'active',
+    last_seen:   new Date().toISOString(),
+    trial_start: S.settings.trialStart||null,
+    premium_date: S.settings.premiumDate||null,
+    premium_plan: S.settings.premiumPlan||null
   });
   // Upsert — kreye si pa egziste, mete a jou si egziste
   fetch(SUPA_URL_APP+'/rest/v1/konektem_users', {
@@ -2025,6 +2050,69 @@ function showRenewalWall(plan){
       icon: '/manifest.json'
     });
   }
+}
+
+function showLockedWall(){
+  if(document.getElementById('locked-wall')) return;
+  var wall = document.createElement('div');
+  wall.id   = 'locked-wall';
+  wall.style.cssText = 'position:fixed;inset:0;z-index:3000;background:#0D1F2D;display:flex;align-items:center;justify-content:center;padding:20px;';
+  wall.addEventListener('click', function(e){ e.stopPropagation(); });
+  document.body.style.overflow = 'hidden';
+
+  var inner = document.createElement('div');
+  inner.style.cssText = 'text-align:center;max-width:360px;';
+
+  var ico = document.createElement('div');
+  ico.style.cssText = 'font-size:56px;margin-bottom:16px;';
+  ico.textContent = '🔒';
+
+  var title = document.createElement('div');
+  title.style.cssText = 'font-size:22px;font-weight:800;color:#fff;margin-bottom:10px;';
+  title.textContent = 'Acces bloke';
+
+  var sub = document.createElement('div');
+  sub.style.cssText = 'font-size:13px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:24px;';
+  sub.textContent = 'Ou bezwen renouvle abonnman ou pou gen acces ak Konektem. Peye via MonCash epi kontakte nou.';
+
+  var btn = document.createElement('a');
+  btn.href   = 'https://wa.me/'+WHATSAPP_NUM+'?text=Mwen vle renouvle plan Konektem mwen';
+  btn.target = '_blank';
+  btn.style.cssText = 'display:inline-flex;align-items:center;gap:8px;padding:13px 28px;background:#25D366;border-radius:10px;color:#fff;font-weight:800;font-size:14px;text-decoration:none;';
+  btn.textContent = '💬 Kontakte nou sou WhatsApp';
+
+  inner.appendChild(ico); inner.appendChild(title);
+  inner.appendChild(sub); inner.appendChild(btn);
+  wall.appendChild(inner);
+  document.body.appendChild(wall);
+}
+
+function showLockedWall(){
+  if(document.getElementById('locked-wall')) return;
+  var wall = document.createElement('div');
+  wall.id  = 'locked-wall';
+  wall.style.cssText = 'position:fixed;inset:0;z-index:3000;background:#0D1F2D;display:flex;align-items:center;justify-content:center;padding:20px;';
+  wall.addEventListener('click',function(e){e.stopPropagation();});
+  document.body.style.overflow = 'hidden';
+  var inner = document.createElement('div');
+  inner.style.cssText = 'text-align:center;max-width:360px;';
+  inner.innerHTML = '<div style="font-size:52px;margin-bottom:16px;">🔒</div>'
+    + '<div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:10px;">Accès Suspendu</div>'
+    + '<div style="font-size:13px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:24px;">Acces suspendu pa administrateur. Renouvle abonnman ou pou jwenn acces konplè.</div>'
+    + '<div id="locked-pay-wrap"></div>'
+    + '<div style="font-size:11px;color:rgba(255,255,255,.2);margin-top:12px;">📱 Paiement via MonCash · '+MONCASH_NUM+'</div>';
+  var btn = document.createElement('button');
+  btn.style.cssText = 'width:100%;padding:14px;border:none;border-radius:10px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:800;font-size:15px;cursor:pointer;';
+  btn.textContent = '💳 Renouveler mon abonnement';
+  btn.onclick = function(e){
+    e.stopPropagation();
+    wall.style.display='none';
+    document.body.style.overflow='';
+    showManualPayModal('mensuel', PRIX_MENSUEL, 'HTG/mois');
+  };
+  inner.querySelector('#locked-pay-wrap').appendChild(btn);
+  wall.appendChild(inner);
+  document.body.appendChild(wall);
 }
 
 function showBannedWall(){
@@ -3436,43 +3524,45 @@ var scanStream = null;
 var scanInterval = null;
 
 function openScanner(){
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    notif('Caméra non disponible sur ce navigateur','err');
-    return;
-  }
   var overlay = document.getElementById('scanOverlay');
   overlay.classList.remove('hidden');
-  document.getElementById('scanResult').textContent='Pointez la caméra vers un code-barres...';
-  document.getElementById('scanManualInp').value='';
+  document.getElementById('scanResult').innerHTML = '';
+  document.getElementById('scanManualInp').value = '';
+  var statusEl = document.getElementById('scanStatus');
 
-  navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } })
-  .then(function(stream){
-    scanStream = stream;
-    var video = document.getElementById('scanVideo');
-    video.srcObject = stream;
-    video.play();
-    // Barcode Detection API (Chrome Android)
-    if('BarcodeDetector' in window){
-      var detector = new BarcodeDetector({ formats:['ean_13','ean_8','code_128','code_39','qr_code','upc_a','upc_e'] });
-      scanInterval = setInterval(function(){
-        if(video.readyState===video.HAVE_ENOUGH_DATA){
-          detector.detect(video).then(function(barcodes){
-            if(barcodes.length>0){
-              var code = barcodes[0].rawValue;
-              handleScanResult(code);
-            }
-          }).catch(function(){});
-        }
-      }, 500);
-    } else {
-      // Fallback: manuel uniquement
-      document.getElementById('scanResult').textContent='Votre navigateur ne supporte pas la détection automatique. Entrez le code manuellement.';
-    }
-  })
-  .catch(function(err){
-    notif('Accès caméra refusé: '+err.message,'err');
-    closeScanner();
-  });
+  setTimeout(function(){ document.getElementById('scanManualInp').focus(); }, 200);
+
+  // Kaméra — eseye men pa obligatwa
+  if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+    statusEl.textContent = '📷 Demaraje kaméra...';
+    navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } })
+    .then(function(stream){
+      scanStream = stream;
+      var video = document.getElementById('scanVideo');
+      video.srcObject = stream;
+      video.play();
+      if('BarcodeDetector' in window){
+        statusEl.textContent = '📷 Kaméra aktif — Montre barcode la devan kamera';
+        var detector = new BarcodeDetector({ formats:['ean_13','ean_8','code_128','code_39','qr_code','upc_a','upc_e'] });
+        scanInterval = setInterval(function(){
+          if(video.readyState===video.HAVE_ENOUGH_DATA){
+            detector.detect(video).then(function(barcodes){
+              if(barcodes.length>0){ handleScanResult(barcodes[0].rawValue); }
+            }).catch(function(){});
+          }
+        }, 500);
+      } else {
+        statusEl.textContent = '⚠️ Scan auto pa disponib — tape kòd anba a';
+      }
+    })
+    .catch(function(){
+      statusEl.textContent = '⚠️ Kaméra bloke — tape kòd anba a (Chrome Android rekòmande)';
+      document.getElementById('scan-frame-box').style.display = 'none';
+    });
+  } else {
+    statusEl.textContent = '⚠️ Kaméra pa disponib — tape kòd la anba a';
+    document.getElementById('scan-frame-box').style.display = 'none';
+  }
 }
 
 function closeScanner(){
@@ -3484,27 +3574,103 @@ function closeScanner(){
 
 function handleScanResult(code){
   clearInterval(scanInterval); scanInterval=null;
-  document.getElementById('scanResult').textContent='Code détecté: '+code;
-  // Chercher produit par barcode
-  var prod = S.products.find(function(p){ return p.barcode===code; });
-  if(prod){
-    closeScanner();
-    if(prod.stock===0){ notif('Article épuisé : '+prod.name,'err'); return; }
-    addCart(prod.id);
-    notif('✅ '+prod.name+' ajouté !','ok');
-  } else {
-    document.getElementById('scanResult').textContent='Code: '+code+' — Article non trouvé. Entrez-le dans Articles.';
-    // Pre-fill la recherche
-    document.getElementById('posQ').value=code;
-    filterProds();
+  var resEl = document.getElementById('scanResult');
+  resEl.style.color = '#86efac';
+  resEl.textContent = 'Code détecté: ' + code;
+  // Chercher produit par barcode OU nom
+  scanSearch(code);
+  if(false){ // garde structure
     setTimeout(closeScanner, 2000);
   }
 }
 
 function scanManualLookup(){
   var code = document.getElementById('scanManualInp').value.trim();
-  if(!code){ notif('Entrez un code-barres','err'); return; }
-  handleScanResult(code);
+  if(!code){ showScanResult('err','Entrez un code ou nom article'); return; }
+  showScanResult('info','Recherche: <strong>'+code+'</strong>...');
+  scanSearch(code);
+}
+
+function showScanResult(type, html){
+  var el = document.getElementById('scanResult');
+  if(!el) return;
+  el.innerHTML = '';
+  var box = document.createElement('div');
+  box.style.cssText = 'border-radius:10px;padding:12px 14px;font-size:13px;'
+    + (type==='ok'  ? 'background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#86efac;' :
+       type==='err' ? 'background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5;' :
+                      'background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);');
+  box.innerHTML = html;
+  el.appendChild(box);
+}
+
+function scanLiveSearch(val){
+  // Cherche en temps reel pandan kliyan ap tape
+  if(!val || val.length < 2){ document.getElementById('scanResult').innerHTML=''; return; }
+  var q = val.toLowerCase();
+  var found = S.products.filter(function(p){
+    return p.name.toLowerCase().indexOf(q)>-1 || (p.barcode&&p.barcode.indexOf(val)>-1);
+  }).slice(0,4);
+  if(!found.length){ showScanResult('info','Aucun article pour: <strong>'+val+'</strong>'); return; }
+  showScanResults(found);
+}
+
+function showScanResults(results){
+  var el = document.getElementById('scanResult');
+  if(!el) return;
+  el.innerHTML = '';
+  results.forEach(function(p){
+    var isOut = p.stock===0;
+    var stockTxt = p.stock===999?'Illimite':p.stock+' en stock';
+    var card = document.createElement('div');
+    card.style.cssText = 'display:flex;align-items:center;justify-content:space-between;'
+      + 'background:'+(isOut?'rgba(239,68,68,.1)':'rgba(34,197,94,.08)')+';'
+      + 'border:1px solid '+(isOut?'rgba(239,68,68,.2)':'rgba(34,197,94,.2)')+';'
+      + 'border-radius:8px;padding:10px 12px;margin-bottom:7px;'
+      + (isOut?'opacity:.6':'cursor:pointer');
+    card.innerHTML = '<div>'
+      + '<div style="font-size:13px;font-weight:700;color:#fff;">'+p.name+'</div>'
+      + '<div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;">'+fmt(p.price)+' · '+stockTxt+'</div>'
+      + '</div>'
+      + (!isOut?'<div style="background:#22c55e;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:800;color:#000;flex-shrink:0;">+ Panier</div>':'');
+    if(!isOut){
+      card.onclick = function(){
+        addCart(p.id);
+        closeScanner();
+        notif('✅ '+p.name+' ajouté au panier','ok');
+      };
+    }
+    el.appendChild(card);
+  });
+}
+
+function scanSearch(code){
+  var q = code.toLowerCase();
+  var results = S.products.filter(function(p){
+    return p.barcode === code
+      || p.name.toLowerCase().indexOf(q) > -1
+      || (p.barcode && p.barcode.toLowerCase().indexOf(q) > -1);
+  });
+
+  if(!results.length){
+    showScanResult('err','❌ Aucun article trouvé pour: <strong>'+code+'</strong><br>'
+      +'<span style="font-size:11px;opacity:.7;">Vérifiez que le barcode est enregistré dans Articles</span>');
+    return;
+  }
+
+  if(results.length === 1){
+    var p = results[0];
+    if(p.stock === 0){
+      showScanResult('err','❌ <strong>'+p.name+'</strong> — Stock épuisé');
+      return;
+    }
+    showScanResult('ok','✅ <strong>'+p.name+'</strong> ajouté au panier — '+fmt(p.price));
+    addCart(p.id);
+    setTimeout(closeScanner, 1200);
+    return;
+  }
+
+  showScanResults(results);
 }
 
 
