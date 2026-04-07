@@ -1084,21 +1084,27 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
 
 <!-- MODAL EMPLOYÉ -->
 <div class="mov" id="empMov">
-  <div class="modal">
+  <div class="modal" style="max-width:480px;">
     <h3 id="empMTitle">Nouveau membre</h3>
-    <div class="fg"><label class="flbl">Nom complet *</label><input class="finp" id="emp-name" placeholder="Ex: Marie Joseph"></div>
-    <div class="fg"><label class="flbl">Rôle / Poste</label>
-      <select class="fsel" id="emp-role">
-        <option value="Caissier">Caissier</option>
-        <option value="Gérant">Gérant</option>
-        <option value="Vendeur">Vendeur</option>
-        <option value="Pharmacien">Pharmacien</option>
-        <option value="Serveur">Serveur</option>
-        <option value="Propriétaire">Propriétaire</option>
-      </select>
+    <div class="f2">
+      <div class="fg"><label class="flbl">Nom complet *</label><input class="finp" id="emp-name" placeholder="Ex: Marie Joseph"></div>
+      <div class="fg"><label class="flbl">PIN (4 chiffres) *</label><input class="finp" id="emp-pin" type="password" maxlength="4" placeholder="Ex: 1234" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
     </div>
-    <div class="fg"><label class="flbl">Téléphone (optionnel)</label><input class="finp" id="emp-tel" placeholder="509 XX XX XX XX"></div>
-    <div class="fg"><label class="flbl">Note (optionnel)</label><input class="finp" id="emp-note" placeholder="Ex: travaille lundi-vendredi"></div>
+    <div class="f2">
+      <div class="fg"><label class="flbl">Niveau d'accès</label>
+        <select class="fsel" id="emp-role" onchange="onEmpRoleChange()">
+          <option value="caissier">🧾 Caissier — accès limité</option>
+          <option value="gerant">👔 Gérant — accès étendu</option>
+          <option value="proprio">👑 Propriétaire — accès total</option>
+        </select>
+      </div>
+      <div class="fg"><label class="flbl">Téléphone</label><input class="finp" id="emp-tel" placeholder="509..."></div>
+    </div>
+    <!-- Permissions détaillées -->
+    <div id="emp-perms-box" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.6px;margin-bottom:8px;">PERMISSIONS</div>
+      <div id="emp-perms-list" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;"></div>
+    </div>
     <div class="mfooter">
       <button class="btn-cancel" onclick="closeMov('empMov')">Annuler</button>
       <button class="btn-g" onclick="saveEmp()">💾 Enregistrer</button>
@@ -3185,20 +3191,209 @@ function showLoginScreen(){
   }
   list.innerHTML = emps.map(function(e){
     var init = e.name.charAt(0).toUpperCase();
+    var roleLabel = e.role==='proprio'?'👑 Propriétaire':e.role==='gerant'?'👔 Gérant':'🧾 Caissier';
     return '<button class="cashier-btn" onclick="loginAs(this.getAttribute(\'data-n\'))" data-n="'+e.name+'">'
       +'<div class="cav">'+init+'</div>'
-      +'<div class="cn"><span>'+e.name+'</span><span class="cr">'+e.role+'</span></div>'
+      +'<div class="cn"><span>'+e.name+'</span><span class="cr">'+roleLabel+'</span></div>'
       +'<span class="arrow">›</span>'
       +'</button>';
   }).join('');
   ls.classList.remove('hidden');
 }
 
+// ── PERMISSIONS PAR ROLE ──
+var ROLE_PERMS = {
+  caissier: {
+    vente:true, panier:true, moncash:true,
+    articles:false, backoffice:false, employes:false,
+    fournisseurs:false, settings:false, import:false,
+    remboursement:true, clients:false, export:false
+  },
+  gerant: {
+    vente:true, panier:true, moncash:true,
+    articles:true, backoffice:true, employes:false,
+    fournisseurs:true, settings:false, import:true,
+    remboursement:true, clients:true, export:true
+  },
+  proprio: {
+    vente:true, panier:true, moncash:true,
+    articles:true, backoffice:true, employes:true,
+    fournisseurs:true, settings:true, import:true,
+    remboursement:true, clients:true, export:true
+  }
+};
+
+// Pèmisyon kounye a (defo: tout)
+var CURRENT_PERMS = Object.assign({}, ROLE_PERMS.proprio);
+var CURRENT_ROLE  = 'proprio';
+var SESSION_OPEN_TIME = null; // lè kasye ouvri sesyon an
+
+function can(perm){ return CURRENT_PERMS[perm] === true; }
+
+function applyRoleRestrictions(role){
+  CURRENT_ROLE  = role;
+  CURRENT_PERMS = Object.assign({}, ROLE_PERMS[role] || ROLE_PERMS.proprio);
+
+  // Kache/montre items sidebar selon pèmisyon
+  var sbMap = {
+    'articles':    can('articles'),
+    'backoffice':  can('backoffice'),
+    'employes':    can('employes'),
+    'fournisseurs':can('fournisseurs'),
+    'settings':    can('settings'),
+    'clients':     can('clients'),
+    'monplan':     true,
+    'tickets':     true,
+    'recu':        true,
+    'vente':       true
+  };
+
+  document.querySelectorAll('.sb-item[onclick*="nav("]').forEach(function(el){
+    var onclick = el.getAttribute('onclick') || '';
+    var match   = onclick.match(/nav\('([^']+)'/);
+    if(!match) return;
+    var viewName = match[1];
+    if(sbMap.hasOwnProperty(viewName)){
+      el.style.display = sbMap[viewName] ? '' : 'none';
+    }
+  });
+
+  // Kache bouton Back Office si pa gen pèmisyon
+  var boBtn = document.getElementById('bo-btn');
+  if(boBtn) boBtn.style.display = can('backoffice') ? '' : 'none';
+}
+
 function loginAs(name){
-  S.settings.cashier = name;
+  // Chèche enpwaye a pou jwenn PIN ak role li
+  var emp = (S.employees||[]).find(function(e){ return e.name===name; });
+  if(!emp){ notif('Enpwaye pa jwenn','err'); return; }
+
+  // Mande PIN
+  showPinModal(emp, function(){
+    // Siksè PIN
+    S.settings.cashier = emp.name;
+    save(); updateTopbar();
+    applyRoleRestrictions(emp.role || 'caissier');
+    SESSION_OPEN_TIME = new Date();
+
+    // Ouvèti sesyon
+    var now = SESSION_OPEN_TIME.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    logSessionEvent('open', emp.name, emp.role, now);
+
+    document.getElementById('login-screen').classList.add('hidden');
+    notif('👋 Bonjou '+emp.name+' ('+getRoleLabel(emp.role)+') — Sesyon ouvri '+now,'ok');
+  });
+}
+
+function getRoleLabel(role){
+  return role==='proprio'?'Propriétaire':role==='gerant'?'Gérant':'Caissier';
+}
+
+function showPinModal(emp, onSuccess){
+  var old = document.getElementById('pin-modal');
+  if(old) old.remove();
+
+  var mov = document.createElement('div');
+  mov.id  = 'pin-modal';
+  mov.style.cssText = 'position:fixed;inset:0;z-index:2500;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:20px;';
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px;width:100%;max-width:320px;text-align:center;';
+
+  var init = emp.name.charAt(0).toUpperCase();
+  box.innerHTML = '<div style="width:52px;height:52px;border-radius:50%;background:var(--accent-glow);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:var(--accent);margin:0 auto 10px;">'+init+'</div>'
+    + '<div style="font-size:17px;font-weight:800;margin-bottom:4px;">'+emp.name+'</div>'
+    + '<div style="font-size:12px;color:var(--text3);margin-bottom:20px;">'+getRoleLabel(emp.role)+'</div>'
+    + '<div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Entrez votre PIN :</div>'
+    + '<div id="pin-dots" style="display:flex;justify-content:center;gap:10px;margin-bottom:16px;">'
+    + '<div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);background:transparent;" id="pd0"></div>'
+    + '<div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);background:transparent;" id="pd1"></div>'
+    + '<div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);background:transparent;" id="pd2"></div>'
+    + '<div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);background:transparent;" id="pd3"></div>'
+    + '</div>'
+    + '<div id="pin-pad" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:220px;margin:0 auto 14px;"></div>'
+    + '<div id="pin-err" style="font-size:12px;color:var(--red);min-height:18px;"></div>'
+    + '<button id="pin-cancel-btn" style="margin-top:10px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;">Annuler</button>';
+
+  mov.appendChild(box);
+  document.body.appendChild(mov);
+  var pcb = document.getElementById('pin-cancel-btn');
+  if(pcb) pcb.onclick = function(){ mov.remove(); };
+
+  // Build numpad
+  var entered = '';
+  var pad = document.getElementById('pin-pad');
+  [1,2,3,4,5,6,7,8,9,'',0,'⌫'].forEach(function(n){
+    var btn = document.createElement('button');
+    btn.style.cssText = 'padding:14px;border-radius:10px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text);font-size:18px;font-weight:700;cursor:pointer;';
+    btn.textContent = n;
+    if(n==='') { btn.style.visibility='hidden'; pad.appendChild(btn); return; }
+    btn.onclick = function(){
+      if(n==='⌫'){
+        entered = entered.slice(0,-1);
+      } else if(entered.length < 4){
+        entered += n;
+      }
+      // Update dots
+      for(var i=0;i<4;i++){
+        var d=document.getElementById('pd'+i);
+        if(d) d.style.background = i<entered.length ? 'var(--accent)' : 'transparent';
+      }
+      // Check PIN
+      if(entered.length===4){
+        if(entered === String(emp.pin)){
+          mov.remove();
+          onSuccess();
+        } else {
+          document.getElementById('pin-err').textContent = '❌ PIN inkòrèk — Eseye ankò';
+          entered = '';
+          for(var i=0;i<4;i++){
+            var d=document.getElementById('pd'+i);
+            if(d) d.style.background='transparent';
+          }
+        }
+      } else {
+        document.getElementById('pin-err').textContent = '';
+      }
+    };
+    pad.appendChild(btn);
+  });
+}
+
+function logSessionEvent(type, name, role, time){
+  if(!S.sessionLogs) S.sessionLogs=[];
+  S.sessionLogs.unshift({ type:type, name:name, role:role, time:time, date:new Date().toISOString() });
+  if(S.sessionLogs.length>100) S.sessionLogs.pop();
+  save();
+}
+
+function fermerSession(){
+  if(!SESSION_OPEN_TIME){ notif('Aucune session ouverte','err'); return; }
+  var now    = new Date();
+  var dur    = Math.round((now-SESSION_OPEN_TIME)/60000);
+  var cashier= S.settings.cashier||'Caissier';
+  var nowTxt = now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+
+  // Calculer total ventes pandan sesyon an
+  var sessionSales = S.sales.filter(function(s){
+    return new Date(s.date) >= SESSION_OPEN_TIME;
+  });
+  var totalSes = sessionSales.reduce(function(a,s){return a+s.total;},0);
+
+  logSessionEvent('close', cashier, CURRENT_ROLE, nowTxt);
+  SESSION_OPEN_TIME = null;
+
+  // Montre rezime
+  var msg = '🏁 Sesyon '+cashier+' fèmen — '+dur+' min · '+sessionSales.length+' vant · '+fmt(totalSes);
+  notif(msg,'ok');
+
+  // Reynitialize pèmisyon
+  applyRoleRestrictions('proprio');
+  S.settings.cashier = S.settings.bizname || 'Caissier';
   save(); updateTopbar();
-  document.getElementById('login-screen').classList.add('hidden');
-  notif('👋 Bonjour '+name+' !','ok');
+
+  // Montre ekran login ankò
+  if((S.employees||[]).length > 0) showLoginScreen();
 }
 
 function skipLogin(){
@@ -3563,6 +3758,118 @@ function openScanner(){
     statusEl.textContent = '⚠️ Kaméra pa disponib — tape kòd la anba a';
     document.getElementById('scan-frame-box').style.display = 'none';
   }
+}
+
+// ── REMBOURSEMENT ──
+function showRemboursement(){
+  if(!can('remboursement')){ notif('Acces refuse','err'); return; }
+  var old2 = document.getElementById('rembMov');
+  if(old2) old2.remove();
+  var mov = document.createElement('div');
+  mov.id='rembMov'; mov.className='mov show';
+  var inner = document.createElement('div');
+  inner.className='modal'; inner.style.maxWidth='520px';
+
+  var titleEl = document.createElement('h3');
+  titleEl.textContent = '🔄 Remboursement';
+  inner.appendChild(titleEl);
+
+  var subEl = document.createElement('div');
+  subEl.style.cssText='font-size:12px;color:var(--text3);margin-bottom:14px;';
+  subEl.textContent='Choisissez la vente à rembourser:';
+  inner.appendChild(subEl);
+
+  var listDiv = document.createElement('div');
+  listDiv.style.cssText='max-height:340px;overflow-y:auto;';
+
+  var recent = S.sales.slice(0,50).filter(function(s){return !s.rembourse;});
+  if(!recent.length){
+    var empty=document.createElement('div');
+    empty.style.cssText='text-align:center;padding:24px;color:var(--text3);';
+    empty.textContent='Aucune vente disponible';
+    listDiv.appendChild(empty);
+  } else {
+    recent.forEach(function(s){
+      var d=new Date(s.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+      var items=s.items.map(function(i){return i.name+' x'+i.qty;}).join(', ');
+      var card=document.createElement('div');
+      card.style.cssText='border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;cursor:pointer;';
+      card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'
+        +'<div style="font-size:13px;font-weight:700;">Vente #'+s.num+' — '+d+'</div>'
+        +'<div style="font-size:14px;font-weight:800;color:var(--accent);">'+fmt(s.total)+'</div>'
+        +'</div>'
+        +'<div style="font-size:11px;color:var(--text3);">'+items.slice(0,60)+'</div>'
+        +(s.clientNom?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">👤 '+s.clientNom+'</div>':'');
+      (function(sid){
+        card.onclick=function(){ confirmRemboursement(sid); };
+      })(s.id);
+      listDiv.appendChild(card);
+    });
+  }
+  inner.appendChild(listDiv);
+
+  var footer=document.createElement('div');
+  footer.className='mfooter';
+  var closeBtn=document.createElement('button');
+  closeBtn.className='btn-cancel'; closeBtn.textContent='Fermer';
+  closeBtn.onclick=function(){mov.remove();};
+  footer.appendChild(closeBtn);
+  inner.appendChild(footer);
+  mov.appendChild(inner);
+  document.body.appendChild(mov);
+}
+function confirmRemboursement(saleId){
+  var s = S.sales.find(function(x){ return x.id===saleId; });
+  if(!s){ notif('Vente non trouvée','err'); return; }
+
+  var raison = prompt('Motif du remboursement (optionnel):', '');
+  if(raison === null) return; // Annuler
+
+  // Mete vant kòm remboursé
+  s.rembourse = true;
+  s.rembourseDate = new Date().toISOString();
+  s.rembourseRaison = raison;
+  s.rembourseBy = S.settings.cashier || 'Admin';
+
+  // Restitye stock
+  s.items.forEach(function(it){
+    var p = S.products.find(function(x){ return x.id===it.id; });
+    if(p && p.stock !== 999) p.stock = (p.stock||0) + it.qty;
+  });
+
+  save();
+  renderProds();
+
+  // Fèmen modal
+  var mov = document.getElementById('rembMov');
+  if(mov) mov.remove();
+
+  // Notif ak reçu
+  notif('✅ Remboursement #'+s.num+' — '+fmt(s.total)+' — Stock rétabli','ok');
+
+  // Montre reçu remboursement
+  showRecuRemboursement(s);
+}
+
+function showRecuRemboursement(s){
+  var d    = new Date().toLocaleDateString('fr-FR')+' '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  var items= s.items.map(function(i){return '<div class="r-row"><span>'+i.name+' ×'+i.qty+'</span><span>-'+fmt(i.price*i.qty)+'</span></div>';}).join('');
+  var h = '<div class="receipt">'
+    + '<div class="r-logo">'+(S.settings.bizname||'Konektem')+'</div>'
+    + '<div class="r-sub" style="color:#ef4444;font-weight:800;">🔄 REMBOURSEMENT</div>'
+    + '<div class="r-sub">'+d+' · Vente #'+s.num+'</div>'
+    + (s.clientNom?'<div class="r-sub">Client: '+s.clientNom+'</div>':'')
+    + '<div class="r-div"></div>'
+    + items
+    + '<div class="r-div"></div>'
+    + '<div class="r-row r-tot" style="color:#ef4444;"><span>REMBOURSÉ</span><span>'+fmt(s.total)+'</span></div>'
+    + (s.rembourseRaison?'<div class="r-sub">Motif: '+s.rembourseRaison+'</div>':'')
+    + '<div class="r-sub">Par: '+(s.rembourseBy||'')+'</div>'
+    + '</div>';
+
+  var recEl = document.getElementById('recuContent');
+  if(recEl) recEl.innerHTML = h;
+  document.getElementById('recuMov').classList.add('show');
 }
 
 function closeScanner(){
