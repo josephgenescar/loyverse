@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1775479121">
+<meta name="version" content="1775655984">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#16a34a">
@@ -1179,7 +1179,7 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
     <div class="login-logo">Konekte<span>m</span></div>
     <div class="login-sub" id="login-biz-name">Qui travaille aujourd'hui ?</div>
     <div class="cashier-list" id="cashier-list"></div>
-    <button style="width:100%;padding:11px;border:none;border-radius:var(--rsm);background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;font-family:sans-serif;" onclick="skipLogin()">Continuer sans sélectionner</button>
+    <button id="skip-login-btn" style="width:100%;padding:11px;border:none;border-radius:var(--rsm);background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;font-family:sans-serif;display:none;" onclick="skipLogin()">Continuer sans sélectionner</button>
   </div>
 </div>
 
@@ -2149,8 +2149,12 @@ function startApp(){
   setTimeout(fetchExchangeRate, 1000);
   renderCatBar(); renderProds(); showView('vente');
   // Afficher l'écran de sélection caissier si activé
-  if(S.settings.askLogin && (S.employees||[]).length > 0){
+  // Toujou montre ekran login si gen enpwaye — obligatwa
+  if((S.employees||[]).length > 0){
     showLoginScreen();
+  } else {
+    // Pa gen enpwaye — propriétaire dirèk ak tout aksè
+    applyRoleRestrictions('proprio');
   }
   var s=S.settings.sector;
   if(s==='restaurant') document.getElementById('f-resto').style.display='block';
@@ -3226,12 +3230,9 @@ function showLoginScreen(){
       +'<span class="arrow">›</span>'
       +'</button>';
   }).join('');
-  // Montre bouton "Continuer" sèlman si pa gen enpwaye oswa si c'est le propriétaire
+  // Bouton skip — kache si gen enpwaye
   var skipBtn = document.getElementById('skip-login-btn');
-  if(skipBtn){
-    // Kache si gen enpwaye (oblije konekte ak PIN)
-    skipBtn.style.display = emps.length > 0 ? 'none' : '';
-  }
+  if(skipBtn) skipBtn.style.display = emps.length > 0 ? 'none' : '';
   ls.classList.remove('hidden');
 }
 
@@ -3320,27 +3321,26 @@ function loginAs(name){
   var emp = (S.employees||[]).find(function(e){ return e.name===name; });
   if(!emp){ notif('Enpwaye pa jwenn','err'); return; }
 
-  // Si pa gen PIN — montre mesaj pou ale ajoute PIN
+  // Verifye PIN — si manke, ka pa konekte
   if(!emp.pin || emp.pin.length !== 4){
-    // Ouvri modal pou sete PIN
     showSetPinModal(emp);
     return;
   }
 
-  // Mande PIN
+  // Mande PIN — obligatwa
   showPinModal(emp, function(){
-    // Siksè PIN
+    var empRole = emp.role || 'caissier';
     S.settings.cashier = emp.name;
-    save(); updateTopbar();
-    applyRoleRestrictions(emp.role || 'caissier');
+    CURRENT_ROLE  = empRole;
+    CURRENT_PERMS = Object.assign({}, ROLE_PERMS[empRole] || ROLE_PERMS.caissier);
+    save();
+    updateTopbar();
+    applyRoleRestrictions(empRole);
     SESSION_OPEN_TIME = new Date();
-
-    // Ouvèti sesyon
     var now = SESSION_OPEN_TIME.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-    logSessionEvent('open', emp.name, emp.role, now);
-
+    logSessionEvent('open', emp.name, empRole, now);
     document.getElementById('login-screen').classList.add('hidden');
-    notif('👋 Bonjou '+emp.name+' ('+getRoleLabel(emp.role)+') — Sesyon ouvri '+now,'ok');
+    notif('👋 Bonjou '+emp.name+' — '+getRoleLabel(empRole)+' — '+now,'ok');
   });
 }
 
