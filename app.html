@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1775655984">
+<meta name="version" content="1775672734">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#16a34a">
@@ -1180,6 +1180,34 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
     <div class="login-sub" id="login-biz-name">Qui travaille aujourd'hui ?</div>
     <div class="cashier-list" id="cashier-list"></div>
     <button id="skip-login-btn" style="width:100%;padding:11px;border:none;border-radius:var(--rsm);background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;font-family:sans-serif;display:none;" onclick="skipLogin()">Continuer sans sélectionner</button>
+    <!-- Bouton propriétaire toujours visible -->
+    <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,.1);padding-top:14px;">
+      <button onclick="showOwnerLogin()" style="width:100%;padding:10px;border:1px solid rgba(255,255,255,.15);border-radius:var(--rsm);background:transparent;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:sans-serif;">
+        👑 Accès Propriétaire
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal accès propriétaire -->
+<div class="mov" id="ownerLoginMov">
+  <div class="modal" style="max-width:360px;text-align:center;">
+    <h3>👑 Accès Propriétaire</h3>
+    <p style="font-size:13px;color:var(--text3);margin:10px 0 18px;line-height:1.6;">
+      Entrez le mot de passe propriétaire pour accéder à toutes les fonctionnalités.
+    </p>
+    <div class="fg">
+      <input class="finp" id="owner-pw-inp" type="password" placeholder="Mot de passe propriétaire"
+        onkeydown="if(event.key==='Enter')checkOwnerPassword()">
+    </div>
+    <div id="owner-pw-err" style="color:var(--red);font-size:12px;min-height:18px;margin:8px 0;"></div>
+    <div class="mfooter">
+      <button class="btn-cancel" onclick="closeMov('ownerLoginMov')">Annuler</button>
+      <button class="btn-g" onclick="checkOwnerPassword()">🔓 Accéder</button>
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:var(--text3);">
+      Mot de passe par défaut: <code style="background:var(--bg);padding:2px 6px;border-radius:4px;">RIVAYO2025</code>
+    </div>
   </div>
 </div>
 
@@ -3505,15 +3533,47 @@ function fermerSession(){
 }
 
 function skipLogin(){
-  // Pa pèmèt skip si gen enpwaye ki ka konekte
   var emps = S.employees||[];
   if(emps.length > 0){
     notif('Seleksyone yon enpwaye epi antre PIN ou','err');
     return;
   }
-  // Si pa gen enpwaye — propriétaire jis konekte
   applyRoleRestrictions('proprio');
   document.getElementById('login-screen').classList.add('hidden');
+}
+
+function showOwnerLogin(){
+  closeMov('ownerLoginMov');
+  document.getElementById('ownerLoginMov').classList.add('show');
+  setTimeout(function(){
+    var inp = document.getElementById('owner-pw-inp');
+    if(inp){ inp.value=''; inp.focus(); }
+    document.getElementById('owner-pw-err').textContent='';
+  }, 100);
+}
+
+function checkOwnerPassword(){
+  var inp = document.getElementById('owner-pw-inp');
+  var entered = inp ? inp.value.trim() : '';
+  // Mot de passe propriétaire — stocké dans settings ou defaut
+  var ownerPw = S.settings.ownerPassword || 'RIVAYO2025';
+
+  if(entered === ownerPw){
+    closeMov('ownerLoginMov');
+    document.getElementById('login-screen').classList.add('hidden');
+    // Konekte kòm propriétaire
+    S.settings.cashier = S.settings.bizname || 'Propriétaire';
+    CURRENT_ROLE  = 'proprio';
+    CURRENT_PERMS = Object.assign({}, ROLE_PERMS.proprio);
+    save();
+    updateTopbar();
+    applyRoleRestrictions('proprio');
+    notif('👑 Bonjou Propriétaire — Accès total accordé','ok');
+  } else {
+    document.getElementById('owner-pw-err').textContent = '❌ Mot de passe incorrect';
+    inp.value = '';
+    inp.focus();
+  }
 }
 
 // ── SORTIR / QUITTER ──
