@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1775672734">
+<meta name="version" content="1775673272">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#16a34a">
@@ -1190,7 +1190,7 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
 </div>
 
 <!-- Modal accès propriétaire -->
-<div class="mov" id="ownerLoginMov">
+<div class="mov" id="ownerLoginMov" style="z-index:1100;">
   <div class="modal" style="max-width:360px;text-align:center;">
     <h3>👑 Accès Propriétaire</h3>
     <p style="font-size:13px;color:var(--text3);margin:10px 0 18px;line-height:1.6;">
@@ -3543,24 +3543,33 @@ function skipLogin(){
 }
 
 function showOwnerLogin(){
-  closeMov('ownerLoginMov');
-  document.getElementById('ownerLoginMov').classList.add('show');
+  var mov = document.getElementById('ownerLoginMov');
+  if(!mov) return;
+  // Fòse z-index pou pase anwo login-screen (z-index:1001)
+  mov.style.zIndex = '1100';
+  mov.style.display = 'flex';
+  mov.classList.add('show');
   setTimeout(function(){
     var inp = document.getElementById('owner-pw-inp');
-    if(inp){ inp.value=''; inp.focus(); }
-    document.getElementById('owner-pw-err').textContent='';
+    if(inp){ inp.value = ''; inp.focus(); }
+    var err = document.getElementById('owner-pw-err');
+    if(err) err.textContent = '';
   }, 100);
 }
 
 function checkOwnerPassword(){
-  var inp = document.getElementById('owner-pw-inp');
+  var inp    = document.getElementById('owner-pw-inp');
+  var errEl  = document.getElementById('owner-pw-err');
   var entered = inp ? inp.value.trim() : '';
-  // Mot de passe propriétaire — stocké dans settings ou defaut
   var ownerPw = S.settings.ownerPassword || 'RIVAYO2025';
 
   if(entered === ownerPw){
-    closeMov('ownerLoginMov');
-    document.getElementById('login-screen').classList.add('hidden');
+    // Fèmen modal
+    var mov = document.getElementById('ownerLoginMov');
+    if(mov){ mov.style.display='none'; mov.classList.remove('show'); }
+    // Fèmen ekran login
+    var ls = document.getElementById('login-screen');
+    if(ls) ls.classList.add('hidden');
     // Konekte kòm propriétaire
     S.settings.cashier = S.settings.bizname || 'Propriétaire';
     CURRENT_ROLE  = 'proprio';
@@ -3568,11 +3577,11 @@ function checkOwnerPassword(){
     save();
     updateTopbar();
     applyRoleRestrictions('proprio');
-    notif('👑 Bonjou Propriétaire — Accès total accordé','ok');
+    SESSION_OPEN_TIME = new Date();
+    notif('👑 Bonjou Propriétaire — Tout aksè ouvert!','ok');
   } else {
-    document.getElementById('owner-pw-err').textContent = '❌ Mot de passe incorrect';
-    inp.value = '';
-    inp.focus();
+    if(errEl) errEl.textContent = '❌ Mot de passe incorrect — Essayez: RIVAYO2025';
+    if(inp){ inp.value = ''; inp.focus(); }
   }
 }
 
