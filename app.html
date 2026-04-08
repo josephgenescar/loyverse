@@ -3117,7 +3117,8 @@ function renderEmpGrid(){
       +(isActive?'<div class="emp-active-badge">Actif</div>':'')
       +'<div class="emp-avatar">'+init+'</div>'
       +'<div class="emp-name">'+e.name+'</div>'
-      +'<div class="emp-role">'+e.role+'</div>'
+      +'<div class="emp-role">'+(e.role==='proprio'?'👑 Propriétaire':e.role==='gerant'?'👔 Gérant':'🧾 Caissier')+'</div>'
+      +'<div style="font-size:10px;margin-top:2px;">'+(e.pin?'🔐 PIN défini':'⚠️ Pas de PIN')+'</div>'
       +'<div class="emp-stats">'+sales.length+' vente(s) · '+fmt(total)+'</div>'
       +'<div class="emp-actions">'
       +'<button class="abt" onclick="setActiveCashier(this.dataset.n)" data-n="'+e.name+'" title="Caissier actif">✓ Activer</button>'
@@ -3133,7 +3134,9 @@ function openEmpMod(id){
     var e = (S.employees||[]).find(function(x){ return x.id===id; });
     document.getElementById('empMTitle').textContent = 'Modifier membre';
     document.getElementById('emp-name').value = e.name||'';
-    document.getElementById('emp-role').value = e.role||'Caissier';
+    document.getElementById('emp-role').value = e.role||'caissier';
+    if(document.getElementById('emp-pin')) document.getElementById('emp-pin').value = '';
+    if(document.getElementById('emp-pin')) document.getElementById('emp-pin').placeholder = 'Laisser vide = garder PIN actuel';
     document.getElementById('emp-tel').value = e.tel||'';
     document.getElementById('emp-note').value = e.note||'';
   } else {
@@ -3146,23 +3149,45 @@ function openEmpMod(id){
 
 function saveEmp(){
   var name = document.getElementById('emp-name').value.trim();
+  var pin  = document.getElementById('emp-pin') ? document.getElementById('emp-pin').value.trim() : '';
+  var role = document.getElementById('emp-role').value || 'caissier';
+
   if(!name){ notif('Nom obligatoire !','err'); return; }
+
+  // PIN obligatwa sèlman pou nouvo enpwaye (pa si edit)
+  if(!S.editEmp && (!pin || pin.length !== 4)){
+    notif('PIN 4 chiffres obligatoire pour '+ name,'err');
+    document.getElementById('emp-pin').focus();
+    return;
+  }
+
   if(!S.employees) S.employees = [];
+
   var data = {
     name: name,
-    role: document.getElementById('emp-role').value,
-    tel: document.getElementById('emp-tel').value.trim(),
-    note: document.getElementById('emp-note').value.trim()
+    role: role,
+    tel:  document.getElementById('emp-tel') ? document.getElementById('emp-tel').value.trim() : '',
+    note: ''
   };
+
+  // Ajoute PIN sèlman si yon nouvo vale antre (pa efase ansyen si edit san PIN)
+  if(pin && pin.length === 4) data.pin = pin;
+
   if(S.editEmp){
     var i = S.employees.findIndex(function(x){ return x.id===S.editEmp; });
     if(i>=0) S.employees[i] = Object.assign({}, S.employees[i], data);
+    S.editEmp = null;
   } else {
-    S.employees.push(Object.assign({id:uid()}, data));
+    data.id = uid();
+    S.employees.push(data);
   }
+
   save(); renderEmpGrid();
   closeMov('empMov');
-  notif('✅ Membre enregistré !','ok');
+  // Reset champs
+  document.getElementById('emp-name').value = '';
+  if(document.getElementById('emp-pin')) document.getElementById('emp-pin').value = '';
+  notif('✅ ' + name + ' enregistré avec PIN !','ok');
 }
 
 function delEmp(id){
@@ -3190,14 +3215,23 @@ function showLoginScreen(){
     return;
   }
   list.innerHTML = emps.map(function(e){
-    var init = e.name.charAt(0).toUpperCase();
+    var init      = e.name.charAt(0).toUpperCase();
     var roleLabel = e.role==='proprio'?'👑 Propriétaire':e.role==='gerant'?'👔 Gérant':'🧾 Caissier';
-    return '<button class="cashier-btn" onclick="loginAs(this.getAttribute(\'data-n\'))" data-n="'+e.name+'">'
+    var hasPIN    = e.pin && e.pin.length===4;
+    var lockIco   = hasPIN ? '🔐' : '⚠️';
+    // Data attribute pou evite quote issues
+    return '<button class="cashier-btn" data-empname="'+encodeURIComponent(e.name)+'" onclick="loginAs(decodeURIComponent(this.dataset.empname))">'
       +'<div class="cav">'+init+'</div>'
-      +'<div class="cn"><span>'+e.name+'</span><span class="cr">'+roleLabel+'</span></div>'
+      +'<div class="cn"><span>'+e.name+'</span><span class="cr">'+roleLabel+' '+lockIco+'</span></div>'
       +'<span class="arrow">›</span>'
       +'</button>';
   }).join('');
+  // Montre bouton "Continuer" sèlman si pa gen enpwaye oswa si c'est le propriétaire
+  var skipBtn = document.getElementById('skip-login-btn');
+  if(skipBtn){
+    // Kache si gen enpwaye (oblije konekte ak PIN)
+    skipBtn.style.display = emps.length > 0 ? 'none' : '';
+  }
   ls.classList.remove('hidden');
 }
 
@@ -3234,21 +3268,25 @@ function applyRoleRestrictions(role){
   CURRENT_ROLE  = role;
   CURRENT_PERMS = Object.assign({}, ROLE_PERMS[role] || ROLE_PERMS.proprio);
 
-  // Kache/montre items sidebar selon pèmisyon
+  // Map: ki view chak role ka wè
   var sbMap = {
+    'vente':       true,
+    'recu':        can('vente'),
+    'tickets':     can('vente'),
+    'clients':     can('clients'),
     'articles':    can('articles'),
     'backoffice':  can('backoffice'),
     'employes':    can('employes'),
     'fournisseurs':can('fournisseurs'),
     'settings':    can('settings'),
-    'clients':     can('clients'),
-    'monplan':     true,
-    'tickets':     true,
-    'recu':        true,
-    'vente':       true
+    'monplan':     can('settings'),
+    'backup':      can('settings'),
+    'integration': can('articles'),
+    'fonctionnalites': can('settings')
   };
 
-  document.querySelectorAll('.sb-item[onclick*="nav("]').forEach(function(el){
+  // Applike nan sidebar
+  document.querySelectorAll('.sb-item').forEach(function(el){
     var onclick = el.getAttribute('onclick') || '';
     var match   = onclick.match(/nav\('([^']+)'/);
     if(!match) return;
@@ -3258,15 +3296,36 @@ function applyRoleRestrictions(role){
     }
   });
 
-  // Kache bouton Back Office si pa gen pèmisyon
+  // Bouton Back Office nan topbar
   var boBtn = document.getElementById('bo-btn');
   if(boBtn) boBtn.style.display = can('backoffice') ? '' : 'none';
+
+  // Si Caissier — retounen sou vente dirèkteman
+  if(role === 'caissier'){
+    showView('vente');
+    // Kache bouton remboursement si pa gen pèmisyon
+    var rembBtn = document.getElementById('sb-rembours');
+    if(rembBtn) rembBtn.style.display = can('remboursement') ? '' : 'none';
+  }
+
+  // Badge ki montre role kounye a nan topbar
+  var roleLabel = role==='proprio'?'👑 Proprio':role==='gerant'?'👔 Gérant':'🧾 Caissier';
+  var cashierPill = document.querySelector('.cashier-pill');
+  if(cashierPill){
+    cashierPill.textContent = (S.settings.cashier||'') + ' · ' + roleLabel;
+  }
 }
 
 function loginAs(name){
-  // Chèche enpwaye a pou jwenn PIN ak role li
   var emp = (S.employees||[]).find(function(e){ return e.name===name; });
   if(!emp){ notif('Enpwaye pa jwenn','err'); return; }
+
+  // Si pa gen PIN — montre mesaj pou ale ajoute PIN
+  if(!emp.pin || emp.pin.length !== 4){
+    // Ouvri modal pou sete PIN
+    showSetPinModal(emp);
+    return;
+  }
 
   // Mande PIN
   showPinModal(emp, function(){
@@ -3287,6 +3346,55 @@ function loginAs(name){
 
 function getRoleLabel(role){
   return role==='proprio'?'Propriétaire':role==='gerant'?'Gérant':'Caissier';
+}
+
+function showSetPinModal(emp){
+  // Modal pou propriétaire sete PIN pou yon enpwaye ki pa gen PIN
+  var mov = document.createElement('div');
+  mov.className = 'mov show';
+  mov.id = 'setpin-modal';
+  var box = document.createElement('div');
+  box.className = 'modal';
+  box.style.maxWidth = '360px';
+  box.style.textAlign = 'center';
+  box.innerHTML = '<h3>⚠️ PIN manke</h3>'
+    + '<div style="font-size:13px;color:var(--text2);margin:12px 0 20px;line-height:1.6;">'
+    + '<strong>' + emp.name + '</strong> pa gen PIN.<br>'
+    + 'Ale nan <strong>⚙️ Paramètres → Équipe & Caissiers</strong> pou modifye epi ajoute yon PIN 4 chif pou li.'
+    + '</div>'
+    + '<div id="set-pin-inputs" style="margin-bottom:16px;">'
+    + '<label style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.6px;display:block;margin-bottom:6px;">CREYE PIN KOUNYE A :</label>'
+    + '<input id="setpin-inp" type="password" maxlength="4" inputmode="numeric" placeholder="4 chiffres" style="width:100%;padding:11px;font-size:20px;text-align:center;letter-spacing:8px;border:2px solid var(--accent);border-radius:8px;background:var(--surface2);color:var(--text);outline:none;">'
+    + '</div>'
+    + '<div style="display:flex;gap:10px;justify-content:center;">'
+    + '<button id="setpin-cancel" class="btn-cancel">Annuler</button>'
+    + '<button id="setpin-save" class="btn-g">💾 Sauvegarder PIN</button>'
+    + '</div>';
+  mov.appendChild(box);
+  document.body.appendChild(mov);
+
+  document.getElementById('setpin-cancel').onclick = function(){ mov.remove(); };
+  document.getElementById('setpin-inp').focus();
+  document.getElementById('setpin-save').onclick = function(){
+    var pin = document.getElementById('setpin-inp').value.trim();
+    if(pin.length !== 4 || isNaN(pin)){ notif('PIN 4 chif obligatwa','err'); return; }
+    // Sove PIN nan enpwaye a
+    var empObj = (S.employees||[]).find(function(e){ return e.name===emp.name; });
+    if(empObj){ empObj.pin = pin; save(); }
+    mov.remove();
+    notif('✅ PIN kreye pou '+emp.name+' — Li ka konnekte kounye a','ok');
+    // Kounye a kontinye ak login
+    showPinModal(Object.assign({}, emp, {pin:pin}), function(){
+      S.settings.cashier = emp.name;
+      save(); updateTopbar();
+      applyRoleRestrictions(emp.role || 'caissier');
+      SESSION_OPEN_TIME = new Date();
+      var now = SESSION_OPEN_TIME.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+      logSessionEvent('open', emp.name, emp.role, now);
+      document.getElementById('login-screen').classList.add('hidden');
+      notif('👋 Bonjou '+emp.name+' !','ok');
+    });
+  };
 }
 
 function showPinModal(emp, onSuccess){
@@ -3397,6 +3505,14 @@ function fermerSession(){
 }
 
 function skipLogin(){
+  // Pa pèmèt skip si gen enpwaye ki ka konekte
+  var emps = S.employees||[];
+  if(emps.length > 0){
+    notif('Seleksyone yon enpwaye epi antre PIN ou','err');
+    return;
+  }
+  // Si pa gen enpwaye — propriétaire jis konekte
+  applyRoleRestrictions('proprio');
   document.getElementById('login-screen').classList.add('hidden');
 }
 
