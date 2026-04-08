@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1775673272">
+<meta name="version" content="1775673969">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#16a34a">
@@ -957,6 +957,26 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
           <div class="set-sec"><h3>⚠️ Données</h3>
             <div class="srow"><span class="slbl">Effacer toutes les données</span><button class="clear-btn" style="padding:7px 15px" onclick="resetData()">Tout effacer</button></div>
           </div>
+
+          <!-- SÉCURITÉ PROPRIÉTAIRE -->
+          <div class="set-sec" id="sec-securite">
+            <h3>🔐 Sécurité Propriétaire</h3>
+            <div class="fg" style="margin-bottom:10px;">
+              <label class="flbl">Mot de passe écran login (👑 Accès Propriétaire)</label>
+              <div style="display:flex;gap:8px;margin-top:6px;">
+                <input class="finp" id="owner-pw-set" type="password"
+                  placeholder="Mot de passe actuel: RIVAYO2025"
+                  style="flex:1;">
+                <button class="btn-g" onclick="saveOwnerPw()" style="white-space:nowrap;padding:10px 14px;">
+                  💾 Changer
+                </button>
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:5px;">
+                Mo de passe defò: <strong>RIVAYO2025</strong> — Chanje li pou sekirite
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -3169,14 +3189,24 @@ function openEmpMod(id){
     document.getElementById('emp-role').value = e.role||'caissier';
     if(document.getElementById('emp-pin')) document.getElementById('emp-pin').value = '';
     if(document.getElementById('emp-pin')) document.getElementById('emp-pin').placeholder = 'Laisser vide = garder PIN actuel';
-    document.getElementById('emp-tel').value = e.tel||'';
-    document.getElementById('emp-note').value = e.note||'';
+    var telEl = document.getElementById('emp-tel');
+    if(telEl) telEl.value = e.tel||'';
   } else {
     document.getElementById('empMTitle').textContent = 'Nouveau membre';
-    ['emp-name','emp-tel','emp-note'].forEach(function(x){ document.getElementById(x).value=''; });
-    document.getElementById('emp-role').value = 'Caissier';
+    ['emp-name','emp-tel'].forEach(function(x){
+      var el = document.getElementById(x);
+      if(el) el.value = '';
+    });
+    var pinEl = document.getElementById('emp-pin');
+    if(pinEl){ pinEl.value=''; pinEl.placeholder='Ex: 1234'; }
+    document.getElementById('emp-role').value = 'caissier';
+    onEmpRoleChange();
   }
   document.getElementById('empMov').classList.add('show');
+  setTimeout(function(){
+    var nm = document.getElementById('emp-name');
+    if(nm) nm.focus();
+  }, 200);
 }
 
 function saveEmp(){
