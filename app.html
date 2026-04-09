@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1775674688">
+<meta name="version" content="1775707304">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#16a34a">
@@ -2057,7 +2057,14 @@ function pushUserToSupabase(email){
       'Prefer':        'resolution=merge-duplicates,return=minimal'
     },
     body: body
-  }).catch(function(){});
+  })
+  .then(function(r){
+    console.log('[Konektem] Sync Supabase →', r.status, email);
+    if(!r.ok) r.text().then(function(t){ console.error('[Konektem] Sync error:', t); });
+  })
+  .catch(function(err){
+    console.warn('[Konektem] Sync echwe (offline?):', err.message);
+  });
 }
 
 function showRenewalWall(plan){
@@ -2192,6 +2199,18 @@ function startApp(){
   checkTrialOnStart();
   initDarkMode();
   setTimeout(syncUserToSupabase, 2000);
+  // Poll Supabase chak 60 segonn pou jwenn chanjman admin
+  setInterval(function(){
+    if(document.visibilityState === 'visible'){
+      syncUserToSupabase();
+    }
+  }, 60000);
+  // Sync tou lè itilizatè retounen sou app la
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible'){
+      syncUserToSupabase();
+    }
+  });
   updatePriceDisplay();
   setTimeout(checkLowStockNotif, 3000);
   setTimeout(fetchExchangeRate, 1000);
@@ -4799,6 +4818,20 @@ window.addEventListener('appinstalled', function(){
   notif('✅ Konektem enstale kòm app!', 'ok');
   deferredInstallPrompt = null;
 });
+
+function saveOwnerPw(){
+  var inp = document.getElementById('owner-pw-set');
+  if(!inp){ notif('Champ pa jwenn','err'); return; }
+  var val = inp.value.trim();
+  if(!val || val.length < 4){
+    notif('Minimum 4 caractères','err');
+    return;
+  }
+  S.settings.ownerPassword = val;
+  save();
+  inp.value = '';
+  notif('✅ Mot de passe propriétaire changé!','ok');
+}
 
 // ── INIT ──
 load();

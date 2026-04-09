@@ -601,7 +601,7 @@ async function insertContact(data) {
       'Content-Type': 'application/json',
       'apikey': SUPA_KEY,
       'Authorization': 'Bearer ' + SUPA_KEY,
-      'Prefer': 'return=minimal'
+      'Prefer': 'resolution=merge-duplicates,return=minimal'
     },
     body: JSON.stringify(data)
   });
@@ -856,8 +856,8 @@ var landingSelPlan = 'mensuel';
 var landingSelPrix = 2500;
 var LANDING_PRIX_MENS    = 2500;
 var LANDING_PRIX_ANN     = 22000;
-var LANDING_MONCASH_NUM  = '509-XXXX-XXXX'; // ← Chanje ak nimewo ou
-var LANDING_WHATSAPP_NUM = '50936000000';    // ← Chanje ak WhatsApp ou
+var LANDING_MONCASH_NUM  = '509-4886-8964'; // ← Chanje ak nimewo ou
+var LANDING_WHATSAPP_NUM = '50948868964';    // ← Chanje ak WhatsApp ou
 
 // Tire pri depi Supabase pou montre pri admin te mete
 function loadLandingPrices(){
