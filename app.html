@@ -685,6 +685,9 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
         <div class="sec-card" onclick="selSec(this,'pharmacie')"><div class="sec-ico">💊</div><div class="sec-name">Pharmacie</div><div class="sec-desc">Médicaments, DCI, ordonnances</div></div>
         <div class="sec-card" onclick="selSec(this,'electronique')"><div class="sec-ico">📱</div><div class="sec-name">Électronique</div><div class="sec-desc">Appareils, accessoires, tech</div></div>
         <div class="sec-card" onclick="selSec(this,'restaurant')"><div class="sec-ico">🍽️</div><div class="sec-name">Restaurant</div><div class="sec-desc">Tables, commandes, menus</div></div>
+        <div class="sec-card" onclick="selSec(this,'store')"><div class="sec-ico">👗</div><div class="sec-name">Boutique / Store</div><div class="sec-desc">Vêtements, chaussures, mode</div></div>
+        <div class="sec-card" onclick="selSec(this,'quincaillerie')"><div class="sec-ico">🔧</div><div class="sec-name">Quincaillerie</div><div class="sec-desc">Matériaux, outils, construction</div></div>
+        <div class="sec-card" onclick="selSec(this,'depot')"><div class="sec-ico">🏭</div><div class="sec-name">Dépôt / Grossiste</div><div class="sec-desc">Vente en gros, distribution</div></div>
       </div>
       <button class="ob-btn" id="ob-btn1" onclick="obNext(1)" disabled>Continuer →</button>
       <button class="ob-back" onclick="obBack(1)">← Retour</button>
@@ -1113,7 +1116,8 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
     <div class="f2">
       <div class="fg"><label class="flbl">Niveau d'accès</label>
         <select class="fsel" id="emp-role" onchange="onEmpRoleChange()">
-          <option value="caissier">🧾 Caissier — accès limité</option>
+          <option value="caissier">🧾 Caissier — vente seulement</option>
+          <option value="vendeur">🛍️ Vendeur — vente + clients</option>
           <option value="gerant">👔 Gérant — accès étendu</option>
           <option value="proprio">👑 Propriétaire — accès total</option>
         </select>
@@ -1308,12 +1312,15 @@ var TRIAL_LIMIT_ARTICLES = 50;
 var TRIAL_LIMIT_SALES = 30;
 var TRIAL_DAYS = 14;
 
-var SECTOR_LABELS = {marche:'🛒 Marché / Épicerie',pharmacie:'💊 Pharmacie',electronique:'📱 Électronique',restaurant:'🍽️ Restaurant'};
+var SECTOR_LABELS = {marche:'🛒 Marché / Épicerie',pharmacie:'💊 Pharmacie',electronique:'📱 Électronique',restaurant:'🍽️ Restaurant',store:'👗 Boutique / Store',quincaillerie:'🔧 Quincaillerie',depot:'🏭 Dépôt / Grossiste'};
 var SECTOR_CATS = {
   marche:['Épicerie','Boissons','Fruits & Légumes','Produits laitiers','Viandes','Condiments','Hygiène','Autres'],
   pharmacie:['Médicaments','Vitamines','Pansements','Hygiène','Bébé','Orthopédie','Parapharmacie','Autres'],
   electronique:['Smartphones','Accessoires','Ordinateurs','Audio/Vidéo','Réseaux','Câbles','Pièces détachées','Services'],
-  restaurant:['Entrées','Plats principaux','Boissons','Desserts','Sandwiches','Petits-déjeuners','À emporter','Autres']
+  restaurant:['Entrées','Plats principaux','Boissons','Desserts','Sandwiches','Petits-déjeuners','À emporter','Autres'],
+  store:['Vêtements Femme','Vêtements Homme','Enfants','Chaussures','Accessoires','Sacs & Maroquinerie','Lingerie','Autres'],
+  quincaillerie:['Matériaux','Quincaillerie','Peintures','Électricité','Plomberie','Outils','Ciment & Sable','Autres'],
+  depot:['Alimentaire','Boissons','Hygiène & Beauté','Électroménager','Construction','Divers','En vrac','Autres']
 };
 var SECTOR_SEEDS = {
   marche:[
@@ -1355,6 +1362,44 @@ var SECTOR_SEEDS = {
     {name:'Eau minérale',price:75,cost:40,stock:60,lowStock:10,category:'Boissons'},
     {name:'Café noir',price:80,cost:30,stock:999,lowStock:0,category:'Boissons'},
     {name:'Sandwich poulet',price:200,cost:100,stock:20,lowStock:3,category:'Sandwiches'}
+  ],
+  store:[
+    {name:'Robe casual',price:1800,cost:1100,stock:15,lowStock:2,category:'Vêtements Femme'},
+    {name:'Jeans homme slim',price:2200,cost:1400,stock:12,lowStock:2,category:'Vêtements Homme'},
+    {name:'T-shirt basique',price:600,cost:350,stock:40,lowStock:5,category:'Vêtements Homme'},
+    {name:'Sneakers blanc',price:3500,cost:2200,stock:8,lowStock:2,category:'Chaussures'},
+    {name:'Sandales femme',price:1500,cost:900,stock:10,lowStock:2,category:'Chaussures'},
+    {name:'Sac à main',price:2800,cost:1800,stock:7,lowStock:1,category:'Sacs & Maroquinerie'},
+    {name:'Ceinture cuir',price:800,cost:450,stock:20,lowStock:3,category:'Accessoires'},
+    {name:'Chapeau de soleil',price:700,cost:400,stock:15,lowStock:3,category:'Accessoires'},
+    {name:'Ensemble bébé',price:1200,cost:700,stock:12,lowStock:2,category:'Enfants'},
+    {name:'Lunettes de soleil',price:1000,cost:600,stock:18,lowStock:3,category:'Accessoires'}
+  ],
+  quincaillerie:[
+    {name:'Ciment Portland 50kg',price:1200,cost:850,stock:50,lowStock:10,category:'Ciment & Sable'},
+    {name:'Barre de fer 10mm',price:800,cost:550,stock:30,lowStock:5,category:'Matériaux'},
+    {name:'Sable fin (sac)',price:300,cost:180,stock:100,lowStock:20,category:'Ciment & Sable'},
+    {name:'Peinture blanc 4L',price:1800,cost:1200,stock:20,lowStock:3,category:'Peintures'},
+    {name:'Câble électrique 2.5mm',price:150,cost:90,stock:200,lowStock:30,category:'Électricité'},
+    {name:'Prise électrique double',price:250,cost:150,stock:50,lowStock:10,category:'Électricité'},
+    {name:'Marteau 500g',price:600,cost:380,stock:15,lowStock:3,category:'Outils'},
+    {name:'Tournevis cruciforme',price:200,cost:120,stock:30,lowStock:5,category:'Outils'},
+    {name:'Tuyau PVC 1/2"',price:180,cost:100,stock:80,lowStock:15,category:'Plomberie'},
+    {name:'Robinet mélangeur',price:1500,cost:950,stock:10,lowStock:2,category:'Plomberie'},
+    {name:'Vis 3x30mm (boîte)',price:150,cost:80,stock:60,lowStock:10,category:'Quincaillerie'},
+    {name:'Serrure Yale',price:2200,cost:1400,stock:8,lowStock:2,category:'Quincaillerie'}
+  ],
+  depot:[
+    {name:'Huile végétale 20L',price:4500,cost:3200,stock:20,lowStock:3,category:'Alimentaire'},
+    {name:'Farine blé 25kg',price:2800,cost:2000,stock:15,lowStock:3,category:'Alimentaire'},
+    {name:'Riz importé 50kg',price:5500,cost:4000,stock:25,lowStock:5,category:'Alimentaire'},
+    {name:'Sucre blanc 25kg',price:3200,cost:2300,stock:18,lowStock:3,category:'Alimentaire'},
+    {name:'Savon lessive 10kg',price:1800,cost:1200,stock:30,lowStock:5,category:'Hygiène & Beauté'},
+    {name:'Détergent liquide 5L',price:1200,cost:800,stock:25,lowStock:5,category:'Hygiène & Beauté'},
+    {name:'Eau minérale (carton 24)',price:700,cost:450,stock:50,lowStock:10,category:'Boissons'},
+    {name:'Jus Tampico carton',price:1800,cost:1300,stock:30,lowStock:5,category:'Boissons'},
+    {name:'Blocs de ciment (x10)',price:2500,cost:1800,stock:40,lowStock:10,category:'Construction'},
+    {name:'Sable construction (m3)',price:3500,cost:2500,stock:20,lowStock:5,category:'Construction'}
   ]
 };
 
@@ -1479,19 +1524,40 @@ function updateTrialBar(){
   if(isTrialExpired()){
     bar.classList.remove('hidden');
     bar.style.background='linear-gradient(90deg,#fee2e2,#fecaca)';
-    document.getElementById('trial-days-txt').innerHTML='<span style="color:#991b1b;font-weight:800;">Essai expiré</span>';
+    document.getElementById('trial-days-txt').innerHTML='<span style="color:#991b1b;font-weight:800;">Essai expiré — Accès bloqué</span>';
     document.getElementById('trial-fill').style.width='0%';
     return;
   }
   // Essai actif → afficher avec compteur
   bar.classList.remove('hidden');
-  bar.style.background='';
   var days = trialDaysLeft();
   document.getElementById('trial-days-txt').textContent=days+' jour'+(days>1?'s':'')+' restant'+(days>1?'s':'');
   var pct = Math.round((days/TRIAL_DAYS)*100);
   document.getElementById('trial-fill').style.width=pct+'%';
-  if(pct<30) document.getElementById('trial-fill').style.background='linear-gradient(90deg,#ef4444,#f87171)';
-  else document.getElementById('trial-fill').style.background='linear-gradient(90deg,var(--gold),#fbbf24)';
+  // Alèt 3 jou — fè ba a wouj + kliyan pa ka fèmen li
+  if(days <= 3){
+    bar.style.background='linear-gradient(90deg,rgba(239,68,68,.15),rgba(220,38,38,.1))';
+    bar.style.border='1px solid rgba(239,68,68,.3)';
+    document.getElementById('trial-days-txt').innerHTML='<span style="color:#dc2626;font-weight:800;animation:blink 1.5s ease infinite;">⚠️ '+days+' jour'+(days>1?'s':'')+' restant'+(days>1?'s':'')+' !</span>';
+    document.getElementById('trial-fill').style.background='linear-gradient(90deg,#ef4444,#f87171)';
+    // Kache bouton fèmen pou l pa ka fèmen ba a
+    var closeBtn = bar.querySelector('.tb-close');
+    if(closeBtn) closeBtn.style.display = 'none';
+    // Ajoute animation blink si pa egziste
+    if(!document.getElementById('blink-style')){
+      var st = document.createElement('style');
+      st.id = 'blink-style';
+      st.textContent = '@keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}';
+      document.head.appendChild(st);
+    }
+  } else {
+    bar.style.background='';
+    bar.style.border='';
+    if(pct<30) document.getElementById('trial-fill').style.background='linear-gradient(90deg,#ef4444,#f87171)';
+    else document.getElementById('trial-fill').style.background='linear-gradient(90deg,var(--gold),#fbbf24)';
+    var closeBtn = bar.querySelector('.tb-close');
+    if(closeBtn) closeBtn.style.display = '';
+  }
 }
 
 function showPremium(){ document.getElementById('premMov').classList.add('show'); }
@@ -1898,7 +1964,7 @@ function obNext(step){
   if(step===1){
     if(!obSec){notif('Choisissez votre secteur.','err');return;}
     S.settings.sector=obSec;
-    var icons={marche:'🛒',pharmacie:'💊',electronique:'📱',restaurant:'🍽️'};
+    var icons={marche:'🛒',pharmacie:'💊',electronique:'📱',restaurant:'🍽️',store:'👗',quincaillerie:'🔧',depot:'🏭'};
     document.getElementById('ob-confirm').textContent='Votre espace '+S.settings.bizname+' est configuré en mode '+SECTOR_LABELS[obSec]+'.';
     document.getElementById('ob-summary').innerHTML=[
       obRow('🏪',S.settings.bizname),obRow('👤',S.settings.cashier),
@@ -1921,10 +1987,38 @@ function selSec(el,sec){
 function launchApp(){
   S.settings.onboardingDone=true;
   S.settings.trialStart=new Date().toISOString();
+  S.settings.businessId = S.settings.businessId || uid();
   S.categories=SECTOR_CATS[S.settings.sector]||['Général'];
   var seeds=SECTOR_SEEDS[S.settings.sector]||SECTOR_SEEDS.marche;
   S.products=seeds.map(function(p){return Object.assign({id:uid(),icon:'',img:'',barcode:'',source:'manual',connType:''},p);});
-  save(); startApp();
+  save();
+  // Enrejistre biznis nan Supabase pou admin panel
+  try {
+    var lu = JSON.parse(localStorage.getItem('konektem_user')||'{}');
+    var email = lu.email||'';
+    if(email){
+      fetch(SUPA_URL_APP+'/rest/v1/konektem_users', {
+        method:'POST',
+        headers:{
+          'apikey':SUPA_KEY_APP,'Authorization':'Bearer '+SUPA_KEY_APP,
+          'Content-Type':'application/json','Prefer':'return=minimal,resolution=merge-duplicates',
+          'on_conflict':'email'
+        },
+        body: JSON.stringify({
+          email:email,
+          bizname: S.settings.bizname,
+          sector:  S.settings.sector,
+          cashier: S.settings.cashier,
+          plan:'trial',
+          status:'active',
+          trial_start: S.settings.trialStart,
+          business_id: S.settings.businessId,
+          created_at: new Date().toISOString()
+        })
+      }).catch(function(){});
+    }
+  } catch(e){}
+  startApp();
 }
 
 // ── APP START ──
@@ -2594,8 +2688,10 @@ function checkout(method, montantRecu, rendu, clientInfo){
     id:uid(), num:S.sales.length+1, date:new Date().toISOString(),
     items:S.cart.slice(), subtotal:sub, discount:disc, tax:tax, total:total,
     method:method, cashier:S.settings.cashier||'Caissier',
+    cashierRole: CURRENT_ROLE||'proprio',
     montantRecu: montantRecu||null,
     rendu: rendu||0,
+    locked:true,
     clientNom:  clientInfo ? clientInfo.nom  : null,
     clientTel:  clientInfo ? clientInfo.tel  : null,
     clientNote: clientInfo ? clientInfo.note : null,
@@ -2934,14 +3030,27 @@ function renderRecu(){
   body.innerHTML=S.sales.map(function(s){
     var d=new Date(s.date);
     var ds=d.toLocaleDateString('fr-FR')+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    var lockIco = s.locked ? '<span title="Vente verrouillée" style="font-size:11px;color:var(--text3);margin-left:4px;">🔒</span>' : '';
     return '<div class="hcard" onclick="viewSale(\''+s.id+'\')"><div class="hc-num">#'+s.num+'</div>'
-      +'<div class="hc-info"><div class="hc-date">📅 '+ds+'</div>'
+      +'<div class="hc-info"><div class="hc-date">📅 '+ds+lockIco+'</div>'
       +'<div class="hc-items">'+s.items.map(function(i){return i.name;}).join(', ')+'</div>'
       +'<div class="hc-meth"><span class="bdg '+(mc[s.method]||'')+'">'+s.method+'</span> · '+s.cashier+'</div></div>'
-      +(s.isRetour?'':'<button class="abt" onclick="openRetourModal(\''+s.id+'\')">↩️</button>')
+      +(s.isRetour?'':'<button class="abt" onclick="event.stopPropagation();openRetourModal(\''+s.id+'\')">↩️</button>')
+      +(can('supprime_vente')?'<button class="abt del" onclick="event.stopPropagation();deleteSale(\''+s.id+'\')" title="Supprimer vente">🗑️</button>':'')
     +'<div class="hc-tot">'+fmt(s.total)+'</div></div>';
   }).join('');
 }
+function deleteSale(id){
+  if(!can('supprime_vente')){ notif('❌ Sèlman Propriétaire ka supprime vant','err'); return; }
+  var s = S.sales.find(function(x){return x.id===id;});
+  if(!s) return;
+  var d = new Date(s.date).toLocaleDateString('fr-FR');
+  if(!confirm('Supprimer vente #'+s.num+' du '+d+' — '+fmt(s.total)+' ?\n\nATTENTION: Cette action est irréversible !')) return;
+  S.sales = S.sales.filter(function(x){return x.id!==id;});
+  save(); renderRecu();
+  notif('🗑️ Vente #'+s.num+' supprimée','ok');
+}
+
 function viewSale(id){
   var s=S.sales.find(function(x){return x.id===id;});if(!s)return;
   S.viewSale=s;
@@ -2953,7 +3062,20 @@ function viewSale(id){
   s.items.forEach(function(i){h+='<div style="display:flex;justify-content:space-between;padding:8px 11px;border-bottom:1px solid var(--bg);font-size:13px"><span>'+i.name+' ×'+i.qty+'</span><span style="font-weight:700">'+fmt(i.price*i.qty)+'</span></div>';});
   h+='<div style="display:flex;justify-content:space-between;padding:9px 11px;font-weight:800;font-size:14px;background:var(--accent-l)"><span>TOTAL</span><span style="color:var(--accent-d)">'+fmt(s.total)+'</span></div></div>'
     +'<div style="font-size:12px;color:var(--text2)">💳 Paiement: '+s.method+'</div></div>';
-  document.getElementById('saleMBody').innerHTML=h;
+  // Bouton delete si proprio
+  var footer = '';
+  if(can('supprime_vente') && s){
+    footer = '<div style="margin-top:14px;border-top:1px solid var(--bg);padding-top:12px;display:flex;gap:7px;justify-content:flex-end;">'
+      +'<button class="btn-o" onclick="closeMov(\'saleMov\');showRecu(S.viewSale)">🖨️ Reçu</button>'
+      +'<button style="padding:8px 14px;border-radius:6px;border:1.5px solid var(--red);background:#fff;color:var(--red);font-size:12px;font-weight:700;cursor:pointer;font-family:sans-serif;" onclick="closeMov(\'saleMov\');deleteSale(\''+s.id+'\')">🗑️ Supprimer</button>'
+      +'</div>';
+  } else {
+    footer = '<div style="margin-top:14px;border-top:1px solid var(--bg);padding-top:12px;text-align:right;">'
+      +'<button class="btn-o" onclick="closeMov(\'saleMov\');showRecu(S.viewSale)">🖨️ Reçu</button>'
+      +(s && s.locked ? '<span style="font-size:11px;color:var(--text3);margin-left:10px;">🔒 Vente verrouillée</span>' : '')
+      +'</div>';
+  }
+  document.getElementById('saleMBody').innerHTML = h + footer;
   document.getElementById('saleMov').classList.add('show');
 }
 function recuFromSale(){if(S.viewSale){closeMov('saleMov');showRecu(S.viewSale);}}
@@ -3177,6 +3299,7 @@ function onEmpRoleChange(){
   var role = roleEl.value;
   var PERMS = {
     caissier: { vente:'✅', articles:'❌', backoffice:'❌', employes:'❌', settings:'❌', remboursement:'✅', clients:'❌', export:'❌' },
+    vendeur:  { vente:'✅', articles:'❌', backoffice:'❌', employes:'❌', settings:'❌', remboursement:'✅', clients:'✅', export:'❌' },
     gerant:   { vente:'✅', articles:'✅', backoffice:'✅', employes:'❌', settings:'❌', remboursement:'✅', clients:'✅', export:'✅' },
     proprio:  { vente:'✅', articles:'✅', backoffice:'✅', employes:'✅', settings:'✅', remboursement:'✅', clients:'✅', export:'✅' }
   };
@@ -3215,7 +3338,7 @@ function renderEmpGrid(){
       +(isActive?'<div class="emp-active-badge">Actif</div>':'')
       +'<div class="emp-avatar">'+init+'</div>'
       +'<div class="emp-name">'+e.name+'</div>'
-      +'<div class="emp-role">'+(e.role==='proprio'?'👑 Propriétaire':e.role==='gerant'?'👔 Gérant':'🧾 Caissier')+'</div>'
+      +'<div class="emp-role">'+(e.role==='proprio'?'👑 Propriétaire':e.role==='gerant'?'👔 Gérant':e.role==='vendeur'?'🛍️ Vendeur':'🧾 Caissier')+'</div>'
       +'<div style="font-size:10px;margin-top:2px;">'+(e.pin?'🔐 PIN défini':'⚠️ Pas de PIN')+'</div>'
       +'<div class="emp-stats">'+sales.length+' vente(s) · '+fmt(total)+'</div>'
       +'<div class="emp-actions">'
@@ -3324,7 +3447,7 @@ function showLoginScreen(){
   }
   list.innerHTML = emps.map(function(e){
     var init      = e.name.charAt(0).toUpperCase();
-    var roleLabel = e.role==='proprio'?'👑 Propriétaire':e.role==='gerant'?'👔 Gérant':'🧾 Caissier';
+    var roleLabel = e.role==='proprio'?'👑 Propriétaire':e.role==='gerant'?'👔 Gérant':e.role==='vendeur'?'🛍️ Vendeur':'🧾 Caissier';
     var hasPIN    = e.pin && e.pin.length===4;
     var lockIco   = hasPIN ? '🔐' : '⚠️';
     // Data attribute pou evite quote issues
@@ -3346,19 +3469,29 @@ var ROLE_PERMS = {
     vente:true, panier:true, moncash:true,
     articles:false, backoffice:false, employes:false,
     fournisseurs:false, settings:false, import:false,
-    remboursement:true, clients:false, export:false
+    remboursement:true, clients:false, export:false,
+    modifie_vente:false, supprime_vente:false
+  },
+  vendeur: {
+    vente:true, panier:true, moncash:true,
+    articles:false, backoffice:false, employes:false,
+    fournisseurs:false, settings:false, import:false,
+    remboursement:true, clients:true, export:false,
+    modifie_vente:false, supprime_vente:false
   },
   gerant: {
     vente:true, panier:true, moncash:true,
     articles:true, backoffice:true, employes:false,
     fournisseurs:true, settings:false, import:true,
-    remboursement:true, clients:true, export:true
+    remboursement:true, clients:true, export:true,
+    modifie_vente:false, supprime_vente:false
   },
   proprio: {
     vente:true, panier:true, moncash:true,
     articles:true, backoffice:true, employes:true,
     fournisseurs:true, settings:true, import:true,
-    remboursement:true, clients:true, export:true
+    remboursement:true, clients:true, export:true,
+    modifie_vente:true, supprime_vente:true
   }
 };
 
@@ -3414,7 +3547,7 @@ function applyRoleRestrictions(role){
   }
 
   // Badge ki montre role kounye a nan topbar
-  var roleLabel = role==='proprio'?'👑 Proprio':role==='gerant'?'👔 Gérant':'🧾 Caissier';
+  var roleLabel = role==='proprio'?'👑 Proprio':role==='gerant'?'👔 Gérant':role==='vendeur'?'🛍️ Vendeur':'🧾 Caissier';
   var cashierPill = document.querySelector('.cashier-pill');
   if(cashierPill){
     cashierPill.textContent = (S.settings.cashier||'') + ' · ' + roleLabel;
@@ -3449,7 +3582,7 @@ function loginAs(name){
 }
 
 function getRoleLabel(role){
-  return role==='proprio'?'Propriétaire':role==='gerant'?'Gérant':'Caissier';
+  return role==='proprio'?'👑 Propriétaire':role==='gerant'?'👔 Gérant':role==='vendeur'?'🛍️ Vendeur':'🧾 Caissier';
 }
 
 function showSetPinModal(emp){
