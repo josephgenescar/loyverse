@@ -758,91 +758,117 @@ function doSignup() {
 function doSignin() {
   var email = document.getElementById('si-email').value.trim().toLowerCase();
   var pass  = document.getElementById('si-pass').value;
-  if (!email || !pass) { showAuthErr('signin','Veuillez remplir tous les champs.'); return; }
+  if (!email || !pass) { showAuthErr('signin','Remplissez email et mot de passe.'); return; }
 
   var btn = document.querySelector('#screen-signin .auth-btn');
-  if(btn){ btn.textContent = 'Connexion...'; btn.disabled = true; }
+  if(btn){ btn.textContent = '⏳ Connexion...'; btn.disabled = true; }
 
-  // ── Etap 1: Eseye lokal anvan ──
+  var passHash = btoa(pass);
+
+  // ── ETAP 1: Verifye lokal anvan ──
   var stored = localStorage.getItem('konektem_user');
   if(stored){
     try{
       var u = JSON.parse(stored);
-      if(u.email === email && u.pass && btoa(pass) === u.pass){
+      // Email + modpas kòrèk lokal
+      if(u.email === email && u.pass && u.pass === passHash){
         if(btn){ btn.textContent = 'Se connecter →'; btn.disabled = false; }
         hideScreen('signin');
         setTimeout(function(){ window.location.href = 'app.html'; }, 200);
         return;
       }
+      // Email kòrèk men pa gen modpas lokal — eseye Supabase
     }catch(e){}
   }
 
-  // ── Etap 2: Verifye Supabase (nouvo appareil) ──
-  fetch(SUPA_URL + '/rest/v1/konektem_users?email=eq.' + encodeURIComponent(email) + '&select=email,bizname,secteur,plan,status,trial_days,premium_date,premium_plan,created_at', {
-    headers: {
-      'apikey': SUPA_KEY,
-      'Authorization': 'Bearer ' + SUPA_KEY,
-      'Content-Type': 'application/json'
-    }
+  // ── ETAP 2: Verifye Supabase (nouvo aparèy oswa 1er login) ──
+  fetch(SUPA_URL + '/rest/v1/konektem_users?email=eq.' + encodeURIComponent(email) +
+    '&select=email,bizname,secteur,plan,status,trial_days,premium_date,premium_plan,created_at,pass_hash', {
+    headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
     if(btn){ btn.textContent = 'Se connecter →'; btn.disabled = false; }
+
     if(!data || !data.length){
-      showAuthErr('signin','Aucun compte trouvé pour cet email. Créez un compte gratuit.');
+      showAuthErr('signin','Aucun compte trouvé. Créez un compte gratuit.');
       return;
     }
+
     var remote = data[0];
-    // Kalkile jou trial ki rete
-    var trialStart = remote.created_at || new Date().toISOString();
-    var trialDays  = remote.trial_days || 14;
-    // Kreye done lokal pou nouvo appareil la
+
+    // ── Verifye modpas via Supabase pass_hash ──
+    if(remote.pass_hash && remote.pass_hash !== passHash){
+      showAuthErr('signin','Mot de passe incorrect.');
+      return;
+    }
+    // Si pa gen pass_hash nan Supabase ancora, aksepte (kont ansyen)
+    // Epi sove modpas la pou pwochen fwa
+
+    var trialStart = remote.trial_start || remote.created_at || new Date().toISOString();
     var userData = {
-      name:       remote.bizname || email,
-      email:      email,
-      pass:       btoa(pass),
-      startDate:  trialStart,
-      plan:       remote.plan || 'trial',
-      trialDays:  trialDays,
-      bizname:    remote.bizname || '',
-      sector:     remote.secteur || '',
+      name:        remote.bizname || email,
+      email:       email,
+      pass:        passHash,
+      startDate:   trialStart,
+      plan:        remote.plan || 'trial',
+      trialDays:   remote.trial_days || 14,
+      bizname:     remote.bizname || '',
+      sector:      remote.secteur || '',
       premiumDate: remote.premium_date || null,
       premiumPlan: remote.premium_plan || null,
-      status:     remote.status || 'active'
+      status:      remote.status || 'active'
     };
     localStorage.setItem('konektem_user', JSON.stringify(userData));
-    // Sove nan S.settings format tou
-    var appData = {
-      settings: {
-        bizname: remote.bizname||'',
-        sector:  remote.secteur||'',
-        plan:    remote.plan||'trial',
-        trialStart: trialStart,
-        premiumDate: remote.premium_date||null,
-        premiumPlan: remote.premium_plan||null,
-        status: remote.status||'active'
-      }
-    };
-    // Mete a jou localStorage pou app.html jwenn done yo
-    var existing = localStorage.getItem('konektem_data');
-    if(existing){
+
+    // ── Sync settings pou app.html ──
+    var appStored = localStorage.getItem('konektem_app');
+    if(appStored){
       try{
-        var ex = JSON.parse(existing);
-        ex.settings = Object.assign(ex.settings||{}, appData.settings);
-        localStorage.setItem('konektem_data', JSON.stringify(ex));
-      }catch(e){ localStorage.setItem('konektem_data', JSON.stringify(appData)); }
-    } else {
-      localStorage.setItem('konektem_data', JSON.stringify(appData));
+        var app = JSON.parse(appStored);
+        // Mete a jou sèlman plan ak status (pa ekrase done lokal)
+        app.settings = app.settings || {};
+        app.settings.plan        = remote.plan || 'trial';
+        app.settings.trialStart  = trialStart;
+        app.settings.premiumDate = remote.premium_date || null;
+        app.settings.premiumPlan = remote.premium_plan || null;
+        if(remote.bizname) app.settings.bizname = remote.bizname;
+        if(remote.secteur) app.settings.sector  = remote.secteur;
+        localStorage.setItem('konektem_app', JSON.stringify(app));
+      }catch(e){}
     }
+
+    // Mete a jou pass_hash nan Supabase si li pa egziste
+    if(!remote.pass_hash){
+      fetch(SUPA_URL + '/rest/v1/konektem_users?email=eq.' + encodeURIComponent(email), {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY,
+          'Content-Type': 'application/json', 'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ pass_hash: passHash })
+      }).catch(function(){});
+    }
+
     hideScreen('signin');
     setTimeout(function(){ window.location.href = 'app.html'; }, 200);
   })
-  .catch(function(){
+  .catch(function(err){
     if(btn){ btn.textContent = 'Se connecter →'; btn.disabled = false; }
-    showAuthErr('signin','Erreur de connexion. Vérifiez votre connexion internet.');
+    // Offline — si gen done lokal, kite konekte
+    if(stored){
+      try{
+        var u2 = JSON.parse(stored);
+        if(u2.email === email){
+          hideScreen('signin');
+          setTimeout(function(){ window.location.href = 'app.html'; }, 200);
+          return;
+        }
+      }catch(e){}
+    }
+    showAuthErr('signin','Erreur de connexion. Vérifiez votre internet.');
   });
 }
-
 // Afficher erreur dans le formulaire (pas un alert)
 function showAuthErr(form, msg) {
   var id = 'auth-err-' + form;

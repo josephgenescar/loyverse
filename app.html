@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1775961849">
+<meta name="version" content="1776031655">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#16a34a">
@@ -916,6 +916,7 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
               <div class="bk-title">Exporter Backup</div>
               <div class="bk-sub">Téléchargez toutes vos données (articles, ventes, clients, paramètres) en fichier JSON.</div>
               <button class="btn-g" onclick="exportBackup()" style="width:100%">⬇️ Télécharger backup</button>
+              <button class="btn-o" onclick="manualCloudSync()" style="width:100%;margin-top:8px;">☁️ Sync Cloud maintenant</button>
             </div>
             <div class="bk-card">
               <div class="bk-ico">📥</div>
@@ -923,6 +924,7 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
               <div class="bk-sub">Importez un fichier backup pour restaurer toutes vos données sur un nouvel appareil.</div>
               <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="importBackup(this)">
               <button class="btn-o" onclick="document.getElementById('restoreFile').click()" style="width:100%">📂 Choisir fichier</button>
+              <button class="btn-g" onclick="forcePullCloud()" style="width:100%;margin-top:8px;">⬇️ Charger depuis Cloud</button>
             </div>
           </div>
           <div class="set-sec" style="margin-top:14px">
@@ -1601,7 +1603,8 @@ function showManualPayModal(plan, prix, unite){
 
     var mov = document.createElement('div');
     mov.id  = 'pay-step-mov';
-    mov.style.cssText = 'position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;';
+    // z-index 3000 — anwo tout lòt modal, pa ka fèmen ak klik deyò
+    mov.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;';
 
     // Enrejistre peman an atant nan Supabase
     var userEmail = S.userEmail||(function(){try{return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||'';}catch(e){return '';}})();
@@ -1610,11 +1613,13 @@ function showManualPayModal(plan, prix, unite){
     var inner = document.createElement('div');
     inner.style.cssText = 'background:#0a1f14;border:1px solid rgba(34,197,94,.35);border-radius:18px;padding:26px;width:100%;max-width:400px;position:relative;';
 
-    // Bouton fèmen
+    // PAS DE BOUTON FERMER — kliyan OBLIJE peye pou jwenn aksè
+    // (Sèlman si pa gen expired wall — janm yon nouvo fonksyon ka pase onClose callback)
     var btnX = document.createElement('button');
-    btnX.style.cssText = 'position:absolute;top:12px;right:12px;background:rgba(255,255,255,.12);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;';
+    btnX.style.cssText = 'position:absolute;top:12px;right:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.3);width:28px;height:28px;border-radius:50%;cursor:default;font-size:15px;pointer-events:none;opacity:0.3;';
     btnX.textContent = '✕';
-    btnX.onclick = closePay;
+    btnX.title = 'Paiement requis pour continuer';
+    // btnX.onclick = closePay;  // DESAKTIVE — pa ka fèmen
 
     // Header
     var hdr = document.createElement('div');
@@ -1672,7 +1677,12 @@ function showManualPayModal(plan, prix, unite){
     inner.appendChild(sec2);
     inner.appendChild(sec3);
     mov.appendChild(inner);
-    mov.addEventListener('click', function(e){ if(e.target===mov) closePay(); });
+    // Klik deyò DEZAKTIVE — pa ka bypass modal peman
+    mov.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      // Pa fèmen — kliyan oblije peye
+    });
     document.body.appendChild(mov);
 
     setTimeout(function(){ var inp=document.getElementById('act-inp'); if(inp) inp.focus(); }, 300);
@@ -2038,6 +2048,12 @@ function syncUserToSupabase(){
 }
 
 function pushUserToSupabase(email){
+  // Jwenn modpas hash pou sove nan Supabase (pou multi-aparèy)
+  var passHash = '';
+  try{
+    var lu = JSON.parse(localStorage.getItem('konektem_user')||'{}');
+    passHash = lu.pass || '';
+  }catch(e){}
   var body = JSON.stringify({
     email:       email,
     bizname:     S.settings.bizname||'',
@@ -2047,7 +2063,8 @@ function pushUserToSupabase(email){
     last_seen:   new Date().toISOString(),
     trial_start: S.settings.trialStart||null,
     premium_date: S.settings.premiumDate||null,
-    premium_plan: S.settings.premiumPlan||null
+    premium_plan: S.settings.premiumPlan||null,
+    pass_hash:   passHash  // pou multi-aparèy login
   });
   // Upsert — kreye si pa egziste, mete a jou si egziste
   fetch(SUPA_URL_APP+'/rest/v1/konektem_users', {
@@ -2061,12 +2078,94 @@ function pushUserToSupabase(email){
     body: body
   })
   .then(function(r){
-    console.log('[Konektem] Sync Supabase →', r.status, email);
+    console.log('[Konektem] Sync user →', r.status, email);
     if(!r.ok) r.text().then(function(t){ console.error('[Konektem] Sync error:', t); });
+    else {
+      // Apre sync user, sync done biznis (Premium sèlman)
+      if(S.settings.plan === 'premium') pushBizDataToSupabase(email);
+    }
   })
   .catch(function(err){
     console.warn('[Konektem] Sync echwe (offline?):', err.message);
   });
+}
+
+// ── Sync done biznis (atik, vant, kliyan) pou propriétaire ──
+// Stocke kòm JSONB nan konektem_data table
+function pushBizDataToSupabase(email){
+  if(!email) return;
+  var bizData = {
+    email:     email,
+    biz_id:    S.settings.businessId || email,
+    products:  JSON.stringify(S.products || []),
+    sales:     JSON.stringify((S.sales || []).slice(0, 500)), // dènye 500
+    clients:   JSON.stringify(S.clients || []),
+    categories: JSON.stringify(S.categories || []),
+    employees: JSON.stringify((S.employees || []).map(function(e){
+      // Pa voye PIN nan Supabase pou sekirite
+      return {id:e.id, name:e.name, role:e.role, tel:e.tel};
+    })),
+    updated_at: new Date().toISOString()
+  };
+  fetch(SUPA_URL_APP + '/rest/v1/konektem_data', {
+    method: 'POST',
+    headers: {
+      'apikey': SUPA_KEY_APP,
+      'Authorization': 'Bearer ' + SUPA_KEY_APP,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates,return=minimal',
+      'on_conflict': 'email'
+    },
+    body: JSON.stringify(bizData)
+  })
+  .then(function(r){
+    console.log('[Konektem] BizData sync →', r.status);
+  })
+  .catch(function(err){
+    console.warn('[Konektem] BizData sync echwe:', err.message);
+  });
+}
+
+// ── Tire done biznis depi Supabase ──
+// Rele sa lè propriétaire konekte sou nouvo aparèy
+function pullBizDataFromSupabase(email, onDone){
+  if(!email) return;
+  fetch(SUPA_URL_APP + '/rest/v1/konektem_data?email=eq.' + encodeURIComponent(email) + '&select=*', {
+    headers: {
+      'apikey': SUPA_KEY_APP,
+      'Authorization': 'Bearer ' + SUPA_KEY_APP
+    }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(!data || !data.length) { if(onDone) onDone(false); return; }
+    var biz = data[0];
+    // Sèlman mete a jou si done Supabase yo pi resan ke lokal yo
+    var remoteDate = biz.updated_at ? new Date(biz.updated_at) : null;
+    var localDate  = S.settings.lastBizSync ? new Date(S.settings.lastBizSync) : null;
+    if(remoteDate && (!localDate || remoteDate > localDate)){
+      try {
+        var prods = JSON.parse(biz.products || '[]');
+        var sales = JSON.parse(biz.sales || '[]');
+        var clients = JSON.parse(biz.clients || '[]');
+        var cats  = JSON.parse(biz.categories || '[]');
+        if(prods.length)   S.products   = prods;
+        if(sales.length)   S.sales      = sales;
+        if(clients.length) S.clients    = clients;
+        if(cats.length)    S.categories = cats;
+        S.settings.lastBizSync = biz.updated_at;
+        save();
+        console.log('[Konektem] BizData pulled:', prods.length, 'prods,', sales.length, 'sales');
+        if(onDone) onDone(true);
+      } catch(e) {
+        console.error('[Konektem] BizData parse error:', e);
+        if(onDone) onDone(false);
+      }
+    } else {
+      if(onDone) onDone(false);
+    }
+  })
+  .catch(function(){ if(onDone) onDone(false); });
 }
 
 function showRenewalWall(plan){
@@ -2200,6 +2299,19 @@ function startApp(){
   updateTopbar(); updateTrialBar();
   checkTrialOnStart();
   initDarkMode();
+  // Pull done biznis si Premium (nouvo aparèy oswa apre lon tan)
+  setTimeout(function(){
+    var ueml = (function(){try{return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||'';}catch(e){return '';}}());
+    if(ueml && S.settings.plan === 'premium'){
+      pullBizDataFromSupabase(ueml, function(pulled){
+        if(pulled){
+          renderProds(); renderInv(); renderRecu(); renderCatBar();
+          notif('🔄 Données synchronisées depuis le cloud','ok');
+        }
+      });
+    }
+  }, 3000);
+
   setTimeout(syncUserToSupabase, 2000);
   // Poll Supabase chak 60 segonn pou jwenn chanjman admin
   setInterval(function(){
@@ -2604,6 +2716,13 @@ function checkout(method, montantRecu, rendu, clientInfo){
     clientId:   clientInfo ? clientInfo.clientId : null
   };
   S.sales.unshift(sale); save();
+  // Sync vant nan Supabase si Premium (pou multi-aparèy)
+  if(S.settings.plan === 'premium'){
+    var userEmail2 = S.userEmail || (function(){
+      try{return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||'';}catch(e){return '';}
+    })();
+    if(userEmail2) setTimeout(function(){ pushBizDataToSupabase(userEmail2); }, 1500);
+  }
   if(S.settings.showReceipt) showRecu(sale);
   S.cart=[]; document.getElementById('discInp').value='';
   // Reset rendu box
@@ -2718,6 +2837,11 @@ function saveProd(){
   else S.products.push(Object.assign({id:uid()},data));
   save();renderInv();renderProds();renderCatBar();
   closeMov('prodMov');notif('✅ Article enregistré !','ok');
+  // Sync atik si Premium
+  if(S.settings.plan === 'premium'){
+    var ueml = S.userEmail||(function(){try{return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||'';}catch(e){return '';}}());
+    if(ueml) setTimeout(function(){ pushBizDataToSupabase(ueml); }, 2000);
+  }
 }
 function delProd(id){
   if(!confirm('Supprimer cet article ?'))return;
@@ -3812,6 +3936,42 @@ function dlFile(content, filename, mime){
 // ════════════════════════════════════════
 // BACKUP & RESTORE
 // ════════════════════════════════════════
+
+function manualCloudSync(){
+  var email = S.userEmail || (function(){
+    try{return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||'';}
+    catch(e){return '';}
+  })();
+  if(!email){ notif('Connectez-vous pour utiliser le cloud','err'); return; }
+  if(S.settings.plan !== 'premium'){
+    notif('☁️ Sync Cloud disponible avec Premium','err'); return;
+  }
+  notif('☁️ Synchronisation en cours...','inf');
+  // Push done lokal → Supabase
+  pushBizDataToSupabase(email);
+  setTimeout(function(){
+    notif('✅ Données sauvegardées dans le cloud','ok');
+  }, 3000);
+}
+
+function forcePullCloud(){
+  var email = S.userEmail || (function(){
+    try{return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||'';}
+    catch(e){return '';}
+  })();
+  if(!email || S.settings.plan !== 'premium') return;
+  notif('⬇️ Téléchargement depuis le cloud...','inf');
+  S.settings.lastBizSync = null; // Fòse re-download
+  save();
+  pullBizDataFromSupabase(email, function(pulled){
+    if(pulled){
+      renderProds(); renderInv(); renderRecu(); renderCatBar();
+      notif('✅ Données chargées depuis le cloud','ok');
+    } else {
+      notif('Aucune donnée cloud trouvée','err');
+    }
+  });
+}
 
 function exportBackup(){
   var backup = {
