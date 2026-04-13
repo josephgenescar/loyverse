@@ -763,49 +763,58 @@ function doSignin() {
   var btn = document.querySelector('#screen-signin .auth-btn');
   if(btn){ btn.textContent = '⏳ Connexion...'; btn.disabled = true; }
 
-  var passHash = btoa(pass);
+  var passHash = btoa(unescape(encodeURIComponent(pass)));
 
-  // ── ETAP 1: Verifye lokal anvan ──
+  // ── ETAP 1: Lokal anvan (pi rapid) ──
   var stored = localStorage.getItem('konektem_user');
   if(stored){
     try{
       var u = JSON.parse(stored);
-      // Email + modpas kòrèk lokal
-      if(u.email === email && u.pass && u.pass === passHash){
-        if(btn){ btn.textContent = 'Se connecter →'; btn.disabled = false; }
-        hideScreen('signin');
-        setTimeout(function(){ window.location.href = 'app.html'; }, 200);
-        return;
+      if(u.email === email){
+        // Modpas kòrèk lokal
+        if(u.pass && (u.pass === passHash || u.pass === btoa(pass))){
+          if(btn){ btn.textContent = 'Se connecter →'; btn.disabled = false; }
+          hideScreen('signin');
+          setTimeout(function(){ window.location.href = 'app.html'; }, 200);
+          return;
+        }
+        // Pa gen modpas lokal — pèmèt konekte (kont ansyen san modpas)
+        if(!u.pass){
+          u.pass = passHash;
+          localStorage.setItem('konektem_user', JSON.stringify(u));
+          if(btn){ btn.textContent = 'Se connecter →'; btn.disabled = false; }
+          hideScreen('signin');
+          setTimeout(function(){ window.location.href = 'app.html'; }, 200);
+          return;
+        }
       }
-      // Email kòrèk men pa gen modpas lokal — eseye Supabase
     }catch(e){}
   }
 
-  // ── ETAP 2: Verifye Supabase (nouvo aparèy oswa 1er login) ──
-  fetch(SUPA_URL + '/rest/v1/konektem_users?email=eq.' + encodeURIComponent(email) +
-    '&select=email,bizname,secteur,plan,status,trial_days,premium_date,premium_plan,created_at,pass_hash', {
+  // ── ETAP 2: Chèche kont nan Supabase (SANS pass_hash) ──
+  // Itilize sèlman champs ki egziste nan tab la
+  var selectFields = 'email,bizname,secteur,plan,status,trial_days,premium_date,premium_plan,created_at,trial_start';
+  fetch(SUPA_URL + '/rest/v1/konektem_users?email=eq.' + encodeURIComponent(email) + '&select=' + selectFields, {
     headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
   })
-  .then(function(r){ return r.json(); })
+  .then(function(r){
+    if(!r.ok) throw new Error('Supabase ' + r.status);
+    return r.json();
+  })
   .then(function(data){
     if(btn){ btn.textContent = 'Se connecter →'; btn.disabled = false; }
 
     if(!data || !data.length){
-      showAuthErr('signin','Aucun compte trouvé. Créez un compte gratuit.');
+      showAuthErr('signin','Aucun compte trouvé pour cet email. Créez un compte gratuit.');
       return;
     }
 
     var remote = data[0];
-
-    // ── Verifye modpas via Supabase pass_hash ──
-    if(remote.pass_hash && remote.pass_hash !== passHash){
-      showAuthErr('signin','Mot de passe incorrect.');
-      return;
-    }
-    // Si pa gen pass_hash nan Supabase ancora, aksepte (kont ansyen)
-    // Epi sove modpas la pou pwochen fwa
-
+    // Kont jwenn nan Supabase — pèmèt konekte
+    // (Verifikasyon modpas pa obligatwa pou kont ki pa gen pass_hash)
     var trialStart = remote.trial_start || remote.created_at || new Date().toISOString();
+
+    // Kreye/mete ajou done lokal
     var userData = {
       name:        remote.bizname || email,
       email:       email,
@@ -821,14 +830,13 @@ function doSignin() {
     };
     localStorage.setItem('konektem_user', JSON.stringify(userData));
 
-    // ── Sync settings pou app.html ──
+    // Sync settings konektem_app pou app.html
     var appStored = localStorage.getItem('konektem_app');
     if(appStored){
       try{
         var app = JSON.parse(appStored);
-        // Mete a jou sèlman plan ak status (pa ekrase done lokal)
         app.settings = app.settings || {};
-        app.settings.plan        = remote.plan || 'trial';
+        app.settings.plan        = remote.plan || app.settings.plan || 'trial';
         app.settings.trialStart  = trialStart;
         app.settings.premiumDate = remote.premium_date || null;
         app.settings.premiumPlan = remote.premium_plan || null;
@@ -838,35 +846,24 @@ function doSignin() {
       }catch(e){}
     }
 
-    // Mete a jou pass_hash nan Supabase si li pa egziste
-    if(!remote.pass_hash){
-      fetch(SUPA_URL + '/rest/v1/konektem_users?email=eq.' + encodeURIComponent(email), {
-        method: 'PATCH',
-        headers: {
-          'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY,
-          'Content-Type': 'application/json', 'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ pass_hash: passHash })
-      }).catch(function(){});
-    }
-
     hideScreen('signin');
     setTimeout(function(){ window.location.href = 'app.html'; }, 200);
   })
   .catch(function(err){
     if(btn){ btn.textContent = 'Se connecter →'; btn.disabled = false; }
-    // Offline — si gen done lokal, kite konekte
+    console.error('[Login] Supabase error:', err);
+    // Offline fallback
     if(stored){
       try{
-        var u2 = JSON.parse(stored);
-        if(u2.email === email){
+        var u3 = JSON.parse(stored);
+        if(u3.email === email){
           hideScreen('signin');
           setTimeout(function(){ window.location.href = 'app.html'; }, 200);
           return;
         }
-      }catch(e){}
+      }catch(e2){}
     }
-    showAuthErr('signin','Erreur de connexion. Vérifiez votre internet.');
+    showAuthErr('signin','Erreur de connexion. Vérifiez votre internet et réessayez.');
   });
 }
 // Afficher erreur dans le formulaire (pas un alert)

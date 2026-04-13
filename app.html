@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1776031655">
+<meta name="version" content="1776049642">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#16a34a">
@@ -685,6 +685,11 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
         <div class="sec-card" onclick="selSec(this,'pharmacie')"><div class="sec-ico">💊</div><div class="sec-name">Pharmacie</div><div class="sec-desc">Médicaments, DCI, ordonnances</div></div>
         <div class="sec-card" onclick="selSec(this,'electronique')"><div class="sec-ico">📱</div><div class="sec-name">Électronique</div><div class="sec-desc">Appareils, accessoires, tech</div></div>
         <div class="sec-card" onclick="selSec(this,'restaurant')"><div class="sec-ico">🍽️</div><div class="sec-name">Restaurant</div><div class="sec-desc">Tables, commandes, menus</div></div>
+        <div class="sec-card" onclick="selSec(this,'store')"><div class="sec-ico">👗</div><div class="sec-name">Boutique / Mode</div><div class="sec-desc">Vêtements, chaussures, accessoires</div></div>
+        <div class="sec-card" onclick="selSec(this,'quincaillerie')"><div class="sec-ico">🔧</div><div class="sec-name">Quincaillerie</div><div class="sec-desc">Matériaux, outils, construction</div></div>
+        <div class="sec-card" onclick="selSec(this,'depot')"><div class="sec-ico">🏭</div><div class="sec-name">Dépôt / Grossiste</div><div class="sec-desc">Vente en gros, distribution</div></div>
+        <div class="sec-card" onclick="selSec(this,'salon')"><div class="sec-ico">✂️</div><div class="sec-name">Salon / Beauté</div><div class="sec-desc">Coiffure, manucure, soins</div></div>
+        <div class="sec-card" onclick="selSec(this,'service')"><div class="sec-ico">🛠️</div><div class="sec-name">Services / Réparation</div><div class="sec-desc">Réparation, impression, tech</div></div>
       </div>
       <button class="ob-btn" id="ob-btn1" onclick="obNext(1)" disabled>Continuer →</button>
       <button class="ob-back" onclick="obBack(1)">← Retour</button>
@@ -1310,13 +1315,30 @@ var TRIAL_LIMIT_ARTICLES = 50;
 var TRIAL_LIMIT_SALES = 30;
 var TRIAL_DAYS = 14;
 
-var SECTOR_LABELS = {marche:'🛒 Marché / Épicerie',pharmacie:'💊 Pharmacie',electronique:'📱 Électronique',restaurant:'🍽️ Restaurant'};
+var SECTOR_LABELS = {
+  marche:'🛒 Marché / Épicerie',
+  pharmacie:'💊 Pharmacie',
+  electronique:'📱 Électronique',
+  restaurant:'🍽️ Restaurant',
+  store:'👗 Boutique / Mode',
+  quincaillerie:'🔧 Quincaillerie',
+  depot:'🏭 Dépôt / Grossiste',
+  salon:'✂️ Salon / Beauté',
+  service:'🛠️ Services / Réparation'
+};
 var SECTOR_CATS = {
   marche:['Épicerie','Boissons','Fruits & Légumes','Produits laitiers','Viandes','Condiments','Hygiène','Autres'],
   pharmacie:['Médicaments','Vitamines','Pansements','Hygiène','Bébé','Orthopédie','Parapharmacie','Autres'],
   electronique:['Smartphones','Accessoires','Ordinateurs','Audio/Vidéo','Réseaux','Câbles','Pièces détachées','Services'],
-  restaurant:['Entrées','Plats principaux','Boissons','Desserts','Sandwiches','Petits-déjeuners','À emporter','Autres']
+  restaurant:['Entrées','Plats principaux','Boissons','Desserts','Sandwiches','Petits-déjeuners','À emporter','Autres'],
+  store:['Vêtements Femme','Vêtements Homme','Enfants','Chaussures','Accessoires','Sacs & Maroquinerie','Lingerie','Autres'],
+  quincaillerie:['Matériaux','Quincaillerie','Peintures','Électricité','Plomberie','Outils','Ciment & Sable','Autres'],
+  depot:['Alimentaire','Boissons','Hygiène & Beauté','Électroménager','Construction','Divers','En vrac','Autres'],
+  salon:['Coiffure','Manucure','Soins visage','Épilation','Maquillage','Produits capillaires','Massages','Autres'],
+  service:['Réparation smartphone','Réparation électro','Couture','Impression','Livraison','Informatique','Électricité','Autres']
 };
+
+
 var SECTOR_SEEDS = {
   marche:[
     {name:'Riz blanc 5lb',price:150,cost:100,stock:50,lowStock:5,category:'Épicerie'},
@@ -1357,6 +1379,46 @@ var SECTOR_SEEDS = {
     {name:'Eau minérale',price:75,cost:40,stock:60,lowStock:10,category:'Boissons'},
     {name:'Café noir',price:80,cost:30,stock:999,lowStock:0,category:'Boissons'},
     {name:'Sandwich poulet',price:200,cost:100,stock:20,lowStock:3,category:'Sandwiches'}
+  ],
+  store:[
+    {name:'Robe casual',price:1800,cost:1100,stock:15,lowStock:2,category:'Vêtements Femme'},
+    {name:'Jeans homme slim',price:2200,cost:1400,stock:12,lowStock:2,category:'Vêtements Homme'},
+    {name:'T-shirt basique',price:600,cost:350,stock:40,lowStock:5,category:'Vêtements Homme'},
+    {name:'Sneakers blanc',price:3500,cost:2200,stock:8,lowStock:2,category:'Chaussures'},
+    {name:'Sandales femme',price:1500,cost:900,stock:10,lowStock:2,category:'Chaussures'},
+    {name:'Sac à main',price:2800,cost:1800,stock:7,lowStock:1,category:'Sacs & Maroquinerie'}
+  ],
+  quincaillerie:[
+    {name:'Ciment Portland 50kg',price:1200,cost:850,stock:50,lowStock:10,category:'Ciment & Sable'},
+    {name:'Barre de fer 10mm',price:800,cost:550,stock:30,lowStock:5,category:'Matériaux'},
+    {name:'Peinture blanc 4L',price:1800,cost:1200,stock:20,lowStock:3,category:'Peintures'},
+    {name:'Câble électrique 2.5mm',price:150,cost:90,stock:200,lowStock:30,category:'Électricité'},
+    {name:'Marteau 500g',price:600,cost:380,stock:15,lowStock:3,category:'Outils'},
+    {name:'Robinet mélangeur',price:1500,cost:950,stock:10,lowStock:2,category:'Plomberie'}
+  ],
+  depot:[
+    {name:'Huile végétale 20L',price:4500,cost:3200,stock:20,lowStock:3,category:'Alimentaire'},
+    {name:'Farine blé 25kg',price:2800,cost:2000,stock:15,lowStock:3,category:'Alimentaire'},
+    {name:'Riz importé 50kg',price:5500,cost:4000,stock:25,lowStock:5,category:'Alimentaire'},
+    {name:'Sucre blanc 25kg',price:3200,cost:2300,stock:18,lowStock:3,category:'Alimentaire'},
+    {name:'Savon lessive 10kg',price:1800,cost:1200,stock:30,lowStock:5,category:'Hygiène & Beauté'},
+    {name:'Eau minérale (carton 24)',price:700,cost:450,stock:50,lowStock:10,category:'Boissons'}
+  ],
+  salon:[
+    {name:'Coupe femme',price:500,cost:200,stock:999,lowStock:0,category:'Coiffure'},
+    {name:'Coupe homme',price:300,cost:100,stock:999,lowStock:0,category:'Coiffure'},
+    {name:'Tresse',price:1500,cost:500,stock:999,lowStock:0,category:'Coiffure'},
+    {name:'Manucure',price:600,cost:150,stock:999,lowStock:0,category:'Manucure'},
+    {name:'Coloration',price:2000,cost:800,stock:999,lowStock:0,category:'Coiffure'},
+    {name:'Shampooing',price:400,cost:100,stock:30,lowStock:5,category:'Produits capillaires'}
+  ],
+  service:[
+    {name:'Réparation écran',price:2500,cost:1500,stock:10,lowStock:2,category:'Réparation smartphone'},
+    {name:'Changement batterie',price:1500,cost:800,stock:15,lowStock:3,category:'Réparation smartphone'},
+    {name:'Déverrouillage',price:1000,cost:200,stock:999,lowStock:0,category:'Réparation smartphone'},
+    {name:'Impression A4',price:25,cost:8,stock:500,lowStock:50,category:'Impression'},
+    {name:'Impression couleur',price:75,cost:25,stock:200,lowStock:30,category:'Impression'},
+    {name:'Réparation PC',price:3000,cost:1000,stock:999,lowStock:0,category:'Informatique'}
   ]
 };
 
@@ -2064,7 +2126,7 @@ function pushUserToSupabase(email){
     trial_start: S.settings.trialStart||null,
     premium_date: S.settings.premiumDate||null,
     premium_plan: S.settings.premiumPlan||null,
-    pass_hash:   passHash  // pou multi-aparèy login
+    // pass_hash retire — kolonne pa nan Supabase toujou
   });
   // Upsert — kreye si pa egziste, mete a jou si egziste
   fetch(SUPA_URL_APP+'/rest/v1/konektem_users', {
