@@ -3446,3 +3446,455 @@ function renderFournisseurs(){
 </script>
 </body>
 </html>
+<script>
+// ══════════════════════════════════════════════════════════
+// FONKSYON KONPLÈ — TOUT SA KI TE MANKE
+// ══════════════════════════════════════════════════════════
+
+// ── PÈMISYON PAR ROLE ──
+var ROLE_PERMS = {
+  caissier:{ vente:true,panier:true,moncash:true,articles:false,backoffice:false,employes:false,fournisseurs:false,settings:false,import:false,remboursement:true,clients:false,export:false,supprime_vente:false },
+  vendeur:{ vente:true,panier:true,moncash:true,articles:false,backoffice:false,employes:false,fournisseurs:false,settings:false,import:false,remboursement:true,clients:true,export:false,supprime_vente:false },
+  gerant:{ vente:true,panier:true,moncash:true,articles:true,backoffice:true,employes:false,fournisseurs:true,settings:false,import:true,remboursement:true,clients:true,export:true,supprime_vente:false },
+  proprio:{ vente:true,panier:true,moncash:true,articles:true,backoffice:true,employes:true,fournisseurs:true,settings:true,import:true,remboursement:true,clients:true,export:true,supprime_vente:true }
+};
+var CURRENT_PERMS = Object.assign({}, ROLE_PERMS.proprio);
+var CURRENT_ROLE  = 'proprio';
+var SESSION_OPEN_TIME = null;
+function can(perm){ return CURRENT_PERMS[perm] === true; }
+
+function getRoleLabel(role){
+  return role==='proprio'?'👑 Propriétaire':role==='gerant'?'👔 Gérant':role==='vendeur'?'🛍️ Vendeur':'🧾 Caissier';
+}
+
+function applyRoleRestrictions(role){
+  CURRENT_ROLE  = role;
+  CURRENT_PERMS = Object.assign({}, ROLE_PERMS[role] || ROLE_PERMS.proprio);
+  var sbMap = {
+    'vente':true,'recu':true,'tickets':true,
+    'clients':can('clients'),'articles':can('articles'),
+    'backoffice':can('backoffice'),'employes':can('employes'),
+    'fournisseurs':can('fournisseurs'),'settings':can('settings'),
+    'monplan':can('settings'),'backup':can('settings'),
+    'integration':can('articles'),'fonctionnalites':can('settings')
+  };
+  document.querySelectorAll('.sb-item').forEach(function(el){
+    var oc = el.getAttribute('onclick')||'';
+    var m  = oc.match(/nav\('([^']+)'/);
+    if(!m) return;
+    if(sbMap.hasOwnProperty(m[1])) el.style.display = sbMap[m[1]] ? '' : 'none';
+  });
+  var boBtn = document.getElementById('bo-btn');
+  if(boBtn) boBtn.style.display = can('backoffice') ? '' : 'none';
+  var rembBtn = document.getElementById('sb-rembours');
+  if(rembBtn) rembBtn.style.display = can('remboursement') ? '' : 'none';
+  if(role==='caissier') showView('vente');
+  var pill = document.querySelector('.cashier-pill');
+  if(pill) pill.textContent = (S.settings.cashier||'') + ' · ' + getRoleLabel(role);
+}
+
+function logSessionEvent(type, name, role, time){
+  if(!S.sessionLogs) S.sessionLogs=[];
+  S.sessionLogs.unshift({type:type,name:name,role:role,time:time,date:new Date().toISOString()});
+  if(S.sessionLogs.length>100) S.sessionLogs.pop();
+  save();
+}
+
+function showLoginScreen(){
+  var emps = S.employees||[];
+  var ls   = document.getElementById('login-screen');
+  var list = document.getElementById('cashier-list');
+  var bizEl= document.getElementById('login-biz-name');
+  if(bizEl) bizEl.textContent = (S.settings.bizname||'Konektem') + " — Qui travaille aujourd'hui ?";
+  if(!emps.length) return;
+  list.innerHTML = emps.map(function(e){
+    var init = e.name.charAt(0).toUpperCase();
+    var roleLabel = getRoleLabel(e.role||'caissier');
+    var hasPIN = e.pin && e.pin.length===4;
+    return '<button class="cashier-btn" data-empname="'+encodeURIComponent(e.name)+'" onclick="loginAs(decodeURIComponent(this.dataset.empname))">'
+      +'<div class="cav">'+init+'</div>'
+      +'<div class="cn"><span>'+e.name+'</span><span class="cr">'+roleLabel+' '+(hasPIN?'🔐':'⚠️')+'</span></div>'
+      +'<span class="arrow">›</span></button>';
+  }).join('');
+  var skipBtn = document.getElementById('skip-login-btn');
+  if(skipBtn) skipBtn.style.display = emps.length>0 ? 'none' : '';
+  ls.classList.remove('hidden');
+}
+
+function loginAs(name){
+  var emp = (S.employees||[]).find(function(e){ return e.name===name; });
+  if(!emp){ notif('Enpwaye pa jwenn','err'); return; }
+  if(!emp.pin || emp.pin.length!==4){ showSetPinModal(emp); return; }
+  showPinModal(emp, function(){
+    var role = emp.role || 'caissier';
+    S.settings.cashier = emp.name;
+    CURRENT_ROLE  = role;
+    CURRENT_PERMS = Object.assign({}, ROLE_PERMS[role]||ROLE_PERMS.caissier);
+    save(); updateTopbar(); applyRoleRestrictions(role);
+    SESSION_OPEN_TIME = new Date();
+    var now = SESSION_OPEN_TIME.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    logSessionEvent('open', emp.name, role, now);
+    document.getElementById('login-screen').classList.add('hidden');
+    notif('👋 Bonjou '+emp.name+' — '+getRoleLabel(role),'ok');
+  });
+}
+
+function showPinModal(emp, onSuccess){
+  var old = document.getElementById('pin-modal'); if(old) old.remove();
+  var mov = document.createElement('div');
+  mov.id = 'pin-modal';
+  mov.style.cssText='position:fixed;inset:0;z-index:2500;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:20px;';
+  var box = document.createElement('div');
+  box.style.cssText='background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px;width:100%;max-width:300px;text-align:center;';
+  var init = emp.name.charAt(0).toUpperCase();
+  box.innerHTML='<div style="width:52px;height:52px;border-radius:50%;background:var(--accent-l);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:var(--accent);margin:0 auto 10px;">'+init+'</div>'
+    +'<div style="font-size:17px;font-weight:800;margin-bottom:4px;">'+emp.name+'</div>'
+    +'<div style="font-size:12px;color:var(--text3);margin-bottom:16px;">'+getRoleLabel(emp.role)+'</div>'
+    +'<div id="pin-dots" style="display:flex;justify-content:center;gap:10px;margin-bottom:16px;">'
+    +'<div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);background:transparent;" id="pd0"></div>'
+    +'<div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);background:transparent;" id="pd1"></div>'
+    +'<div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);background:transparent;" id="pd2"></div>'
+    +'<div style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);background:transparent;" id="pd3"></div>'
+    +'</div>'
+    +'<div id="pin-pad" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:200px;margin:0 auto 12px;"></div>'
+    +'<div id="pin-err" style="font-size:12px;color:var(--red);min-height:18px;"></div>';
+  var cancelBtn = document.createElement('button');
+  cancelBtn.style.cssText='margin-top:8px;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;';
+  cancelBtn.textContent='Annuler';
+  cancelBtn.onclick=function(){ mov.remove(); };
+  box.appendChild(cancelBtn);
+  mov.appendChild(box);
+  document.body.appendChild(mov);
+  var entered='';
+  var pad=document.getElementById('pin-pad');
+  [1,2,3,4,5,6,7,8,9,'',0,'⌫'].forEach(function(n){
+    var btn=document.createElement('button');
+    btn.style.cssText='padding:14px;border-radius:10px;border:1.5px solid var(--border2);background:var(--bg);color:var(--text);font-size:18px;font-weight:700;cursor:pointer;';
+    btn.textContent=n;
+    if(n===''){btn.style.visibility='hidden';pad.appendChild(btn);return;}
+    btn.onclick=function(){
+      if(n==='⌫') entered=entered.slice(0,-1);
+      else if(entered.length<4) entered+=n;
+      for(var i=0;i<4;i++){var d=document.getElementById('pd'+i);if(d)d.style.background=i<entered.length?'var(--accent)':'transparent';}
+      if(entered.length===4){
+        if(entered===String(emp.pin)){mov.remove();onSuccess();}
+        else{
+          document.getElementById('pin-err').textContent='❌ PIN inkòrèk';
+          entered='';
+          for(var i=0;i<4;i++){var d=document.getElementById('pd'+i);if(d)d.style.background='transparent';}
+        }
+      } else { document.getElementById('pin-err').textContent=''; }
+    };
+    pad.appendChild(btn);
+  });
+}
+
+function showSetPinModal(emp){
+  var mov=document.createElement('div'); mov.className='mov show'; mov.id='setpin-modal';
+  var box=document.createElement('div'); box.className='modal'; box.style.maxWidth='340px'; box.style.textAlign='center';
+  box.innerHTML='<h3>⚠️ PIN manke — '+emp.name+'</h3>'
+    +'<div style="font-size:13px;color:var(--text2);margin:10px 0 16px;line-height:1.6;">Kreye yon PIN 4 chif pou li konekte.</div>'
+    +'<input id="setpin-inp" type="password" maxlength="4" inputmode="numeric" placeholder="4 chiffres" style="width:100%;padding:11px;font-size:20px;text-align:center;letter-spacing:8px;border:2px solid var(--accent);border-radius:8px;background:var(--bg);color:var(--text);outline:none;">';
+  var footer=document.createElement('div'); footer.className='mfooter';
+  var btnC=document.createElement('button'); btnC.className='btn-cancel'; btnC.textContent='Annuler'; btnC.onclick=function(){mov.remove();};
+  var btnS=document.createElement('button'); btnS.className='btn-g'; btnS.textContent='💾 Sauvegarder';
+  btnS.onclick=function(){
+    var pin=document.getElementById('setpin-inp').value.trim();
+    if(pin.length!==4||isNaN(pin)){notif('PIN 4 chif obligatwa','err');return;}
+    var empObj=(S.employees||[]).find(function(e){return e.name===emp.name;});
+    if(empObj){empObj.pin=pin;save();}
+    mov.remove();
+    showPinModal(Object.assign({},emp,{pin:pin}),function(){
+      S.settings.cashier=emp.name; save(); updateTopbar();
+      applyRoleRestrictions(emp.role||'caissier');
+      SESSION_OPEN_TIME=new Date();
+      var now=SESSION_OPEN_TIME.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+      logSessionEvent('open',emp.name,emp.role,now);
+      document.getElementById('login-screen').classList.add('hidden');
+      notif('👋 Bonjou '+emp.name+'!','ok');
+    });
+  };
+  footer.appendChild(btnC); footer.appendChild(btnS);
+  box.appendChild(footer); mov.appendChild(box); document.body.appendChild(mov);
+  setTimeout(function(){var i=document.getElementById('setpin-inp');if(i)i.focus();},100);
+}
+
+function fermerSession(){
+  if(!SESSION_OPEN_TIME){notif('Aucune session ouverte','err');return;}
+  var now=new Date();
+  var dur=Math.round((now-SESSION_OPEN_TIME)/60000);
+  var cashier=S.settings.cashier||'Caissier';
+  var nowTxt=now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  var sessionSales=S.sales.filter(function(s){return new Date(s.date)>=SESSION_OPEN_TIME;});
+  var totalSes=sessionSales.reduce(function(a,s){return a+s.total;},0);
+  logSessionEvent('close',cashier,CURRENT_ROLE,nowTxt);
+  SESSION_OPEN_TIME=null;
+  notif('🏁 Sesyon '+cashier+' fèmen — '+dur+'min · '+sessionSales.length+' vant · '+fmt(totalSes),'ok');
+  applyRoleRestrictions('proprio');
+  S.settings.cashier=S.settings.bizname||'Caissier';
+  save(); updateTopbar();
+  if((S.employees||[]).length>0) showLoginScreen();
+}
+
+function skipLogin(){
+  if((S.employees||[]).length>0){notif('Seleksyone enpwaye epi antre PIN ou','err');return;}
+  applyRoleRestrictions('proprio');
+  document.getElementById('login-screen').classList.add('hidden');
+}
+
+function showOwnerLogin(){
+  var mov=document.getElementById('ownerLoginMov');
+  if(!mov)return;
+  mov.style.zIndex='1100'; mov.style.display='flex'; mov.classList.add('show');
+  setTimeout(function(){var i=document.getElementById('owner-pw-inp');if(i){i.value='';i.focus();}var e=document.getElementById('owner-pw-err');if(e)e.textContent='';},100);
+}
+
+function checkOwnerPassword(){
+  var inp=document.getElementById('owner-pw-inp');
+  var errEl=document.getElementById('owner-pw-err');
+  var entered=inp?inp.value.trim():'';
+  var ownerPw=S.settings.ownerPassword||'RIVAYO2025';
+  if(entered===ownerPw){
+    var mov=document.getElementById('ownerLoginMov');
+    if(mov){mov.style.display='none';mov.classList.remove('show');}
+    var ls=document.getElementById('login-screen');
+    if(ls)ls.classList.add('hidden');
+    S.settings.cashier=S.settings.bizname||'Propriétaire';
+    CURRENT_ROLE='proprio'; CURRENT_PERMS=Object.assign({},ROLE_PERMS.proprio);
+    save(); updateTopbar(); applyRoleRestrictions('proprio');
+    SESSION_OPEN_TIME=new Date();
+    notif('👑 Bonjou Propriétaire — Tout aksè!','ok');
+  } else {
+    if(errEl) errEl.textContent='❌ Mot de passe incorrect';
+    if(inp){inp.value='';inp.focus();}
+  }
+}
+
+function quitterSession(){
+  closeSb();
+  var url=window.location.href;
+  if(url.indexOf('app')!==-1){var base=url.substring(0,url.lastIndexOf('/')+1);window.location.href=base+'index.html';}
+  else window.location.href='/';
+}
+
+function changerCaissier(){
+  closeSb();
+  if((S.employees||[]).length>0) showLoginScreen();
+  else{var name=prompt('Entrez le nom du caissier :');if(name&&name.trim()){S.settings.cashier=name.trim();save();updateTopbar();notif('👋 Bonjour '+name.trim()+'!','ok');}}
+}
+
+// ── EMPLOYÉS ──
+function onEmpRoleChange(){
+  var roleEl=document.getElementById('emp-role'); if(!roleEl)return;
+  var role=roleEl.value;
+  var PERMS={
+    caissier:{vente:'✅',articles:'❌',backoffice:'❌',employes:'❌',settings:'❌',remboursement:'✅',clients:'❌',export:'❌'},
+    vendeur:{vente:'✅',articles:'❌',backoffice:'❌',employes:'❌',settings:'❌',remboursement:'✅',clients:'✅',export:'❌'},
+    gerant:{vente:'✅',articles:'✅',backoffice:'✅',employes:'❌',settings:'❌',remboursement:'✅',clients:'✅',export:'✅'},
+    proprio:{vente:'✅',articles:'✅',backoffice:'✅',employes:'✅',settings:'✅',remboursement:'✅',clients:'✅',export:'✅'}
+  };
+  var labels={vente:'Caisse/Ventes',articles:'Articles',backoffice:'Back Office',employes:'Équipe',settings:'Paramètres',remboursement:'Remboursement',clients:'Clients',export:'Export CSV'};
+  var p=PERMS[role]||PERMS.caissier;
+  var box=document.getElementById('emp-perms-list'); if(!box)return;
+  box.innerHTML=Object.keys(labels).map(function(k){
+    var ok=p[k]==='✅';
+    return '<div style="display:flex;align-items:center;gap:5px;padding:3px 6px;border-radius:5px;background:'+(ok?'rgba(34,197,94,.08)':'rgba(239,68,68,.06)')+';"><span>'+(ok?'✅':'❌')+'</span><span style="font-size:11px;color:'+(ok?'var(--accent-d)':'var(--text3)')+'">'+labels[k]+'</span></div>';
+  }).join('');
+}
+
+function renderEmpGrid(){
+  var grid=document.getElementById('empGrid'); if(!grid)return;
+  var emps=S.employees||[];
+  if(!emps.length){grid.innerHTML='<div style="text-align:center;color:var(--text3);padding:30px;background:#fff;border-radius:var(--r);">Aucun membre. Cliquez "+ Ajouter membre".</div>';return;}
+  grid.innerHTML='';
+  emps.forEach(function(e){
+    var isActive=S.settings.cashier===e.name;
+    var sales=S.sales.filter(function(s){return s.cashier===e.name;});
+    var total=sales.reduce(function(a,s){return a+s.total;},0);
+    var card=document.createElement('div');
+    card.className='emp-card'+(isActive?' active-cashier':'');
+    card.innerHTML=(isActive?'<div class="emp-active-badge">Actif</div>':'')
+      +'<div class="emp-avatar">'+e.name.charAt(0).toUpperCase()+'</div>'
+      +'<div class="emp-name">'+e.name+'</div>'
+      +'<div class="emp-role">'+getRoleLabel(e.role||'caissier')+'</div>'
+      +'<div style="font-size:10px;margin-top:2px;">'+(e.pin?'🔐 PIN défini':'⚠️ Pas de PIN')+'</div>'
+      +'<div class="emp-stats">'+sales.length+' vente(s) · '+fmt(total)+'</div>';
+    var actions=document.createElement('div'); actions.className='emp-actions';
+    var btnA=document.createElement('button'); btnA.className='abt'; btnA.textContent='✓ Activer';
+    (function(n){btnA.onclick=function(){setActiveCashier(n);};})(e.name);
+    var btnE=document.createElement('button'); btnE.className='abt'; btnE.textContent='✏️';
+    (function(id){btnE.onclick=function(){openEmpMod(id);};})(e.id);
+    var btnD=document.createElement('button'); btnD.className='abt del'; btnD.textContent='🗑️';
+    (function(id){btnD.onclick=function(){delEmp(id);};})(e.id);
+    actions.appendChild(btnA); actions.appendChild(btnE); actions.appendChild(btnD);
+    card.appendChild(actions); grid.appendChild(card);
+  });
+}
+
+function openEmpMod(id){
+  S.editEmp=id||null;
+  if(id){
+    var e=(S.employees||[]).find(function(x){return x.id===id;});
+    document.getElementById('empMTitle').textContent='Modifier membre';
+    document.getElementById('emp-name').value=e.name||'';
+    document.getElementById('emp-role').value=e.role||'caissier';
+    var p=document.getElementById('emp-pin'); if(p){p.value='';p.placeholder='Laisser vide = garder PIN';}
+    var t=document.getElementById('emp-tel'); if(t)t.value=e.tel||'';
+  } else {
+    document.getElementById('empMTitle').textContent='Nouveau membre';
+    ['emp-name','emp-tel'].forEach(function(x){var el=document.getElementById(x);if(el)el.value='';});
+    var p=document.getElementById('emp-pin'); if(p){p.value='';p.placeholder='Ex: 1234';}
+    document.getElementById('emp-role').value='caissier';
+    onEmpRoleChange();
+  }
+  document.getElementById('empMov').classList.add('show');
+  setTimeout(function(){var n=document.getElementById('emp-name');if(n)n.focus();},200);
+}
+
+function saveEmp(){
+  var name=document.getElementById('emp-name').value.trim();
+  var pin=document.getElementById('emp-pin')?document.getElementById('emp-pin').value.trim():'';
+  var role=document.getElementById('emp-role').value||'caissier';
+  if(!name){notif('Nom obligatoire !','err');return;}
+  if(!S.editEmp&&(!pin||pin.length!==4)){notif('PIN 4 chiffres obligatoire','err');if(document.getElementById('emp-pin'))document.getElementById('emp-pin').focus();return;}
+  if(!S.employees)S.employees=[];
+  var data={name:name,role:role,tel:document.getElementById('emp-tel')?document.getElementById('emp-tel').value.trim():''};
+  if(pin&&pin.length===4)data.pin=pin;
+  if(S.editEmp){
+    var i=S.employees.findIndex(function(x){return x.id===S.editEmp;});
+    if(i>=0)S.employees[i]=Object.assign({},S.employees[i],data);
+    S.editEmp=null;
+  } else {data.id=uid();S.employees.push(data);}
+  save();renderEmpGrid();closeMov('empMov');
+  document.getElementById('emp-name').value='';
+  if(document.getElementById('emp-pin'))document.getElementById('emp-pin').value='';
+  notif('✅ '+name+' enregistré!','ok');
+}
+
+function delEmp(id){
+  if(!confirm('Supprimer ce membre ?'))return;
+  S.employees=(S.employees||[]).filter(function(x){return x.id!==id;});
+  save();renderEmpGrid();notif('🗑️ Membre supprimé');
+}
+
+function setActiveCashier(name){
+  S.settings.cashier=name;save();updateTopbar();renderEmpGrid();
+  notif('✅ '+name+' est maintenant le caissier actif','ok');
+}
+
+// ── REMBOURSEMENT ──
+function showRemboursement(){
+  if(!can('remboursement')){notif('Accès refusé','err');return;}
+  var old2=document.getElementById('rembMov'); if(old2)old2.remove();
+  var mov=document.createElement('div'); mov.id='rembMov'; mov.className='mov show';
+  var inner=document.createElement('div'); inner.className='modal'; inner.style.maxWidth='520px';
+  var titleEl=document.createElement('h3'); titleEl.textContent='🔄 Remboursement'; inner.appendChild(titleEl);
+  var subEl=document.createElement('div'); subEl.style.cssText='font-size:12px;color:var(--text3);margin-bottom:14px;'; subEl.textContent='Choisissez la vente à rembourser:'; inner.appendChild(subEl);
+  var listDiv=document.createElement('div'); listDiv.style.cssText='max-height:340px;overflow-y:auto;';
+  var recent=S.sales.slice(0,50).filter(function(s){return !s.rembourse&&!s.isRetour;});
+  if(!recent.length){var empty=document.createElement('div');empty.style.cssText='text-align:center;padding:24px;color:var(--text3);';empty.textContent='Aucune vente disponible';listDiv.appendChild(empty);}
+  else recent.forEach(function(s){
+    var d=new Date(s.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    var items=s.items.map(function(i){return i.name+' x'+i.qty;}).join(', ');
+    var card=document.createElement('div');
+    card.style.cssText='border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;cursor:pointer;';
+    card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><div style="font-size:13px;font-weight:700;">Vente #'+s.num+' — '+d+'</div><div style="font-size:14px;font-weight:800;color:var(--accent);">'+fmt(s.total)+'</div></div><div style="font-size:11px;color:var(--text3);">'+items.slice(0,60)+'</div>'+(s.clientNom?'<div style="font-size:11px;color:var(--text2);margin-top:2px;">👤 '+s.clientNom+'</div>':'');
+    (function(sid){card.onclick=function(){confirmRemboursement(sid);};})(s.id);
+    listDiv.appendChild(card);
+  });
+  inner.appendChild(listDiv);
+  var footer=document.createElement('div'); footer.className='mfooter';
+  var closeBtn=document.createElement('button'); closeBtn.className='btn-cancel'; closeBtn.textContent='Fermer'; closeBtn.onclick=function(){mov.remove();};
+  footer.appendChild(closeBtn); inner.appendChild(footer); mov.appendChild(inner); document.body.appendChild(mov);
+}
+
+function confirmRemboursement(saleId){
+  var s=S.sales.find(function(x){return x.id===saleId;}); if(!s){notif('Vente non trouvée','err');return;}
+  var raison=prompt('Motif du remboursement (optionnel):',''); if(raison===null)return;
+  s.rembourse=true; s.rembourseDate=new Date().toISOString(); s.rembourseRaison=raison; s.rembourseBy=S.settings.cashier||'Admin';
+  s.items.forEach(function(it){var p=S.products.find(function(x){return x.id===it.id;});if(p&&p.stock!==999)p.stock=(p.stock||0)+it.qty;});
+  save(); renderProds();
+  var mov=document.getElementById('rembMov'); if(mov)mov.remove();
+  notif('✅ Remboursement #'+s.num+' — '+fmt(s.total)+' — Stock rétabli','ok');
+  showRecuRemboursement(s);
+}
+
+function showRecuRemboursement(s){
+  var d=new Date().toLocaleDateString('fr-FR')+' '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  var items=s.items.map(function(i){return '<div class="r-row"><span>'+i.name+' ×'+i.qty+'</span><span>-'+fmt(i.price*i.qty)+'</span></div>';}).join('');
+  var h='<div class="receipt"><div class="r-logo">'+(S.settings.bizname||'Konektem')+'</div><div class="r-sub" style="color:#ef4444;font-weight:800;">🔄 REMBOURSEMENT</div><div class="r-sub">'+d+' · Vente #'+s.num+'</div>'+(s.clientNom?'<div class="r-sub">Client: '+s.clientNom+'</div>':'')+'<div class="r-div"></div>'+items+'<div class="r-div"></div><div class="r-row r-tot" style="color:#ef4444;"><span>REMBOURSÉ</span><span>'+fmt(s.total)+'</span></div>'+(s.rembourseRaison?'<div class="r-sub">Motif: '+s.rembourseRaison+'</div>':'')+'<div class="r-sub">Par: '+(s.rembourseBy||'')+'</div></div>';
+  var recEl=document.getElementById('recContent'); if(recEl)recEl.innerHTML=h;
+  document.getElementById('recMov').classList.add('show');
+}
+
+// ── PARAMÈTRES / SÉCURITÉ ──
+function saveOwnerPw(){
+  var inp=document.getElementById('owner-pw-set'); if(!inp)return;
+  var val=inp.value.trim();
+  if(!val||val.length<4){notif('Minimum 4 caractères','err');return;}
+  S.settings.ownerPassword=val; save(); inp.value='';
+  notif('✅ Mot de passe propriétaire changé!','ok');
+}
+
+function changePassword(){
+  var np=document.getElementById('new-pass')?document.getElementById('new-pass').value:'';
+  var cp=document.getElementById('conf-pass')?document.getElementById('conf-pass').value:'';
+  if(!np){notif('Entrez un mot de passe','err');return;}
+  if(np!==cp){notif('Mots de passe différents','err');return;}
+  if(np.length<4){notif('Minimum 4 caractères','err');return;}
+  S.settings.appPassword=np; save();
+  if(document.getElementById('new-pass')) document.getElementById('new-pass').value='';
+  if(document.getElementById('conf-pass')) document.getElementById('conf-pass').value='';
+  notif('✅ Mot de passe changé!','ok');
+}
+
+// ── FOURNISSEURS (manke) ──
+function openAchatModal(fournId){
+  var old=document.getElementById('achat-mov'); if(old)old.remove();
+  var fourn=(S.fournisseurs||[]).find(function(f){return f.id===fournId;})||{nom:'?'};
+  var mov=document.createElement('div'); mov.id='achat-mov'; mov.className='mov show';
+  var inner=document.createElement('div'); inner.className='modal';
+  var prodsOpts=S.products.map(function(p){return '<option value="'+p.id+'">'+p.name+' (stock: '+p.stock+')</option>';}).join('');
+  inner.innerHTML='<h3>Achat — '+fourn.nom+'</h3>'
+    +'<div class="fg"><label class="flbl">Article</label><select class="fsel" id="ac-prod">'+prodsOpts+'</select></div>'
+    +'<div class="f2"><div class="fg"><label class="flbl">Quantité</label><input class="finp" type="number" id="ac-qty" value="1" min="1"></div>'
+    +'<div class="fg"><label class="flbl">Prix coût</label><input class="finp" type="number" id="ac-prix" placeholder="0"></div></div>'
+    +'<div class="fg"><label class="flbl">Note</label><input class="finp" id="ac-note" placeholder="Réf. facture..."></div>'
+    +'<div class="mfooter" id="achat-footer"></div>';
+  mov.appendChild(inner); document.body.appendChild(mov);
+  var bA=document.createElement('button'); bA.className='btn-cancel'; bA.textContent='Annuler'; bA.onclick=function(){mov.remove();};
+  var bS=document.createElement('button'); bS.className='btn-g'; bS.textContent='Enregistrer';
+  (function(fid){bS.onclick=function(){saveAchat(fid);};})(fournId);
+  document.getElementById('achat-footer').appendChild(bA);
+  document.getElementById('achat-footer').appendChild(bS);
+  mov.addEventListener('click',function(e){if(e.target===mov)mov.remove();});
+}
+
+function saveAchat(fournId){
+  var prodId=document.getElementById('ac-prod').value;
+  var qty=parseInt(document.getElementById('ac-qty').value)||0;
+  var prix=parseFloat(document.getElementById('ac-prix').value)||0;
+  var note=document.getElementById('ac-note').value;
+  if(qty<=0){notif('Quantité invalide','err');return;}
+  var prod=S.products.find(function(p){return p.id===prodId;});
+  if(prod&&prod.stock!==999)prod.stock+=qty;
+  if(prod&&prix>0)prod.cost=prix;
+  if(!S.achats)S.achats=[];
+  S.achats.unshift({id:uid(),date:new Date().toISOString(),fournisseurId:fournId,produitId:prodId,produitNom:prod?prod.name:'?',qty:qty,prixUnit:prix,total:prix*qty,note:note});
+  save();
+  document.getElementById('achat-mov').remove();
+  notif('✅ Achat enregistré — Stock +'+qty,'ok');
+  renderInv();
+}
+
+// ── SYNC CLOUD MANUEL ──
+function forcePullCloud(){ pullFromCloud(); notif('🔄 Synchronisation en cours...','inf'); }
+function manualCloudSync(){ syncProductsToCloud(); notif('☁️ Sync cloud lancé','ok'); }
+
+// ── INIT FINAL ──
+// Démare app si onboarding deja fini
+(function initCheck(){
+  load();
+  if(S.settings.onboardingDone){ startApp(); }
+})();
+</script>

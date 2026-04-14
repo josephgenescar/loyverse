@@ -1,5 +1,5 @@
 // Konektem Service Worker v4.0 — PWA Offline konplè
-var CACHE_NAME = 'konektem-v1776139483';
+var CACHE_NAME = 'konektem-v1776174297';
 var STATIC_URLS = [
   '/',
   '/index.html',
