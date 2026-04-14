@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1776104005">
+<meta name="version" content="1776139375">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#16a34a">
@@ -1964,7 +1964,7 @@ function updatePriceDisplay(){
 
 // ── CLOCK ──
 function tick(){var n=new Date();var el=document.getElementById('clock');if(el)el.textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
-setInterval(tick,1000);tick();
+// tick démarre apre DOM chaje (evite 'document is not defined')
 
 // ── ONBOARDING ──
 var obSec='';
@@ -1979,7 +1979,7 @@ function obNext(step){
   if(step===1){
     if(!obSec){notif('Choisissez votre secteur.','err');return;}
     S.settings.sector=obSec;
-    var icons={marche:'🛒',pharmacie:'💊',electronique:'📱',restaurant:'🍽️'};
+    var icons={marche:'🛒',pharmacie:'💊',electronique:'📱',restaurant:'🍽️',store:'👗',quincaillerie:'🔧',depot:'🏭',salon:'✂️',service:'🛠️'};
     document.getElementById('ob-confirm').textContent='Votre espace '+S.settings.bizname+' est configuré en mode '+SECTOR_LABELS[obSec]+'.';
     document.getElementById('ob-summary').innerHTML=[
       obRow('🏪',S.settings.bizname),obRow('👤',S.settings.cashier),
@@ -2000,12 +2000,42 @@ function selSec(el,sec){
   document.getElementById('ob-btn1').disabled=false;
 }
 function launchApp(){
-  S.settings.onboardingDone=true;
-  S.settings.trialStart=new Date().toISOString();
-  S.categories=SECTOR_CATS[S.settings.sector]||['Général'];
-  var seeds=SECTOR_SEEDS[S.settings.sector]||SECTOR_SEEDS.marche;
-  S.products=seeds.map(function(p){return Object.assign({id:uid(),icon:'',img:'',barcode:'',source:'manual',connType:''},p);});
-  save(); startApp();
+  S.settings.onboardingDone = true;
+  S.settings.trialStart     = new Date().toISOString();
+  S.settings.businessId     = S.settings.businessId || uid();
+  S.categories = SECTOR_CATS[S.settings.sector] || ['Général'];
+  var seeds = SECTOR_SEEDS[S.settings.sector] || SECTOR_SEEDS.marche;
+  S.products = seeds.map(function(p){
+    return Object.assign({id:uid(),icon:'',img:'',barcode:'',source:'manual',connType:''},p);
+  });
+  save();
+
+  // Enrejistre sektè + biznis nan Supabase pou admin wè
+  var lu = {};
+  try{ lu = JSON.parse(localStorage.getItem('konektem_user')||'{}'); }catch(e){}
+  var email = lu.email || '';
+  if(email){
+    fetch(SUPA_URL_APP+'/rest/v1/konektem_users', {
+      method:'POST',
+      headers:{
+        'apikey':SUPA_KEY_APP,'Authorization':'Bearer '+SUPA_KEY_APP,
+        'Content-Type':'application/json',
+        'Prefer':'resolution=merge-duplicates,return=minimal',
+        'on_conflict':'email'
+      },
+      body: JSON.stringify({
+        email:       email,
+        bizname:     S.settings.bizname,
+        secteur:     S.settings.sector,
+        plan:        'trial',
+        status:      'active',
+        trial_start: S.settings.trialStart,
+        business_id: S.settings.businessId,
+        created_at:  new Date().toISOString()
+      })
+    }).catch(function(){});
+  }
+  startApp();
 }
 
 // ── APP START ──
@@ -2513,6 +2543,8 @@ function startApp(){
   document.getElementById('screen-ob').classList.add('hidden');
   var app=document.getElementById('screen-app');
   app.style.display='flex'; app.style.flexDirection='column'; app.style.height='100%';
+  // Démare clock sèlman apre DOM prèt
+  tick(); setInterval(tick, 1000);
   updateTopbar(); updateTrialBar();
   checkTrialOnStart();
   initDarkMode();
@@ -3326,3 +3358,91 @@ function renderRecu(){
     }
   });
 }
+// ══════════════════════════════════════════════════
+// FONKSYON FOURNISSEURS
+// ══════════════════════════════════════════════════
+function openFournisseurModal(id){
+  S.editFourn = id || null;
+  var fourn = id ? (S.fournisseurs||[]).find(function(f){return f.id===id;}) : null;
+  var old2 = document.getElementById('fourn-mov');
+  if(old2) old2.remove();
+  var mov = document.createElement('div');
+  mov.id='fourn-mov'; mov.className='mov show';
+  var box = document.createElement('div');
+  box.className='modal'; box.style.maxWidth='420px';
+  box.innerHTML='<h3>'+(id?'Modifier':'Ajouter')+' Fournisseur</h3>'
+    +'<div class="fg"><label class="flbl">Nom *</label><input class="finp" id="fn-nom" placeholder="Ex: Maison Michel"></div>'
+    +'<div class="f2"><div class="fg"><label class="flbl">Téléphone</label><input class="finp" id="fn-tel" placeholder="509..."></div>'
+    +'<div class="fg"><label class="flbl">Email</label><input class="finp" id="fn-email" placeholder="email@..."></div></div>'
+    +'<div class="fg"><label class="flbl">Adresse</label><input class="finp" id="fn-addr" placeholder="Adresse..."></div>'
+    +'<div class="mfooter" id="fourn-footer"></div>';
+  if(fourn){
+    setTimeout(function(){
+      var nm=document.getElementById('fn-nom');if(nm)nm.value=fourn.nom||'';
+      var tl=document.getElementById('fn-tel');if(tl)tl.value=fourn.tel||'';
+      var em=document.getElementById('fn-email');if(em)em.value=fourn.email||'';
+      var ad=document.getElementById('fn-addr');if(ad)ad.value=fourn.addr||'';
+    },50);
+  }
+  var btnC=document.createElement('button'); btnC.className='btn-cancel'; btnC.textContent='Annuler';
+  btnC.onclick=function(){mov.remove();};
+  var btnS=document.createElement('button'); btnS.className='btn-g'; btnS.textContent='Enregistrer';
+  btnS.onclick=saveFournisseur;
+  var footer=box.querySelector('#fourn-footer');
+  footer.appendChild(btnC); footer.appendChild(btnS);
+  mov.appendChild(box);
+  mov.addEventListener('click',function(e){if(e.target===mov)mov.remove();});
+  document.body.appendChild(mov);
+  setTimeout(function(){var nm=document.getElementById('fn-nom');if(nm)nm.focus();},150);
+}
+
+function saveFournisseur(){
+  var nom=(document.getElementById('fn-nom')||{}).value||'';
+  nom=nom.trim();
+  if(!nom){notif('Nom obligatoire','err');return;}
+  if(!S.fournisseurs)S.fournisseurs=[];
+  var data={
+    nom:nom,
+    tel:((document.getElementById('fn-tel')||{}).value||''),
+    email:((document.getElementById('fn-email')||{}).value||''),
+    addr:((document.getElementById('fn-addr')||{}).value||'')
+  };
+  if(S.editFourn){
+    var i=S.fournisseurs.findIndex(function(f){return f.id===S.editFourn;});
+    if(i>=0)S.fournisseurs[i]=Object.assign({},S.fournisseurs[i],data);
+    S.editFourn=null;
+  } else {
+    S.fournisseurs.push(Object.assign({id:uid()},data));
+  }
+  save();renderFournisseurs();
+  var mov=document.getElementById('fourn-mov');if(mov)mov.remove();
+  notif('Fournisseur enregistré','ok');
+}
+
+function renderFournisseurs(){
+  var el=document.getElementById('fourn-body');
+  if(!el)return;
+  var fourns=S.fournisseurs||[];
+  if(!fourns.length){
+    el.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px">Aucun fournisseur</td></tr>';
+    return;
+  }
+  el.innerHTML='';
+  fourns.forEach(function(f){
+    var total=(S.achats||[]).filter(function(a){return a.fournisseurId===f.id;}).reduce(function(s,a){return s+(a.total||0);},0);
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td><strong>'+f.nom+'</strong></td><td>'+(f.tel||'—')+'</td><td>'+(f.email||'—')+'</td><td>'+fmt(total)+'</td><td></td>';
+    var actTd=tr.cells[4];
+    var btnA=document.createElement('button'); btnA.className='abt'; btnA.textContent='+ Achat';
+    (function(fid){btnA.onclick=function(){openAchatModal(fid);};})(f.id);
+    var btnE=document.createElement('button'); btnE.className='abt'; btnE.textContent='✏️'; btnE.style.marginLeft='3px';
+    (function(fid){btnE.onclick=function(){openFournisseurModal(fid);};})(f.id);
+    var btnD=document.createElement('button'); btnD.className='abt del'; btnD.textContent='🗑️'; btnD.style.marginLeft='3px';
+    (function(fid){btnD.onclick=function(){if(confirm('Supprimer ?')){S.fournisseurs=(S.fournisseurs||[]).filter(function(x){return x.id!==fid;});save();renderFournisseurs();}};})(f.id);
+    actTd.appendChild(btnA); actTd.appendChild(btnE); actTd.appendChild(btnD);
+    el.appendChild(tr);
+  });
+}
+</script>
+</body>
+</html>

@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="1775479121">
+<meta name="version" content="1776139476">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#16a34a">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -307,16 +307,96 @@ footer{border-top:1px solid var(--border);padding:38px 5%;display:flex;align-ite
 </nav>
 
 <!-- HERO -->
-<section class="hero">
-  <div class="hero-badge"><span class="dot"></span>Caisse intelligente haïtienne</div>
-  <h1>La caisse qui<br><span class="hl">connecte</span> votre boutique<br>au monde numérique</h1>
-  <p class="hero-sub">Gérez vos ventes, stock et clients depuis n'importe quel appareil. Adapté à chaque secteur.</p>
+<section class="hero" style="padding:60px 5% 40px;max-width:1000px;margin:0 auto;">
+  <div class="hero-badge"><span class="dot"></span>Logiciel de caisse gratuit pour Haïti</div>
+  <h1 style="font-size:clamp(30px,5.5vw,58px);line-height:1.1;margin-bottom:20px;">
+    Logiciel de caisse<br><span class="hl">gratuit</span> et Gestion de Stock
+  </h1>
+  <p class="hero-sub">Transformez votre smartphone ou tablette en logiciel de caisse puissant. Gérez facilement les ventes, la gestion des stocks et des employés ; fidélisez vos clients et augmentez vos revenus.</p>
   <div class="hero-actions">
     <button class="btn-hero green" onclick="showScreen('signup')">Démarrer gratuitement →</button>
-    <button class="btn-hero outline" onclick="showScreen('preview')">Voir l'aperçu</button>
+    <button class="btn-hero outline" onclick="showScreen('signin')">Se connecter</button>
   </div>
-  <p class="hero-note"><span>14 jours d'essai gratuit</span> · Aucune carte · Données locales</p>
+  <p class="hero-note"><span>14 jours d'essai complet gratuit</span> · Aucune carte bancaire requise</p>
 </section>
+
+<!-- DEVICE ILLUSTRATION — style Loyverse -->
+<div style="position:relative;z-index:1;padding:0 5%;max-width:860px;margin:0 auto 50px;text-align:center;">
+  <div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:20px;padding:30px 20px;position:relative;overflow:hidden;">
+    <!-- Glow dekoratif -->
+    <div style="position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:400px;height:200px;background:radial-gradient(ellipse,rgba(34,197,94,.2) 0%,transparent 70%);pointer-events:none;"></div>
+    <!-- Ekran tablèt -->
+    <div style="display:inline-block;position:relative;width:min(520px,90%);margin:0 auto;">
+      <!-- Tablèt frame -->
+      <div style="background:#1a1a2e;border-radius:16px;padding:12px;box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 0 3px rgba(255,255,255,.1);">
+        <!-- Barre tablèt -->
+        <div style="background:#0f0f1a;border-radius:4px 4px 0 0;padding:8px 12px;display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:#ff5f57;"></div>
+          <div style="width:8px;height:8px;border-radius:50%;background:#ffbd2e;"></div>
+          <div style="width:8px;height:8px;border-radius:50%;background:#28ca42;"></div>
+          <div style="flex:1;text-align:center;font-size:11px;color:rgba(255,255,255,.4);">Konektem — Boutique</div>
+        </div>
+        <!-- Ecran app -->
+        <div style="display:grid;grid-template-columns:1fr 140px;gap:8px;min-height:220px;">
+          <!-- Grille produits -->
+          <div>
+            <div style="background:rgba(34,197,94,.1);border-radius:6px;padding:7px 10px;margin-bottom:6px;font-size:11px;color:rgba(255,255,255,.5);">🔍 Rechercher...</div>
+            <div style="display:flex;gap:4px;margin-bottom:8px;overflow:hidden;">
+              <div style="background:#22c55e;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;color:#000;white-space:nowrap;">Tous</div>
+              <div style="background:rgba(255,255,255,.08);border-radius:20px;padding:3px 10px;font-size:10px;color:rgba(255,255,255,.5);white-space:nowrap;">Épicerie</div>
+              <div style="background:rgba(255,255,255,.08);border-radius:20px;padding:3px 10px;font-size:10px;color:rgba(255,255,255,.5);white-space:nowrap;">Boissons</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
+              <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:7px 5px;text-align:center;"><div style="font-size:18px;">🛒</div><div style="font-size:9px;color:rgba(255,255,255,.7);margin-top:3px;">Riz 5lb</div><div style="font-size:10px;color:#22c55e;font-weight:700;">150 HTG</div></div>
+              <div style="background:rgba(255,255,255,.06);border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:7px 5px;text-align:center;"><div style="font-size:18px;">🫙</div><div style="font-size:9px;color:rgba(255,255,255,.7);margin-top:3px;">Huile 1L</div><div style="font-size:10px;color:#22c55e;font-weight:700;">400 HTG</div></div>
+              <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:7px 5px;text-align:center;"><div style="font-size:18px;">🥤</div><div style="font-size:9px;color:rgba(255,255,255,.7);margin-top:3px;">Jus</div><div style="font-size:10px;color:#22c55e;font-weight:700;">75 HTG</div></div>
+              <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:7px 5px;text-align:center;"><div style="font-size:18px;">🧂</div><div style="font-size:9px;color:rgba(255,255,255,.7);margin-top:3px;">Sel 1kg</div><div style="font-size:10px;color:#22c55e;font-weight:700;">50 HTG</div></div>
+              <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:7px 5px;text-align:center;"><div style="font-size:18px;">☕</div><div style="font-size:9px;color:rgba(255,255,255,.7);margin-top:3px;">Café</div><div style="font-size:10px;color:#22c55e;font-weight:700;">300 HTG</div></div>
+              <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:6px;padding:7px 5px;text-align:center;opacity:.6;"><div style="font-size:18px;">🌽</div><div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:3px;">Maïs</div><div style="font-size:10px;color:#ef4444;font-weight:700;">Épuisé</div></div>
+            </div>
+          </div>
+          <!-- Panier -->
+          <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:8px;">
+            <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.8);margin-bottom:6px;">🛒 Panier</div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,.5);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.06);">Riz 5lb ×2<span style="color:#22c55e;">300</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,.5);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.06);">Huile 1L ×1<span style="color:#22c55e;">400</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,.5);padding:3px 0;">Jus ×3<span style="color:#22c55e;">225</span></div>
+            <div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,.15);display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#fff;">TOTAL<span style="color:#22c55e;">925 HTG</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:6px;">
+              <div style="background:#16a34a;border-radius:4px;padding:5px;text-align:center;font-size:9px;font-weight:700;color:#fff;">💵 Cash</div>
+              <div style="background:#1d4ed8;border-radius:4px;padding:5px;text-align:center;font-size:9px;font-weight:700;color:#fff;">📱 MC</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Scanner laser deyò -->
+      <div style="position:absolute;left:-50px;top:50%;transform:translateY(-50%);background:#1a1a2e;border:2px solid rgba(255,255,255,.15);border-radius:10px;padding:8px 6px;width:38px;display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="width:4px;height:4px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;"></div>
+        <div style="width:20px;height:30px;background:linear-gradient(180deg,#333 0%,#222 100%);border-radius:4px;display:flex;align-items:center;justify-content:center;">
+          <div style="width:2px;height:20px;background:rgba(34,197,94,.6);border-radius:1px;"></div>
+        </div>
+      </div>
+      <!-- Kat VISA deyò -->
+      <div style="position:absolute;right:-40px;bottom:20px;background:linear-gradient(135deg,#1a3a6b,#2563eb);border-radius:8px;padding:10px 12px;width:80px;font-size:8px;color:rgba(255,255,255,.8);box-shadow:0 8px 20px rgba(0,0,0,.4);">
+        <div style="font-size:14px;margin-bottom:4px;">💳</div>
+        <div style="font-weight:700;letter-spacing:1px;">VISA</div>
+        <div style="opacity:.6;margin-top:2px;">•••• 4821</div>
+      </div>
+    </div>
+    <!-- Légende anba -->
+    <div style="display:flex;justify-content:center;gap:24px;margin-top:20px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5);">
+        <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;"></div>Vente rapide
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5);">
+        <div style="width:8px;height:8px;border-radius:50%;background:#3b82f6;"></div>Scan barcode
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.5);">
+        <div style="width:8px;height:8px;border-radius:50%;background:#f59e0b;"></div>MonCash intégré
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- PREVIEW -->
 <div class="preview-wrap">
@@ -372,7 +452,7 @@ footer{border-top:1px solid var(--border);padding:38px 5%;display:flex;align-ite
     <div class="tb-stats">
       <div class="tb-stat"><div class="num">14</div><div class="lab">Jours gratuits</div></div>
       <div class="tb-stat"><div class="num">∞</div><div class="lab">Articles</div></div>
-      <div class="tb-stat"><div class="num">4</div><div class="lab">Secteurs</div></div>
+      <div class="tb-stat"><div class="num">9</div><div class="lab">Secteurs</div></div>
     </div>
   </div>
 </div>
