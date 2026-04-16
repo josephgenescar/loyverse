@@ -1644,6 +1644,8 @@ function checkout(method, montantRecu, rendu, clientInfo){
   S.sales.unshift(sale); save();
   // Sync vant nan cloud pou lòt aparèy wè li
   setTimeout(function(){ syncSaleToCloud(sale); }, 500);
+  // Verifye stock apre chak vant
+  setTimeout(checkStockAfterSale, 800);
   // Sync vant nan Supabase si Premium (pou multi-aparèy)
   if(S.settings.plan === 'premium'){
     var userEmail2 = S.userEmail || (function(){
@@ -3006,4 +3008,184 @@ function selPlanLocal(el, plan){
   el.classList.add('sel');
   S.selectedPlan = plan;
 }
+
+
+// ══════════════════════════════════════════════════════════════════
+// SISTÈM ALÈT STOCK — 3 NIvo
+// 1. Notifikasyon navigatè (Push)
+// 2. Bouton WhatsApp direkteman
+// 3. Badge wouj + panel nan Back Office
+// ══════════════════════════════════════════════════════════════════
+
+// ── Kle pou pa voye menm alèt 2 fwa ──
+var STOCK_ALERT_SENT = {};
+
+function checkLowStockNotif(){
+  if(!S.products || !S.products.length) return;
+
+  // Jwenn atik ki ba oswa vid (pa 999=illimité)
+  var epuise  = S.products.filter(function(p){ return p.stock !== 999 && p.stock === 0; });
+  var bas     = S.products.filter(function(p){ return p.stock !== 999 && p.stock > 0 && p.stock <= (p.lowStock||5); });
+  var total   = epuise.length + bas.length;
+
+  if(!total) return;
+
+  // ── NIvo 3: Badge wouj nan Back Office btn ──
+  updateStockBadge(epuise.length, bas.length);
+
+  // ── NIvo 3: Panel alèt nan BO (si ouvert) ──
+  updateBOStockPanel(epuise, bas);
+
+  // ── NIvo 1: Notif navigatè ──
+  var alertKey = epuise.map(function(p){return p.id;}).join(',') + bas.map(function(p){return p.id;}).join(',');
+  if(STOCK_ALERT_SENT[alertKey]) return; // pa voye 2 fwa menm alèt
+  STOCK_ALERT_SENT[alertKey] = true;
+
+  if('Notification' in window && Notification.permission === 'granted'){
+    var msg = '';
+    if(epuise.length) msg += epuise.length + ' article(s) ÉPUISÉ(S): ' + epuise.map(function(p){return p.name;}).slice(0,3).join(', ');
+    if(bas.length)    msg += (msg?' · ':'' ) + bas.length + ' article(s) stock bas: ' + bas.map(function(p){return p.name+' ('+p.stock+' restant)';}).slice(0,3).join(', ');
+
+    try {
+      new Notification('⚠️ Konektem — Alèt Stock', {
+        body: msg,
+        icon: '/manifest-icon.png',
+        badge: '/manifest-icon.png',
+        tag: 'stock-alert',
+        requireInteraction: true  // Rete jiskaske moun a li
+      });
+    } catch(e) {}
+  }
+
+  // ── NIvo 1b: Voye notif via Service Worker (fonksyone lè app fèmen) ──
+  if('serviceWorker' in navigator && navigator.serviceWorker.controller){
+    navigator.serviceWorker.controller.postMessage({
+      type: 'STOCK_ALERT',
+      epuise: epuise.map(function(p){return p.name;}),
+      bas: bas.map(function(p){return p.name + ' (' + p.stock + ')';})
+    });
+  }
+}
+
+// ── Badge wouj sou bouton Back Office ──
+function updateStockBadge(nEpuise, nBas){
+  var boBtn = document.getElementById('bo-btn');
+  if(!boBtn) return;
+
+  // Retire vye badge
+  var old = document.getElementById('stock-badge');
+  if(old) old.remove();
+
+  if(!nEpuise && !nBas) return;
+
+  var badge = document.createElement('div');
+  badge.id = 'stock-badge';
+  badge.style.cssText = 'position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;'
+    + 'background:#ef4444;color:#fff;border-radius:10px;font-size:10px;font-weight:800;'
+    + 'display:flex;align-items:center;justify-content:center;padding:0 4px;'
+    + 'box-shadow:0 2px 6px rgba(239,68,68,.5);border:2px solid var(--bg);z-index:10;';
+  badge.textContent = nEpuise + nBas;
+  badge.title = nEpuise + ' épuisé(s), ' + nBas + ' stock bas';
+
+  boBtn.style.position = 'relative';
+  boBtn.appendChild(badge);
+}
+
+// ── Panel stock alèt nan Back Office ──
+function updateBOStockPanel(epuise, bas){
+  var panel = document.getElementById('bo-stock-alert');
+  if(!panel) return;
+
+  if(!epuise.length && !bas.length){
+    panel.style.display = 'none';
+    return;
+  }
+
+  panel.style.display = 'block';
+  var html = '';
+
+  if(epuise.length){
+    html += '<div style="margin-bottom:10px;">'
+      + '<div style="font-size:12px;font-weight:800;color:#ef4444;margin-bottom:6px;">🔴 ÉPUISÉ — ' + epuise.length + ' article(s)</div>'
+      + epuise.map(function(p){
+          return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;'
+            + 'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:6px;margin-bottom:4px;">'
+            + '<span style="font-size:13px;font-weight:600;">' + p.name + '</span>'
+            + '<span style="font-size:11px;color:#ef4444;font-weight:800;">Stock: 0</span></div>';
+        }).join('')
+      + '</div>';
+  }
+
+  if(bas.length){
+    html += '<div>'
+      + '<div style="font-size:12px;font-weight:800;color:#f59e0b;margin-bottom:6px;">🟡 STOCK BAS — ' + bas.length + ' article(s)</div>'
+      + bas.map(function(p){
+          var pct = Math.round((p.stock / Math.max(p.lowStock * 2, 1)) * 100);
+          return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;'
+            + 'background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:6px;margin-bottom:4px;">'
+            + '<div><span style="font-size:13px;font-weight:600;">' + p.name + '</span>'
+            + '<div style="margin-top:3px;height:4px;background:rgba(255,255,255,.1);border-radius:2px;width:100px;">'
+            + '<div style="height:4px;background:#f59e0b;border-radius:2px;width:' + Math.min(pct,100) + '%;"></div></div></div>'
+            + '<span style="font-size:12px;color:#f59e0b;font-weight:800;">' + p.stock + ' / min ' + (p.lowStock||5) + '</span></div>';
+        }).join('')
+      + '</div>';
+  }
+
+  // Bouton WhatsApp
+  html += buildStockWhatsApp(epuise, bas);
+
+  panel.innerHTML = html;
+}
+
+// ── Bouton WhatsApp pou voye alèt stock ──
+function buildStockWhatsApp(epuise, bas){
+  var bizname = S.settings.bizname || 'Boutique';
+  var now = new Date().toLocaleDateString('fr-FR') + ' ' + new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  var msg = '⚠️ *ALÈT STOCK — ' + bizname.toUpperCase() + '*\n';
+  msg += '📅 ' + now + '\n\n';
+
+  if(epuise.length){
+    msg += '🔴 *ÉPUISÉ (' + epuise.length + ' atik):*\n';
+    epuise.forEach(function(p){ msg += '  • ' + p.name + ' → STOCK = 0\n'; });
+    msg += '\n';
+  }
+  if(bas.length){
+    msg += '🟡 *STOCK BAS (' + bas.length + ' atik):*\n';
+    bas.forEach(function(p){ msg += '  • ' + p.name + ' → ' + p.stock + ' restant (min: ' + (p.lowStock||5) + ')\n'; });
+    msg += '\n';
+  }
+
+  msg += '👉 Konekte sou Konektem pou renouvle stock yo.';
+
+  var waUrl = 'https://wa.me/' + (WHATSAPP_NUM||'50948868964') + '?text=' + encodeURIComponent(msg);
+
+  return '<a href="' + waUrl + '" target="_blank" style="display:flex;align-items:center;gap:8px;'
+    + 'margin-top:12px;padding:10px 16px;background:#25D366;border-radius:8px;color:#fff;'
+    + 'font-weight:800;font-size:13px;text-decoration:none;justify-content:center;">'
+    + '📲 Voye alèt stock sou WhatsApp</a>';
+}
+
+// ── Mete a jou alèt chak fwa yon vant fèt ──
+function checkStockAfterSale(){
+  var epuise = S.products.filter(function(p){ return p.stock !== 999 && p.stock === 0; });
+  var bas    = S.products.filter(function(p){ return p.stock !== 999 && p.stock > 0 && p.stock <= (p.lowStock||5); });
+
+  // Reset key pou alèt ka revoye si nouvo atik epuize
+  STOCK_ALERT_SENT = {};
+
+  updateStockBadge(epuise.length, bas.length);
+  updateBOStockPanel(epuise, bas);
+
+  // Notif navigatè pou atik ki fenk vin vid
+  if(epuise.length || bas.length){
+    checkLowStockNotif();
+  }
+}
+
+// ── Verifikasyon peryodik chak 5 minit ──
+setInterval(function(){
+  if(document.visibilityState === 'visible' && S.products){
+    checkLowStockNotif();
+  }
+}, 5 * 60 * 1000);
 
