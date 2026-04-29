@@ -3189,3 +3189,523 @@ setInterval(function(){
   }
 }, 5 * 60 * 1000);
 
+
+// ══════════════════════════════════════════════════════════════════
+// SISTÈM PLIZYÈ BIZNIS (Multi-Business) + SYNC KONPLÈ
+// ══════════════════════════════════════════════════════════════════
+
+var CURRENT_BIZ_ID = null;  // ID biznis aktif la
+
+// ── Jwenn email kont ──
+function getOwnerEmail(){
+  try{ return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }
+  catch(e){ return ''; }
+}
+
+// ── Chaje lis biznis propriétaire a depi Supabase ──
+function loadUserBusinesses(callback){
+  var email = getOwnerEmail();
+  if(!email){ if(callback) callback([]); return; }
+
+  fetch(SUPA_URL_APP + '/rest/v1/konektem_businesses?owner_email=eq.' + encodeURIComponent(email)
+    + '&order=created_at.asc', {
+    headers:{ 'apikey': SUPA_KEY_APP, 'Authorization': 'Bearer ' + SUPA_KEY_APP }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(callback) callback(Array.isArray(data) ? data : []);
+  })
+  .catch(function(){ if(callback) callback([]); });
+}
+
+// ── Kreye yon nouvo biznis nan Supabase ──
+function createBusinessInCloud(bizData, callback){
+  var email = getOwnerEmail();
+  if(!email){ notif('Connectez-vous pour créer un autre business','err'); return; }
+
+  fetch(SUPA_URL_APP + '/rest/v1/konektem_businesses', {
+    method: 'POST',
+    headers:{
+      'apikey': SUPA_KEY_APP, 'Authorization': 'Bearer ' + SUPA_KEY_APP,
+      'Content-Type': 'application/json', 'Prefer': 'return=representation'
+    },
+    body: JSON.stringify({
+      id:          bizData.id,
+      owner_email: email,
+      bizname:     bizData.bizname,
+      secteur:     bizData.secteur || 'marche',
+      currency:    bizData.currency || 'HTG',
+      plan:        'trial',
+      status:      'active',
+      trial_start: new Date().toISOString(),
+      settings_json: JSON.stringify(bizData.settings || {})
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    notif('✅ ' + bizData.bizname + ' créé!', 'ok');
+    if(callback) callback(data);
+  })
+  .catch(function(err){ notif('Erreur création business: ' + err.message, 'err'); });
+}
+
+// ── Chanje biznis aktif ──
+function switchBusiness(bizId){
+  var email = getOwnerEmail();
+  if(!email){ notif('Email requis','err'); return; }
+
+  notif('🔄 Chargement...', 'inf');
+
+  // Sove done biznis aktyèl anvan chanje
+  syncProductsToCloud();
+
+  // Chèche done biznis nouvo a nan localStorage
+  var storageKey = 'konektem_app_' + bizId;
+  var savedData = localStorage.getItem(storageKey);
+
+  if(savedData){
+    // Done lokal disponib — chaje dirèkteman
+    try{
+      S = JSON.parse(savedData);
+      CURRENT_BIZ_ID = bizId;
+      localStorage.setItem('konektem_current_biz', bizId);
+      save(); // sove nan kle aktyèl la tou
+      renderProds(); renderCatBar(); renderRecu(); updateTopbar();
+      notif('✅ Boutique changée: ' + (S.settings.bizname||''), 'ok');
+      closeMov('bizSwitchMov');
+      // Pull done cloud pou mete a jou
+      setTimeout(function(){ pullBizFromCloud(bizId); }, 1000);
+      return;
+    }catch(e){}
+  }
+
+  // Pa gen done lokal — tire depi Supabase
+  pullBizFromCloud(bizId, function(ok){
+    if(ok){
+      CURRENT_BIZ_ID = bizId;
+      localStorage.setItem('konektem_current_biz', bizId);
+      renderProds(); renderCatBar(); renderRecu(); updateTopbar();
+      notif('✅ Boutique chargée depuis le cloud', 'ok');
+      closeMov('bizSwitchMov');
+    }
+  });
+}
+
+// ── Tire done yon biznis depi cloud ──
+function pullBizFromCloud(bizId, callback){
+  var email = getOwnerEmail();
+
+  // Tire atik yo
+  fetch(SUPA_URL_APP + '/rest/v1/konektem_products?business_id=eq.' + encodeURIComponent(bizId), {
+    headers:{ 'apikey': SUPA_KEY_APP, 'Authorization': 'Bearer ' + SUPA_KEY_APP }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(prods){
+    if(Array.isArray(prods) && prods.length){
+      S.products = prods.map(function(p){
+        return { id:p.id, name:p.name, price:p.price||0, cost:p.cost||0,
+                 stock:p.stock||0, lowStock:p.low_stock||5,
+                 category:p.category||'', barcode:p.barcode||'',
+                 img:p.img||'', source:p.source||'manual' };
+      });
+    }
+  })
+  .catch(function(){});
+
+  // Tire vant yo (30 dènye jou)
+  var since = new Date(Date.now() - 30*86400000).toISOString();
+  fetch(SUPA_URL_APP + '/rest/v1/konektem_sales?business_id=eq.' + encodeURIComponent(bizId)
+    + '&date=gte.' + since + '&order=date.desc&limit=500', {
+    headers:{ 'apikey': SUPA_KEY_APP, 'Authorization': 'Bearer ' + SUPA_KEY_APP }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(sales){
+    if(Array.isArray(sales) && sales.length){
+      S.sales = sales.map(function(s){
+        return { id:s.id, num:s.num, date:s.date, items:s.items||[],
+                 total:s.total||0, method:s.method, cashier:s.cashier,
+                 clientNom:s.client_nom, isRetour:s.is_retour||false,
+                 rembourse:s.rembourse||false, locked:true };
+      });
+    }
+    save();
+    if(callback) callback(true);
+  })
+  .catch(function(){ if(callback) callback(false); });
+}
+
+// ── Sove done biznis aktyèl nan localStorage separe ──
+var _origSave = save;
+save = function(){
+  _origSave();
+  // Sove tou nan kle spesifik pou biznis sa a
+  var bizId = CURRENT_BIZ_ID || S.settings.businessId;
+  if(bizId){
+    try{ localStorage.setItem('konektem_app_' + bizId, JSON.stringify(S)); }
+    catch(e){}
+  }
+};
+
+// ── Ouvri modal "Changer de boutique" ──
+function showBizSwitchModal(){
+  var old = document.getElementById('bizSwitchMov');
+  if(old) old.remove();
+
+  var mov = document.createElement('div');
+  mov.id = 'bizSwitchMov'; mov.className = 'mov show';
+  mov.style.zIndex = '2000';
+
+  var inner = document.createElement('div');
+  inner.className = 'modal'; inner.style.maxWidth = '480px';
+
+  inner.innerHTML = '<h3 style="margin-bottom:4px;">🏪 Mes Boutiques</h3>'
+    + '<div style="font-size:12px;color:var(--text3);margin-bottom:16px;">Choisissez ou créez une boutique</div>'
+    + '<div id="biz-list" style="margin-bottom:16px;min-height:60px;">'
+    + '<div style="text-align:center;color:var(--text3);padding:20px;">⏳ Chargement...</div></div>'
+    + '<button class="btn-g" style="width:100%;margin-bottom:8px;" onclick="showNewBizForm()">'
+    + '+ Créer une nouvelle boutique</button>';
+
+  var footer = document.createElement('div'); footer.className = 'mfooter';
+  var btnC = document.createElement('button'); btnC.className = 'btn-cancel';
+  btnC.textContent = 'Fermer';
+  btnC.onclick = function(){ mov.remove(); };
+  footer.appendChild(btnC); inner.appendChild(footer);
+  mov.appendChild(inner);
+  mov.addEventListener('click', function(e){ if(e.target===mov) mov.remove(); });
+  document.body.appendChild(mov);
+
+  // Chaje lis biznis yo
+  loadUserBusinesses(function(bizList){
+    var listDiv = document.getElementById('biz-list');
+    if(!listDiv) return;
+
+    // Toujou ajoute biznis prensipal la (kont aktyèl)
+    var currentBizId = S.settings.businessId;
+    var currentBizName = S.settings.bizname || 'Ma boutique principale';
+
+    if(!bizList.length){
+      // Pa gen biznis nan cloud — montre jis aktyèl la
+      listDiv.innerHTML = renderBizCard({
+        id: currentBizId, bizname: currentBizName,
+        secteur: S.settings.sector, plan: S.settings.plan
+      }, true);
+      return;
+    }
+
+    var isInList = bizList.some(function(b){ return b.id === currentBizId; });
+    var html = '';
+    if(!isInList){
+      html += renderBizCard({
+        id: currentBizId, bizname: currentBizName,
+        secteur: S.settings.sector, plan: S.settings.plan
+      }, true);
+    }
+    bizList.forEach(function(b){
+      html += renderBizCard(b, b.id === (CURRENT_BIZ_ID || currentBizId));
+    });
+    listDiv.innerHTML = html;
+  });
+}
+
+function renderBizCard(b, isActive){
+  var SECTOR_ICO = {
+    marche:'🛒', pharmacie:'💊', electronique:'📱', restaurant:'🍽️',
+    store:'👗', quincaillerie:'🔧', depot:'🏭', salon:'✂️', service:'🛠️'
+  };
+  var ico = SECTOR_ICO[b.secteur] || '🏪';
+  var planBadge = b.plan === 'premium'
+    ? '<span style="background:#f59e0b;color:#000;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:800;">⭐ Premium</span>'
+    : '<span style="background:rgba(255,255,255,.1);color:var(--text3);padding:2px 7px;border-radius:10px;font-size:10px;">Trial</span>';
+
+  return '<div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;'
+    + 'border:2px solid ' + (isActive ? 'var(--accent)' : 'var(--border)') + ';'
+    + 'background:' + (isActive ? 'rgba(34,197,94,.08)' : 'var(--bg)') + ';'
+    + 'margin-bottom:8px;cursor:' + (isActive ? 'default' : 'pointer') + ';"'
+    + (isActive ? '' : ' onclick="switchBusiness(\'' + b.id + '\')"') + '>'
+    + '<div style="font-size:28px;">' + ico + '</div>'
+    + '<div style="flex:1;">'
+    + '<div style="font-weight:700;font-size:14px;">' + b.bizname
+    + (isActive ? ' <span style="font-size:10px;color:var(--accent);">● Actif</span>' : '') + '</div>'
+    + '<div style="font-size:11px;color:var(--text3);text-transform:capitalize;">' + (b.secteur||'') + '</div>'
+    + '</div>' + planBadge + '</div>';
+}
+
+// ── Formulè pou kreye yon nouvo biznis ──
+function showNewBizForm(){
+  var listDiv = document.getElementById('biz-list');
+  if(!listDiv) return;
+
+  listDiv.innerHTML = '<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;">'
+    + '<div style="font-size:14px;font-weight:700;margin-bottom:12px;">🏪 Nouvelle boutique</div>'
+    + '<div class="fg"><label class="flbl">Nom de la boutique</label>'
+    + '<input class="finp" id="nb-name" placeholder="Ex: Restaurant Chez Marie"></div>'
+    + '<div class="fg"><label class="flbl">Secteur</label>'
+    + '<select class="fsel" id="nb-sector">'
+    + '<option value="marche">🛒 Marché / Épicerie</option>'
+    + '<option value="pharmacie">💊 Pharmacie</option>'
+    + '<option value="restaurant">🍽️ Restaurant</option>'
+    + '<option value="electronique">📱 Électronique</option>'
+    + '<option value="store">👗 Boutique / Mode</option>'
+    + '<option value="quincaillerie">🔧 Quincaillerie</option>'
+    + '<option value="depot">🏭 Dépôt / Grossiste</option>'
+    + '<option value="salon">✂️ Salon / Beauté</option>'
+    + '<option value="service">🛠️ Services</option>'
+    + '</select></div>'
+    + '<div style="display:flex;gap:8px;margin-top:12px;">'
+    + '<button class="btn-cancel" style="flex:1;" onclick="showBizSwitchModal()">Annuler</button>'
+    + '<button class="btn-g" style="flex:2;" onclick="createNewBusiness()">✅ Créer</button>'
+    + '</div></div>';
+}
+
+function createNewBusiness(){
+  var name = (document.getElementById('nb-name')||{}).value;
+  var sector = (document.getElementById('nb-sector')||{}).value;
+  if(!name || !name.trim()){ notif('Nom obligatoire','err'); return; }
+
+  var newBizId = uid();
+  var newBiz = {
+    id: newBizId, bizname: name.trim(), secteur: sector,
+    settings:{ bizname: name.trim(), sector: sector, businessId: newBizId,
+               plan:'trial', trialStart: new Date().toISOString(),
+               currency:'HTG', onboardingDone: true }
+  };
+
+  // Sove kopi done prensipal anvan chanje
+  var oldBizId = S.settings.businessId;
+  if(oldBizId){
+    try{ localStorage.setItem('konektem_app_' + oldBizId, JSON.stringify(S)); }
+    catch(e){}
+  }
+
+  // Kreye nan Supabase
+  createBusinessInCloud(newBiz, function(){
+    // Chaje nouvo espas vide
+    S = {
+      settings:{ bizname: name.trim(), sector: sector, businessId: newBizId,
+                 plan:'trial', trialStart: new Date().toISOString(),
+                 currency:'HTG', onboardingDone: true,
+                 cashier: name.trim() },
+      products: (SECTOR_SEEDS[sector]||SECTOR_SEEDS.marche).map(function(p){
+        return Object.assign({id:uid(),img:'',barcode:'',source:'manual'},p);
+      }),
+      sales:[], cart:[], categories:[], tickets:[], clients:[],
+      employees:[], fournisseurs:[], achats:[], sessionLogs:[]
+    };
+    S.categories = SECTOR_CATS[sector]||['Général'];
+    CURRENT_BIZ_ID = newBizId;
+    localStorage.setItem('konektem_current_biz', newBizId);
+    save();
+    renderProds(); renderCatBar(); updateTopbar();
+    notif('🏪 Boutique "' + name.trim() + '" créée et activée!', 'ok');
+    var mov = document.getElementById('bizSwitchMov');
+    if(mov) mov.remove();
+  });
+}
+
+// ── Init: restore bon biznis lè app louvri ──
+(function restoreLastBiz(){
+  var lastBizId = localStorage.getItem('konektem_current_biz');
+  if(lastBizId && lastBizId !== S.settings.businessId){
+    var saved = localStorage.getItem('konektem_app_' + lastBizId);
+    if(saved){
+      try{
+        var parsed = JSON.parse(saved);
+        if(parsed.settings && parsed.settings.businessId === lastBizId){
+          S = parsed;
+          CURRENT_BIZ_ID = lastBizId;
+        }
+      }catch(e){}
+    }
+  }
+})();
+
+
+// ══════════════════════════════════════════════════════════════════
+// SISTÈM SIPÒ — BOUTON SOS + RAPÒ PWOBLÈM
+// ══════════════════════════════════════════════════════════════════
+
+var SOS_CATEGORIES = [
+  { id:'tech',    ico:'⚙️',  label:'Problème technique',     desc:'App pa mache, pa ka konekte, lentè' },
+  { id:'peman',   ico:'💳',  label:'Problème de paiement',   desc:'MonCash, activation, abonnement' },
+  { id:'compte',  ico:'👤',  label:'Problème de compte',     desc:'Pa ka konekte, modpas, done' },
+  { id:'stock',   ico:'📦',  label:'Problème de stock',      desc:'Done pèdi, sync pa mache' },
+  { id:'autre',   ico:'💬',  label:'Autre demande',          desc:'Suggestion, question, lòt' }
+];
+
+function showSosModal(){
+  var old = document.getElementById('sosMov'); if(old) old.remove();
+  var mov = document.createElement('div');
+  mov.id = 'sosMov'; mov.className = 'mov show'; mov.style.zIndex = '3500';
+
+  var inner = document.createElement('div');
+  inner.className = 'modal'; inner.style.maxWidth = '460px';
+
+  // Header
+  inner.innerHTML = '<div style="text-align:center;margin-bottom:16px;">'
+    + '<div style="font-size:40px;margin-bottom:8px;">🆘</div>'
+    + '<h3 style="margin:0 0 4px;">Besoin d\'aide ?</h3>'
+    + '<div style="font-size:12px;color:var(--text3);">Décrivez votre problème — nous répondons en moins de 24h</div>'
+    + '</div>'
+    // Info kliyan (otomatik)
+    + '<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:var(--text3);">'
+    + '📋 <strong style="color:var(--text);">' + (S.settings.bizname||'Boutique') + '</strong>'
+    + ' · ' + (S.settings.sector||'') + ' · Plan: ' + (S.settings.plan||'trial')
+    + '</div>'
+    // Kategori pwoblèm
+    + '<div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:8px;">TYPE DE PROBLÈME</div>'
+    + '<div id="sos-cats" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;">'
+    + SOS_CATEGORIES.map(function(c){
+        return '<div class="sos-cat" data-id="'+c.id+'" onclick="selectSosCat(this,\''+c.id+'\')"'
+          + ' style="border:1.5px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;'
+          + 'background:var(--bg);transition:all .15s;">'
+          + '<div style="font-size:18px;margin-bottom:4px;">'+c.ico+'</div>'
+          + '<div style="font-size:12px;font-weight:700;">'+c.label+'</div>'
+          + '<div style="font-size:10px;color:var(--text3);margin-top:2px;">'+c.desc+'</div>'
+          + '</div>';
+      }).join('')
+    + '</div>'
+    // Deskripsyon
+    + '<div class="fg"><label class="flbl">Décrivez le problème</label>'
+    + '<textarea id="sos-msg" class="finp" rows="3" style="resize:none;" '
+    + 'placeholder="Ex: Lè map klike sou btn Vente, anyen pa pase..."></textarea></div>'
+    // Nivo ijans
+    + '<div class="fg"><label class="flbl">Niveau d\'urgence</label>'
+    + '<select id="sos-urgence" class="fsel">'
+    + '<option value="normal">🟢 Normal — Pa prese</option>'
+    + '<option value="urgent">🟡 Urgent — Biznis afekte</option>'
+    + '<option value="critique">🔴 Critique — App pa fonksyone ditou</option>'
+    + '</select></div>'
+    // Aksyon
+    + '<div id="sos-footer" class="mfooter"></div>';
+
+  // Boutons
+  var footer = inner.querySelector('#sos-footer');
+  var btnC = document.createElement('button');
+  btnC.className = 'btn-cancel'; btnC.textContent = 'Fermer';
+  btnC.onclick = function(){ mov.remove(); };
+
+  var btnWA = document.createElement('button');
+  btnWA.className = 'btn-g';
+  btnWA.style.cssText = 'background:#25D366;flex:2;';
+  btnWA.innerHTML = '📲 Envoyer via WhatsApp';
+  btnWA.onclick = function(){ sosSendWhatsApp(); };
+
+  var btnSupa = document.createElement('button');
+  btnSupa.className = 'btn-o';
+  btnSupa.style.flex = '1';
+  btnSupa.innerHTML = '📨 Envoyer rapport';
+  btnSupa.onclick = function(){ sosSendReport(); };
+
+  footer.appendChild(btnC);
+  footer.appendChild(btnSupa);
+  footer.appendChild(btnWA);
+
+  mov.appendChild(inner);
+  mov.addEventListener('click', function(e){ if(e.target===mov) mov.remove(); });
+  document.body.appendChild(mov);
+
+  // Seleksyone premye kategori pa defò
+  setTimeout(function(){
+    var first = document.querySelector('.sos-cat');
+    if(first) selectSosCat(first, 'tech');
+  }, 100);
+}
+
+var _sosCatSelected = 'tech';
+function selectSosCat(el, catId){
+  _sosCatSelected = catId;
+  document.querySelectorAll('.sos-cat').forEach(function(c){
+    c.style.borderColor = 'var(--border)';
+    c.style.background  = 'var(--bg)';
+  });
+  el.style.borderColor = 'var(--accent)';
+  el.style.background  = 'rgba(34,197,94,.08)';
+}
+
+function buildSosMessage(){
+  var cat     = SOS_CATEGORIES.find(function(c){ return c.id===_sosCatSelected; }) || SOS_CATEGORIES[0];
+  var msg     = (document.getElementById('sos-msg')||{}).value || '';
+  var urgence = (document.getElementById('sos-urgence')||{}).value || 'normal';
+  var urgIco  = urgence==='critique'?'🔴':urgence==='urgent'?'🟡':'🟢';
+  var now     = new Date().toLocaleDateString('fr-FR') + ' ' + new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+
+  // Info teknik otomatik
+  var techInfo = [
+    'Navigateur: ' + navigator.userAgent.split(' ').slice(-2).join(' '),
+    'Plateforme: ' + (navigator.platform||'?'),
+    'En ligne: ' + (navigator.onLine ? 'Oui' : 'NON ❌'),
+    'Plan: ' + (S.settings.plan||'trial'),
+    'Articles: ' + (S.products||[]).length,
+    'Ventes: ' + (S.sales||[]).length
+  ].join(' | ');
+
+  return '*🆘 SUPPORT KONEKTEM*\n'
+    + '━━━━━━━━━━━━━━━━\n'
+    + '🏪 *Boutique:* ' + (S.settings.bizname||'?') + '\n'
+    + '📧 *Email:* ' + (getSyncEmail()||'?') + '\n'
+    + '📅 *Date:* ' + now + '\n'
+    + '━━━━━━━━━━━━━━━━\n'
+    + cat.ico + ' *Catégorie:* ' + cat.label + '\n'
+    + urgIco + ' *Urgence:* ' + urgence.toUpperCase() + '\n'
+    + '━━━━━━━━━━━━━━━━\n'
+    + '*Description:*\n' + (msg||'(Aucune description)') + '\n'
+    + '━━━━━━━━━━━━━━━━\n'
+    + '🔧 *Info technique:*\n' + techInfo;
+}
+
+function sosSendWhatsApp(){
+  var msg = buildSosMessage();
+  if(!msg){ notif('Décrivez le problème','err'); return; }
+  var url = 'https://wa.me/' + (WHATSAPP_NUM||'50948868964') + '?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank');
+  notif('📲 WhatsApp ouvert — envoyez le message!', 'ok');
+}
+
+function sosSendReport(){
+  var msgEl = document.getElementById('sos-msg');
+  var msg   = msgEl ? msgEl.value.trim() : '';
+  if(!msg){ notif('Décrivez le problème d\'abord','err'); if(msgEl) msgEl.focus(); return; }
+
+  var cat     = SOS_CATEGORIES.find(function(c){ return c.id===_sosCatSelected; })||SOS_CATEGORIES[0];
+  var urgence = (document.getElementById('sos-urgence')||{}).value||'normal';
+  var email   = getSyncEmail();
+
+  // Sove rapport nan Supabase (tab konektem_logs)
+  fetch(SUPA_URL_APP + '/rest/v1/konektem_logs', {
+    method: 'POST',
+    headers:{
+      'apikey': SUPA_KEY_APP, 'Authorization': 'Bearer ' + SUPA_KEY_APP,
+      'Content-Type': 'application/json', 'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({
+      type:       'support_ticket',
+      user_email: email,
+      details:    JSON.stringify({
+        category:  cat.id,
+        label:     cat.label,
+        urgence:   urgence,
+        message:   msg,
+        bizname:   S.settings.bizname,
+        plan:      S.settings.plan,
+        online:    navigator.onLine,
+        products:  (S.products||[]).length,
+        sales:     (S.sales||[]).length,
+        ua:        navigator.userAgent,
+        date:      new Date().toISOString()
+      }),
+      by: email || 'anonymous'
+    })
+  })
+  .then(function(r){
+    if(r.ok || r.status === 201){
+      notif('✅ Rapport envoyé! Nous répondons sous 24h.', 'ok');
+      var mov = document.getElementById('sosMov'); if(mov) mov.remove();
+    } else {
+      notif('Erreur envoi — essayez WhatsApp', 'err');
+    }
+  })
+  .catch(function(){
+    notif('Hors ligne — utilisez WhatsApp', 'err');
+  });
+}
+
