@@ -506,80 +506,102 @@ function verifyCode(){
   var res = document.getElementById('code-result');
   var btn = document.getElementById('act-btn');
   if(!inp || !res) return;
-  var code = inp.value.trim().toUpperCase();
+  var code = inp.value.trim().toUpperCase().replace(/\s/g,'');
 
-  if(code.length < 8 || !code.startsWith('PREM-')){
-    showCodeResult('err', 'Fòma enkòrèk — egzanp: PREM-A3X7');
+  // Valide fòma: PREM-XXXX (9 chars) oswa 8 chars minimòm
+  if(!code || code.length < 7){
+    showCodeResult('err', 'Antre kòd ou (egzanp: PREM-A3X7)');
     return;
   }
 
-  showCodeResult('loading', 'Verifikasyon...');
+  showCodeResult('loading', '⏳ Verifikasyon en cours...');
   if(btn){ btn.disabled=true; btn.textContent='...'; }
 
-  var userEmail = S.userEmail||(function(){
-    try{return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||'';}catch(e){return '';}
-  })();
+  var userEmail = '';
+  try{ userEmail = JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }catch(e){}
 
-  // ── Verifye kòd dirèkteman nan tab konektem_codes ──
-  fetch(SUPA_URL_APP + '/rest/v1/konektem_codes?code=eq.' + encodeURIComponent(code) + '&select=code,plan,used,used_by', {
-    headers: {
+  // Query dirèk nan tab konektem_codes
+  var queryUrl = SUPA_URL_APP + '/rest/v1/konektem_codes?code=eq.'
+    + encodeURIComponent(code) + '&select=id,code,plan,used,used_by';
+
+  console.log('[VerifyCode] Chèche kòd:', code);
+  console.log('[VerifyCode] URL:', queryUrl);
+
+  fetch(queryUrl, {
+    headers:{
       'apikey':        SUPA_KEY_APP,
-      'Authorization': 'Bearer ' + SUPA_KEY_APP
+      'Authorization': 'Bearer ' + SUPA_KEY_APP,
+      'Content-Type':  'application/json'
     }
   })
-  .then(function(r){ return r.json(); })
+  .then(function(r){
+    console.log('[VerifyCode] HTTP status:', r.status);
+    if(!r.ok){
+      return r.text().then(function(t){
+        console.error('[VerifyCode] Erè HTTP:', t);
+        throw new Error('HTTP ' + r.status + ': ' + t);
+      });
+    }
+    return r.json();
+  })
   .then(function(rows){
+    console.log('[VerifyCode] Rows resevwa:', JSON.stringify(rows));
     if(btn){ btn.disabled=false; btn.textContent='Valide'; }
-    if(!Array.isArray(rows) || !rows.length){
-      showCodeResult('err', 'Kòd invalide. Kontakte nou sou WhatsApp.');
+
+    if(!Array.isArray(rows) || rows.length === 0){
+      console.warn('[VerifyCode] Kòd pa jwenn nan Supabase');
+      showCodeResult('err', '❌ Kòd ' + code + ' pa jwenn. Kontakte nou sou WhatsApp.');
       return;
     }
+
     var row = rows[0];
+    console.log('[VerifyCode] Row:', JSON.stringify(row));
+
     if(row.used){
-      showCodeResult('err', 'Kòd sa deja itilize. Kontakte nou sou WhatsApp.');
+      showCodeResult('err', '❌ Kòd sa deja itilize pa ' + (row.used_by||'yon lòt kliyan') + '. Kontakte nou.');
       return;
     }
-    // Kòd bon — marke kòm itilize nan Supabase
-    Promise.all([
-      fetch(SUPA_URL_APP + '/rest/v1/konektem_codes?code=eq.' + encodeURIComponent(code), {
-        method: 'PATCH',
-        headers: {
-          'apikey': SUPA_KEY_APP, 'Authorization': 'Bearer ' + SUPA_KEY_APP,
-          'Content-Type': 'application/json', 'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ used: true, used_by: userEmail, used_at: new Date().toISOString() })
-      }),
+
+    // ✅ Kòd bon — marke kòm itilize
+    showCodeResult('loading', '✅ Kòd bon! Aktivasyon en cours...');
+
+    // Marke used nan Supabase
+    fetch(SUPA_URL_APP + '/rest/v1/konektem_codes?id=eq.' + row.id, {
+      method: 'PATCH',
+      headers:{
+        'apikey': SUPA_KEY_APP, 'Authorization': 'Bearer ' + SUPA_KEY_APP,
+        'Content-Type': 'application/json', 'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        used:    true,
+        used_by: userEmail,
+        used_at: new Date().toISOString()
+      })
+    }).catch(function(e){ console.warn('[VerifyCode] PATCH used echwe:', e); });
+
+    // Mete a jou plan kliyan nan Supabase
+    if(userEmail){
       fetch(SUPA_URL_APP + '/rest/v1/konektem_users?email=eq.' + encodeURIComponent(userEmail), {
         method: 'PATCH',
-        headers: {
+        headers:{
           'apikey': SUPA_KEY_APP, 'Authorization': 'Bearer ' + SUPA_KEY_APP,
           'Content-Type': 'application/json', 'Prefer': 'return=minimal'
         },
-        body: JSON.stringify({ plan: 'premium', status: 'active', premium_date: new Date().toISOString() })
-      })
-    ])
-    .then(function(){ activatePremium(code, row.plan || 'mensuel'); })
-    .catch(function(){ activatePremium(code, row.plan || 'mensuel'); }); // aktive lokal menm si cloud echwe
+        body: JSON.stringify({
+          plan:         'premium',
+          status:       'active',
+          premium_date: new Date().toISOString()
+        })
+      }).catch(function(e){ console.warn('[VerifyCode] PATCH user echwe:', e); });
+    }
+
+    // Aktive Premium lokal imedyatman
+    activatePremium(code, row.plan || 'mensuel');
   })
-  .catch(function(){
-    // Fallback — Netlify Function si Supabase echwe
-    fetch('/.netlify/functions/verify-code', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ code:code, plan:S.selPlanId||'mensuel' })
-    })
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      if(btn){ btn.disabled=false; btn.textContent='Valide'; }
-      if(data.valid){ activatePremium(code); }
-      else showCodeResult('err', 'Kòd invalide. Kontakte nou sou WhatsApp.');
-    })
-    .catch(function(){
-      if(btn){ btn.disabled=false; btn.textContent='Valide'; }
-      // Dènye fallback — verifikasyon lokal
-      if(verifyCodeLocal(code)){ activatePremium(code); }
-      else showCodeResult('err', 'Kòd invalide. Kontakte nou sou WhatsApp.');
-    });
+  .catch(function(err){
+    console.error('[VerifyCode] Catch erè:', err.message);
+    if(btn){ btn.disabled=false; btn.textContent='Valide'; }
+    showCodeResult('err', '❌ Erè koneksyon. Verifye entènèt ou epi eseye ankò.');
   });
 }
 

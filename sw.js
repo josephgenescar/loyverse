@@ -1,5 +1,5 @@
 // Konektem Service Worker v1777421194
-var CACHE_NAME = 'konektem-v1777750538';
+var CACHE_NAME = 'konektem-v1777751334';
 var STATIC_FILES = ['/', '/index.html', '/app.html', '/app.js', '/manifest.json',
   '/status.html'];
 
