@@ -520,28 +520,46 @@ function verifyCode(){
     try{return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||'';}catch(e){return '';}
   })();
 
-  // ── Verifye via Supabase fonksyon mark_code_used ──
-  fetch('https://mnpgapvltdrpztnjmeie.supabase.co/rest/v1/rpc/mark_code_used', {
-    method: 'POST',
+  // ── Verifye kòd dirèkteman nan tab konektem_codes ──
+  fetch(SUPA_URL_APP + '/rest/v1/konektem_codes?code=eq.' + encodeURIComponent(code) + '&select=code,plan,used,used_by', {
     headers: {
-      'apikey':        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE',
-      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE',
-      'Content-Type':  'application/json'
-    },
-    body: JSON.stringify({ p_code: code, p_email: userEmail })
+      'apikey':        SUPA_KEY_APP,
+      'Authorization': 'Bearer ' + SUPA_KEY_APP
+    }
   })
   .then(function(r){ return r.json(); })
-  .then(function(valid){
+  .then(function(rows){
     if(btn){ btn.disabled=false; btn.textContent='Valide'; }
-    // Supabase RPC retounen JSONB: {success:true, plan:'mensuel'} oswa boolean
-    var ok = (valid === true) || (valid && valid.success === true);
-    if(ok){
-      var planRecu = (valid && valid.plan) ? valid.plan : 'mensuel';
-      activatePremium(code, planRecu);
-    } else {
-      var errMsg = (valid && valid.error) ? valid.error : 'Kòd enkòrèk oswa deja itilize. Kontakte nou sou WhatsApp.';
-      showCodeResult('err', errMsg);
+    if(!Array.isArray(rows) || !rows.length){
+      showCodeResult('err', 'Kòd invalide. Kontakte nou sou WhatsApp.');
+      return;
     }
+    var row = rows[0];
+    if(row.used){
+      showCodeResult('err', 'Kòd sa deja itilize. Kontakte nou sou WhatsApp.');
+      return;
+    }
+    // Kòd bon — marke kòm itilize nan Supabase
+    Promise.all([
+      fetch(SUPA_URL_APP + '/rest/v1/konektem_codes?code=eq.' + encodeURIComponent(code), {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPA_KEY_APP, 'Authorization': 'Bearer ' + SUPA_KEY_APP,
+          'Content-Type': 'application/json', 'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ used: true, used_by: userEmail, used_at: new Date().toISOString() })
+      }),
+      fetch(SUPA_URL_APP + '/rest/v1/konektem_users?email=eq.' + encodeURIComponent(userEmail), {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPA_KEY_APP, 'Authorization': 'Bearer ' + SUPA_KEY_APP,
+          'Content-Type': 'application/json', 'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ plan: 'premium', status: 'active', premium_date: new Date().toISOString() })
+      })
+    ])
+    .then(function(){ activatePremium(code, row.plan || 'mensuel'); })
+    .catch(function(){ activatePremium(code, row.plan || 'mensuel'); }); // aktive lokal menm si cloud echwe
   })
   .catch(function(){
     // Fallback — Netlify Function si Supabase echwe
@@ -872,9 +890,7 @@ function pushUserToSupabase(email){
     status:      'active',
     last_seen:   new Date().toISOString(),
     trial_start: S.settings.trialStart||null,
-    premium_date: S.settings.premiumDate||null,
-    premium_plan: S.settings.premiumPlan||null,
-    // pass_hash retire — kolonne pa nan Supabase toujou
+    premium_date: S.settings.premiumDate||null
   });
   // Upsert — kreye si pa egziste, mete a jou si egziste
   fetch(SUPA_URL_APP+'/rest/v1/konektem_users', {
@@ -3926,3 +3942,19 @@ function addSupportButton(){
   if(sb) sb.appendChild(btn);
 }
 
+
+// Taux de change HTG/USD (opsyonèl — pa kririk)
+function fetchExchangeRate(){
+  // Fonksyon opsyonèl — pa koz erè si li echwe
+  try {
+    fetch('https://api.exchangerate-api.com/v4/latest/USD')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(data && data.rates && data.rates.HTG){
+          S.exchangeRate = data.rates.HTG;
+          save();
+        }
+      })
+      .catch(function(){}); // silans si offline
+  } catch(e) {}
+}
