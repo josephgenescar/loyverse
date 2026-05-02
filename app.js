@@ -414,7 +414,18 @@ function showManualPayModal(plan, prix, unite){
     waBtn.target = '_blank';
     waBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#25D366;border-radius:8px;color:#fff;font-weight:800;font-size:14px;text-decoration:none;';
     waBtn.textContent = '② Voye screenshot sou WhatsApp';
-    waBtn.onclick = function(){ recordPaymentIntent(plan, prix); };
+    waBtn.onclick = function(){
+    recordPaymentIntent(plan, prix);
+    var bizname = S.settings.bizname || '';
+    var email = (function(){ try{ return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }catch(e){ return ''; } })();
+    var msg = '💳 *PEMAN KONEKTEM — ' + (plan==='mensuel'?'MENSUEL':'ANNUEL') + '*\n\n'
+      + '👤 Boutique: ' + bizname + '\n'
+      + '📧 Email: ' + email + '\n'
+      + '💰 Montan: ' + prix + ' HTG\n'
+      + '📅 Dat: ' + new Date().toLocaleString('fr-FR') + '\n\n'
+      + '✅ Mwen fèk voye peman MonCash la. Screenshot konfirmasyon atache.';
+    window.open('https://wa.me/50948868964?text=' + encodeURIComponent(msg), '_blank');
+  };
     var sec2lbl = document.createElement('div');
     sec2lbl.style.cssText = 'font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:10px;';
     sec2lbl.textContent = '② VOYE SCREENSHOT BA NOU';
@@ -522,11 +533,14 @@ function verifyCode(){
   .then(function(r){ return r.json(); })
   .then(function(valid){
     if(btn){ btn.disabled=false; btn.textContent='Valide'; }
-    if(valid === true){
-      // Supabase konfime kòd la — aktive lokal tou
-      activatePremium(code);
+    // Supabase RPC retounen JSONB: {success:true, plan:'mensuel'} oswa boolean
+    var ok = (valid === true) || (valid && valid.success === true);
+    if(ok){
+      var planRecu = (valid && valid.plan) ? valid.plan : 'mensuel';
+      activatePremium(code, planRecu);
     } else {
-      showCodeResult('err', 'Kòd enkòrèk oswa deja itilize. Kontakte nou sou WhatsApp.');
+      var errMsg = (valid && valid.error) ? valid.error : 'Kòd enkòrèk oswa deja itilize. Kontakte nou sou WhatsApp.';
+      showCodeResult('err', errMsg);
     }
   })
   .catch(function(){
@@ -573,8 +587,9 @@ function verifyCodeLocal(code){
   return valid.indexOf(code) > -1;
 }
 
-function activatePremium(code){
+function activatePremium(code, planRecu){
   S.settings.plan = 'premium';
+  if(planRecu) S.settings.premiumPlan = planRecu;
   S.settings.premiumDate = new Date().toISOString();
   S.settings.premiumCode = code;
   S.settings.premiumPlan = S.selPlanId || 'mensuel';
@@ -1245,6 +1260,13 @@ function startApp(){
   setInterval(function(){
     if(document.visibilityState === 'visible') pullFromCloud();
   }, 30000);
+  // Presence tracking — voye chak 60 segonn
+  sendPresence();
+  setInterval(function(){
+    if(document.visibilityState === 'visible') sendPresence();
+  }, 60000);
+  // Ajoute bouton SOS nan sidebar
+  setTimeout(addSupportButton, 500);
   // Sync tou lè itilizatè retounen sou app la
   document.addEventListener('visibilitychange', function(){
     if(document.visibilityState === 'visible'){
@@ -3707,5 +3729,200 @@ function sosSendReport(){
   .catch(function(){
     notif('Hors ligne — utilisez WhatsApp', 'err');
   });
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// PRESENCE + SUPPORT — Monitoring an tan reyèl
+// ══════════════════════════════════════════════════════════════
+
+// ── Voye presence chak 60 segonn ──
+function sendPresence(){
+  var email = getOwnerEmail();
+  if(!email) return;
+
+  // Kalkile vant jodi a
+  var today = new Date().toDateString();
+  var todaySales = (S.sales||[]).filter(function(s){
+    return new Date(s.date).toDateString() === today;
+  });
+  var todayRevenue = todaySales.reduce(function(a,s){ return a+s.total; }, 0);
+
+  fetch(SUPA_URL_APP + '/rest/v1/konektem_presence', {
+    method: 'POST',
+    headers:{
+      'apikey': SUPA_KEY_APP,
+      'Authorization': 'Bearer ' + SUPA_KEY_APP,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates,return=minimal',
+      'on_conflict': 'email'
+    },
+    body: JSON.stringify({
+      email:         email,
+      bizname:       S.settings.bizname || '',
+      secteur:       S.settings.sector  || '',
+      plan:          S.settings.plan    || 'trial',
+      last_seen:     new Date().toISOString(),
+      app_version:   document.querySelector('meta[name="version"]')
+                       ? document.querySelector('meta[name="version"]').content : '?',
+      device_info:   navigator.userAgent.substring(0,100),
+      business_id:   S.settings.businessId || '',
+      is_online:     true,
+      ventes_today:  todaySales.length,
+      revenue_today: todayRevenue
+    })
+  }).catch(function(){});
+}
+
+// ── Marke offline lè fenmen paj ──
+function sendOffline(){
+  var email = getOwnerEmail();
+  if(!email) return;
+  // Beacon pou asire li voye menm lè paj ap fèmen
+  var data = JSON.stringify({ email: email, is_online: false, last_seen: new Date().toISOString() });
+  navigator.sendBeacon
+    ? navigator.sendBeacon(
+        SUPA_URL_APP + '/rest/v1/konektem_presence?email=eq.' + encodeURIComponent(email),
+        new Blob([data], {type:'application/json'})
+      )
+    : fetch(SUPA_URL_APP + '/rest/v1/konektem_presence?email=eq.' + encodeURIComponent(email), {
+        method: 'PATCH', keepalive: true,
+        headers:{
+          'apikey': SUPA_KEY_APP, 'Authorization': 'Bearer ' + SUPA_KEY_APP,
+          'Content-Type': 'application/json'
+        },
+        body: data
+      }).catch(function(){});
+}
+
+// Demare presence tracking lè app louvri
+window.addEventListener('beforeunload', sendOffline);
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'hidden') sendOffline();
+  else sendPresence();
+});
+
+// ── Modal SOS / Rapòte yon pwoblèm ──
+function showSupportModal(){
+  var old = document.getElementById('supportMov');
+  if(old) old.remove();
+
+  var mov = document.createElement('div');
+  mov.id = 'supportMov'; mov.className = 'mov show';
+  mov.style.zIndex = '3000';
+
+  var inner = document.createElement('div');
+  inner.className = 'modal'; inner.style.maxWidth = '440px';
+
+  var email = getOwnerEmail();
+  var bizname = S.settings.bizname || '';
+
+  inner.innerHTML =
+    '<div style="text-align:center;margin-bottom:16px;">'
+    + '<div style="font-size:40px;margin-bottom:8px;">🆘</div>'
+    + '<h3 style="margin:0 0 4px;">Signaler un problème</h3>'
+    + '<div style="font-size:12px;color:var(--text3);">Notre équipe répond sous 30 minutes</div>'
+    + '</div>'
+
+    + '<div class="fg"><label class="flbl">Type de problème</label>'
+    + '<select class="fsel" id="sup-type">'
+    + '<option value="technique">🔧 Problème technique (app ne charge pas...)</option>'
+    + '<option value="paiement">💳 Problème de paiement / abonnement</option>'
+    + '<option value="stock">📦 Problème de stock / données</option>'
+    + '<option value="sync">📱 Problème de synchronisation</option>'
+    + '<option value="autre">💬 Autre</option>'
+    + '</select></div>'
+
+    + '<div class="fg"><label class="flbl">Décrivez le problème</label>'
+    + '<textarea class="finp" id="sup-msg" rows="4" placeholder="Ex: Le bouton Continuer ne répond pas depuis ce matin..." '
+    + 'style="resize:vertical;min-height:90px;"></textarea></div>'
+
+    + '<div id="sup-footer" class="mfooter"></div>';
+
+  mov.appendChild(inner);
+  mov.addEventListener('click', function(e){ if(e.target===mov) mov.remove(); });
+  document.body.appendChild(mov);
+
+  var btnC = document.createElement('button');
+  btnC.className = 'btn-cancel'; btnC.textContent = 'Annuler';
+  btnC.onclick = function(){ mov.remove(); };
+
+  var btnS = document.createElement('button');
+  btnS.className = 'btn-g'; btnS.textContent = '📤 Envoyer';
+  btnS.onclick = function(){
+    var type = document.getElementById('sup-type').value;
+    var msg  = document.getElementById('sup-msg').value.trim();
+    if(!msg){ notif('Décrivez le problème svp','err'); return; }
+
+    btnS.disabled = true; btnS.textContent = '⏳ Envoi...';
+
+    // Sove nan Supabase
+    fetch(SUPA_URL_APP + '/rest/v1/konektem_support', {
+      method: 'POST',
+      headers:{
+        'apikey': SUPA_KEY_APP, 'Authorization': 'Bearer ' + SUPA_KEY_APP,
+        'Content-Type': 'application/json', 'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        email:    email,
+        bizname:  bizname,
+        type:     type,
+        message:  msg,
+        status:   'ouvert',
+        priority: type === 'paiement' ? 'urgent' : 'normal'
+      })
+    })
+    .then(function(r){
+      if(!r.ok) throw new Error('Erreur ' + r.status);
+
+      // Voye WhatsApp bay admin
+      var typeLabel = {
+        technique: '🔧 Technique', paiement: '💳 Paiement',
+        stock: '📦 Stock', sync: '📱 Sync', autre: '💬 Autre'
+      }[type] || type;
+
+      var waTxt = '🆘 *TICKET SUPPORT — KONEKTEM*\n\n'
+        + '👤 *Client:* ' + (bizname||email) + '\n'
+        + '📧 *Email:* ' + email + '\n'
+        + '🏷️ *Plan:* ' + (S.settings.plan||'trial').toUpperCase() + '\n'
+        + '📂 *Type:* ' + typeLabel + '\n'
+        + '📅 *Date:* ' + new Date().toLocaleString('fr-FR') + '\n\n'
+        + '📝 *Message:*\n' + msg;
+
+      mov.remove();
+      notif('✅ Ticket envoyé! Nous vous contactons bientôt.', 'ok');
+
+      // Ouvri WhatsApp pou kliyan wè konfirmasyon
+      setTimeout(function(){
+        window.open('https://wa.me/' + (WHATSAPP_NUM||'50948868964')
+          + '?text=' + encodeURIComponent(waTxt), '_blank');
+      }, 800);
+    })
+    .catch(function(err){
+      btnS.disabled = false; btnS.textContent = '📤 Envoyer';
+      notif('Erreur envoi: ' + err.message, 'err');
+    });
+  };
+
+  var footer = document.getElementById('sup-footer');
+  footer.appendChild(btnC);
+  footer.appendChild(btnS);
+}
+
+// ── Ajoute bouton SOS nan sidebar apre startApp ──
+function addSupportButton(){
+  // Verifye pa gen bouton deja
+  if(document.getElementById('sos-btn')) return;
+
+  var btn = document.createElement('div');
+  btn.id = 'sos-btn';
+  btn.className = 'sb-item';
+  btn.style.cssText = 'color:#ef4444;margin-top:auto;';
+  btn.innerHTML = '<span class="ico">🆘</span>Signaler un problème';
+  btn.onclick = function(){ closeSb(); showSupportModal(); };
+
+  // Mete nan fin sidebar anvan "Changer de boutique"
+  var sb = document.querySelector('.sb-nav');
+  if(sb) sb.appendChild(btn);
 }
 
