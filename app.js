@@ -2832,31 +2832,209 @@ function notif(msg,type){
 
 // ── RENDERBO KONPLÈ ──
 function renderBO(){
-  var boDate=document.getElementById('bo-date');
-  if(boDate) boDate.textContent='📅 '+new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  var today=new Date().toDateString();
-  var todayS=S.sales.filter(function(s){return new Date(s.date).toDateString()===today;});
-  var todayR=todayS.reduce(function(a,s){return a+s.total;},0);
-  var totalR=S.sales.reduce(function(a,s){return a+s.total;},0);
-  var totalC=S.sales.reduce(function(a,s){return a+s.items.reduce(function(b,i){return b+i.qty*(i.cost||0);},0);},0);
-  var profit=totalR-totalC;
-  var kpi=document.getElementById('kpiGrid');
-  if(kpi) kpi.innerHTML=
-    '<div class="kpi"><div class="kpi-lbl">Ventes aujourd\'hui</div><div class="kpi-val">'+fmt(todayR)+'</div><div class="kpi-sub">'+todayS.length+' transaction(s)</div></div>'
-    +'<div class="kpi or"><div class="kpi-lbl">Revenu total</div><div class="kpi-val">'+fmt(totalR)+'</div><div class="kpi-sub">'+S.sales.length+' ventes</div></div>'
-    +'<div class="kpi bl"><div class="kpi-lbl">Bénéfice estimé</div><div class="kpi-val">'+fmt(profit)+'</div><div class="kpi-sub">Revenu − Coût</div></div>'
-    +'<div class="kpi re"><div class="kpi-lbl">Articles épuisés</div><div class="kpi-val">'+S.products.filter(function(p){return p.stock===0;}).length+'</div><div class="kpi-sub">sur '+S.products.length+'</div></div>';
-  // Graphique 7 jou
-  var days=[];
-  for(var i=6;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);var ds=d.toDateString();var rv=S.sales.filter(function(s){return new Date(s.date).toDateString()===ds;}).reduce(function(a,s){return a+s.total;},0);days.push({label:d.toLocaleDateString('fr-FR',{weekday:'short'}),rev:rv});}
+  var boDate = document.getElementById('bo-date');
+  if(boDate) boDate.textContent = '📅 ' + new Date().toLocaleDateString('fr-FR',{
+    weekday:'long', year:'numeric', month:'long', day:'numeric'
+  });
+
+  var today     = new Date().toDateString();
+  var thisMon   = new Date().getMonth() + '-' + new Date().getFullYear();
+  var allS      = S.sales.filter(function(s){ return !s.rembourse && !s.isRetour; });
+  var todayS    = allS.filter(function(s){ return new Date(s.date).toDateString() === today; });
+  var monthS    = allS.filter(function(s){
+    var d = new Date(s.date);
+    return (d.getMonth() + '-' + d.getFullYear()) === thisMon;
+  });
+
+  function calcRev(arr)  { return arr.reduce(function(a,s){ return a+s.total; },0); }
+  function calcCout(arr) {
+    return arr.reduce(function(a,s){
+      return a + s.items.reduce(function(b,it){ return b + it.qty*(it.cost||0); },0);
+    },0);
+  }
+
+  var todayRev   = calcRev(todayS),  todayCout  = calcCout(todayS),  todayBen  = todayRev  - todayCout;
+  var monthRev   = calcRev(monthS),  monthCout  = calcCout(monthS),  monthBen  = monthRev  - monthCout;
+  var totalRev   = calcRev(allS),    totalCout  = calcCout(allS),    totalBen  = totalRev  - totalCout;
+  var margePct   = totalRev > 0 ? Math.round((totalBen/totalRev)*100) : 0;
+  var stockVal   = S.products.reduce(function(a,p){
+    return a + ((p.stock!==999?p.stock:0)*(p.cost||0));
+  },0);
+  var nbEpuise   = S.products.filter(function(p){return p.stock===0;}).length;
+
+  // ── KPI JODI A (3 kard) ──
+  var kpi = document.getElementById('kpiGrid');
+  if(kpi){
+    kpi.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px;';
+    var kpis = [
+      {ico:'💵', lbl:'REVENU AUJOURD\'HUI', val:fmt(todayRev),
+       sub:todayS.length+' vente(s)', clr:'#22c55e', bg:'rgba(34,197,94,.08)', bdr:'rgba(34,197,94,.25)'},
+      {ico:'🛒', lbl:'COÛT DES ACHATS', val:fmt(todayCout),
+       sub:'Prix coût vendus', clr:'#f59e0b', bg:'rgba(245,158,11,.08)', bdr:'rgba(245,158,11,.25)'},
+      {ico:'📈', lbl:'BÉNÉFICE NET', val:fmt(todayBen),
+       sub:'Revenu − Coût achat', clr:todayBen>=0?'#22c55e':'#ef4444',
+       bg:todayBen>=0?'rgba(34,197,94,.08)':'rgba(239,68,68,.08)',
+       bdr:todayBen>=0?'rgba(34,197,94,.25)':'rgba(239,68,68,.25)'},
+      {ico:'📦', lbl:'VALEUR STOCK', val:fmt(stockVal),
+       sub:S.products.filter(function(p){return p.stock!==999&&p.stock>0;}).length+' articles',
+       clr:'#3b82f6', bg:'rgba(59,130,246,.08)', bdr:'rgba(59,130,246,.25)'}
+    ];
+    kpi.innerHTML = kpis.map(function(k){
+      return '<div style="background:'+k.bg+';border:1.5px solid '+k.bdr+';border-radius:12px;padding:16px;">'
+        +'<div style="font-size:11px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">'+k.ico+' '+k.lbl+'</div>'
+        +'<div style="font-size:24px;font-weight:900;color:'+k.clr+';margin-bottom:3px;">'+k.val+'</div>'
+        +'<div style="font-size:11px;color:var(--text3);">'+k.sub+'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  // ── TABLEAU FINANSYE DETAYE ──
+  var summary = document.getElementById('bo-summary');
+  if(!summary){
+    summary = document.createElement('div');
+    summary.id = 'bo-summary';
+    var kpiEl = document.getElementById('kpiGrid');
+    if(kpiEl && kpiEl.parentNode) kpiEl.parentNode.insertBefore(summary, kpiEl.nextSibling);
+  }
+
+  var c = function(v,pos){ return '<span style="color:'+(v>=0?pos||'#22c55e':'#ef4444');+'">'+fmt(v)+'</span>'; };
+
+  summary.innerHTML =
+    // Tablo prensipal
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;">'
+    +'<div style="background:rgba(34,197,94,.07);padding:10px 16px;font-size:12px;font-weight:800;color:var(--text3);letter-spacing:.5px;border-bottom:1px solid var(--border);">ANALYSE FINANCIÈRE</div>'
+    +'<table style="width:100%;border-collapse:collapse;">'
+    +'<thead><tr style="border-bottom:1px solid var(--border);">'
+    +'<th style="padding:9px 14px;text-align:left;font-size:11px;color:var(--text3);font-weight:700;"></th>'
+    +'<th style="padding:9px 14px;text-align:right;font-size:11px;color:var(--text3);font-weight:700;">Aujourd\'hui</th>'
+    +'<th style="padding:9px 14px;text-align:right;font-size:11px;color:var(--text3);font-weight:700;">Ce mois</th>'
+    +'<th style="padding:9px 14px;text-align:right;font-size:11px;color:var(--text3);font-weight:700;">Total général</th>'
+    +'</tr></thead><tbody>'
+
+    // Reveni (lajan kliyan peye)
+    +'<tr style="border-bottom:1px solid rgba(255,255,255,.05);">'
+    +'<td style="padding:11px 14px;font-size:13px;"><strong>💵 Chiffre d\'affaires</strong><br><span style="font-size:10px;color:var(--text3);">Total reçu des clients</span></td>'
+    +'<td style="padding:11px 14px;text-align:right;font-size:14px;font-weight:800;color:#22c55e;">'+fmt(todayRev)+'</td>'
+    +'<td style="padding:11px 14px;text-align:right;font-size:14px;font-weight:800;color:#22c55e;">'+fmt(monthRev)+'</td>'
+    +'<td style="padding:11px 14px;text-align:right;font-size:14px;font-weight:800;color:#22c55e;">'+fmt(totalRev)+'</td>'
+    +'</tr>'
+
+    // Koût achats (sa ou te depanse pou achte pwodwi)
+    +'<tr style="border-bottom:1px solid rgba(255,255,255,.05);">'
+    +'<td style="padding:11px 14px;font-size:13px;"><strong>🛒 Coût d\'achat</strong><br><span style="font-size:10px;color:var(--text3);">Prix coût des articles vendus</span></td>'
+    +'<td style="padding:11px 14px;text-align:right;font-size:14px;font-weight:800;color:#f59e0b;">− '+fmt(todayCout)+'</td>'
+    +'<td style="padding:11px 14px;text-align:right;font-size:14px;font-weight:800;color:#f59e0b;">− '+fmt(monthCout)+'</td>'
+    +'<td style="padding:11px 14px;text-align:right;font-size:14px;font-weight:800;color:#f59e0b;">− '+fmt(totalCout)+'</td>'
+    +'</tr>'
+
+    // Benefis net (GRAS)
+    +'<tr style="background:'+(totalBen>=0?'rgba(34,197,94,.06)':'rgba(239,68,68,.06)'+';border-top:2px solid '+(totalBen>=0?'rgba(34,197,94,.3)':'rgba(239,68,68,.3)'))+'">'
+    +'<td style="padding:13px 14px;font-size:14px;font-weight:900;">📈 BÉNÉFICE NET<br><span style="font-size:10px;color:var(--text3);font-weight:400;">Chiffre d\'affaires − Coût</span></td>'
+    +'<td style="padding:13px 14px;text-align:right;font-size:16px;font-weight:900;color:'+(todayBen>=0?'#22c55e':'#ef4444')+';">'+fmt(todayBen)+'</td>'
+    +'<td style="padding:13px 14px;text-align:right;font-size:16px;font-weight:900;color:'+(monthBen>=0?'#22c55e':'#ef4444')+';">'+fmt(monthBen)+'</td>'
+    +'<td style="padding:13px 14px;text-align:right;font-size:16px;font-weight:900;color:'+(totalBen>=0?'#22c55e':'#ef4444')+';">'+fmt(totalBen)+'</td>'
+    +'</tr>'
+
+    +'</tbody></table></div>'
+
+    // Kard estatistik anba
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;">'
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;">'
+    +'<div style="font-size:10px;color:var(--text3);font-weight:700;margin-bottom:4px;">📊 MARGE BÉNÉF.</div>'
+    +'<div style="font-size:22px;font-weight:900;color:'+(margePct>=0?'#22c55e':'#ef4444')+';">'+margePct+'%</div>'
+    +'<div style="font-size:10px;color:var(--text3);">Bénéf. / CA total</div>'
+    +'</div>'
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;">'
+    +'<div style="font-size:10px;color:var(--text3);font-weight:700;margin-bottom:4px;">📦 VALEUR STOCK</div>'
+    +'<div style="font-size:22px;font-weight:900;color:#3b82f6;">'+fmt(stockVal)+'</div>'
+    +'<div style="font-size:10px;color:var(--text3);">Capital immobilisé</div>'
+    +'</div>'
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;">'
+    +'<div style="font-size:10px;color:var(--text3);font-weight:700;margin-bottom:4px;">🔴 ÉPUISÉS</div>'
+    +'<div style="font-size:22px;font-weight:900;color:#ef4444;">'+nbEpuise+'</div>'
+    +'<div style="font-size:10px;color:var(--text3);">sur '+S.products.length+' articles</div>'
+    +'</div>'
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;">'
+    +'<div style="font-size:10px;color:var(--text3);font-weight:700;margin-bottom:4px;">🧾 VENTES TOTAL</div>'
+    +'<div style="font-size:22px;font-weight:900;color:var(--accent);">'+allS.length+'</div>'
+    +'<div style="font-size:10px;color:var(--text3);">transactions</div>'
+    +'</div>'
+    +'</div>';
+
+  // ── Grafik 7 jou (Reveni + Benefis) ──
+  var days = [];
+  for(var di=6;di>=0;di--){
+    var d=new Date(); d.setDate(d.getDate()-di);
+    var ds=d.toDateString();
+    var dayS=allS.filter(function(s){return new Date(s.date).toDateString()===ds;});
+    var dRev=calcRev(dayS), dCout=calcCout(dayS);
+    days.push({label:d.toLocaleDateString('fr-FR',{weekday:'short'}), rev:dRev, ben:dRev-dCout});
+  }
   var mx=Math.max.apply(null,days.map(function(d){return d.rev;}).concat([1]));
   var cbars=document.getElementById('cbars');
-  if(cbars) cbars.innerHTML=days.map(function(d){var h=Math.max(4,Math.round((d.rev/mx)*100));return '<div class="cw"><div class="cb" style="height:'+h+'px">'+(d.rev?'<div class="cv">'+Math.round(d.rev/1000)+'k</div>':'')+'</div><div class="cl">'+d.label+'</div></div>';}).join('');
-  // Top articles
-  var sold={};S.sales.forEach(function(s){s.items.forEach(function(i){if(!sold[i.id])sold[i.id]=Object.assign({},i,{ts:0,tr:0});sold[i.id].ts+=i.qty;sold[i.id].tr+=i.qty*i.price;});});
-  var top=Object.values(sold).sort(function(a,b){return b.ts-a.ts;}).slice(0,5);
+  if(cbars) cbars.innerHTML=days.map(function(d){
+    var hr=Math.max(4,Math.round((d.rev/mx)*100));
+    var hb=Math.max(0,Math.round((Math.max(0,d.ben)/mx)*100));
+    return '<div class="cw">'
+      +'<div style="position:relative;height:'+hr+'px;">'
+      +'<div style="position:absolute;bottom:0;width:100%;height:'+hr+'px;background:rgba(34,197,94,.2);border-radius:4px 4px 0 0;"></div>'
+      +'<div style="position:absolute;bottom:0;width:100%;height:'+hb+'px;background:#22c55e;border-radius:4px 4px 0 0;"></div>'
+      +(d.rev?'<div class="cv">'+Math.round(d.rev/1000)+'k</div>':'')
+      +'</div><div class="cl">'+d.label+'</div></div>';
+  }).join('');
+
+  // Légende
+  var lg=document.getElementById('chart-legend');
+  if(!lg){
+    lg=document.createElement('div');lg.id='chart-legend';
+    lg.style.cssText='display:flex;gap:16px;margin-top:6px;justify-content:flex-end;flex-wrap:wrap;';
+    var cb=document.getElementById('cbars');
+    if(cb&&cb.parentNode)cb.parentNode.appendChild(lg);
+  }
+  lg.innerHTML='<span style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px;">'
+    +'<span style="width:10px;height:10px;border-radius:2px;background:rgba(34,197,94,.3);display:inline-block;"></span>Chiffre d\'affaires</span>'
+    +'<span style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px;">'
+    +'<span style="width:10px;height:10px;border-radius:2px;background:#22c55e;display:inline-block;"></span>Bénéfice net</span>';
+
+  // ── Top Articles ak Revenu + Koût + Benefis ──
+  var sold={};
+  allS.forEach(function(s){
+    s.items.forEach(function(it){
+      if(!sold[it.id])sold[it.id]=Object.assign({},it,{ts:0,tr:0,tc:0});
+      sold[it.id].ts+=it.qty; sold[it.id].tr+=it.qty*it.price; sold[it.id].tc+=it.qty*(it.cost||0);
+    });
+  });
+  var top=Object.values(sold).sort(function(a,b){return b.tr-a.tr;}).slice(0,5);
   var topList=document.getElementById('topList');
-  if(topList) topList.innerHTML=top.length?top.map(function(p,i){return '<div class="tp"><div class="tp-rk">#'+(i+1)+'</div><div class="tp-img">'+getEmoji(p.category,S.settings.sector)+'</div><div class="tp-info"><div class="tp-name">'+p.name+'</div><div class="tp-sold">'+p.ts+' vendu(s)</div></div><div class="tp-rev">'+fmt(p.tr)+'</div></div>';}).join(''):'<div style="color:var(--text3);font-size:13px">Aucune vente</div>';
+  if(topList){
+    topList.innerHTML=top.length?top.map(function(p,i){
+      var ben=p.tr-p.tc;
+      var marg=p.tr>0?Math.round((ben/p.tr)*100):0;
+      return '<div style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">'
+        +'<div style="font-size:12px;font-weight:700;color:var(--text3);width:22px;">#'+(i+1)+'</div>'
+        +'<div style="font-size:20px;">'+getEmoji(p.category,S.settings.sector)+'</div>'
+        +'<div style="flex:1;">'
+        +'<div style="font-size:13px;font-weight:700;">'+p.name+'</div>'
+        +'<div style="font-size:10px;color:var(--text3);">'+p.ts+' vendu(s)</div>'
+        +'</div>'
+        +'<div style="text-align:right;margin-right:12px;">'
+        +'<div style="font-size:9px;color:var(--text3);">Revenu</div>'
+        +'<div style="font-size:13px;font-weight:700;color:#22c55e;">'+fmt(p.tr)+'</div>'
+        +'</div>'
+        +'<div style="text-align:right;margin-right:12px;">'
+        +'<div style="font-size:9px;color:var(--text3);">Coût</div>'
+        +'<div style="font-size:13px;font-weight:700;color:#f59e0b;">−'+fmt(p.tc)+'</div>'
+        +'</div>'
+        +'<div style="text-align:right;">'
+        +'<div style="font-size:9px;color:var(--text3);">Bénéfice</div>'
+        +'<div style="font-size:13px;font-weight:800;color:'+(ben>=0?'#22c55e':'#ef4444')+';">'+fmt(ben)+'</div>'
+        +'<div style="font-size:9px;color:'+(marg>=0?'#22c55e':'#ef4444')+';">'+marg+'%</div>'
+        +'</div>'
+        +'</div>';
+    }).join('')
+    :'<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px;">Aucune vente encore</div>';
+  }
+
   renderBoV(); renderBoS(); renderBoE();
 }
 
