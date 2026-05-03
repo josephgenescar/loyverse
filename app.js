@@ -3488,7 +3488,7 @@ function createBusinessInCloud(bizData, callback){
 }
 
 // ── Chanje biznis aktif ──
-function switchBusiness(bizId){
+function switchBusiness(bizId, bizData){
   var email = getOwnerEmail();
   if(!email){ notif('Email requis','err'); return; }
 
@@ -3509,7 +3509,7 @@ function switchBusiness(bizId){
       localStorage.setItem('konektem_current_biz', bizId);
       save(); // sove nan kle aktyèl la tou
       renderProds(); renderCatBar(); renderRecu(); updateTopbar();
-      notif('✅ Boutique changée: ' + (S.settings.bizname||''), 'ok');
+      notif('✅ Boutique: ' + (S.settings.bizname||bizId) + ' — chargée!', 'ok');
       closeMov('bizSwitchMov');
       // Pull done cloud pou mete a jou
       setTimeout(function(){ pullBizFromCloud(bizId); }, 1000);
@@ -3592,16 +3592,34 @@ function showBizSwitchModal(){
   var mov = document.createElement('div');
   mov.id = 'bizSwitchMov'; mov.className = 'mov show';
   mov.style.zIndex = '2000';
+  mov.addEventListener('click', function(e){ if(e.target===mov) mov.remove(); });
 
   var inner = document.createElement('div');
   inner.className = 'modal'; inner.style.maxWidth = '480px';
+  inner.style.maxHeight = '80vh'; inner.style.overflowY = 'auto';
 
-  inner.innerHTML = '<h3 style="margin-bottom:4px;">🏪 Mes Boutiques</h3>'
-    + '<div style="font-size:12px;color:var(--text3);margin-bottom:16px;">Choisissez ou créez une boutique</div>'
-    + '<div id="biz-list" style="margin-bottom:16px;min-height:60px;">'
-    + '<div style="text-align:center;color:var(--text3);padding:20px;">⏳ Chargement...</div></div>'
-    + '<button class="btn-g" style="width:100%;margin-bottom:8px;" onclick="showNewBizForm()">'
-    + '+ Créer une nouvelle boutique</button>';
+  var title = document.createElement('h3');
+  title.style.marginBottom = '4px';
+  title.textContent = '🏪 Mes Boutiques';
+  inner.appendChild(title);
+
+  var sub = document.createElement('div');
+  sub.style.cssText = 'font-size:12px;color:var(--text3);margin-bottom:16px;';
+  sub.textContent = 'Choisissez ou créez une boutique';
+  inner.appendChild(sub);
+
+  var listDiv = document.createElement('div');
+  listDiv.id = 'biz-list';
+  listDiv.style.cssText = 'margin-bottom:16px;min-height:60px;';
+  listDiv.innerHTML = '<div style="text-align:center;color:var(--text3);padding:20px;">⏳ Chargement...</div>';
+  inner.appendChild(listDiv);
+
+  var btnNew = document.createElement('button');
+  btnNew.className = 'btn-g';
+  btnNew.style.cssText = 'width:100%;margin-bottom:8px;';
+  btnNew.textContent = '+ Créer une nouvelle boutique';
+  btnNew.onclick = showNewBizForm;
+  inner.appendChild(btnNew);
 
   var footer = document.createElement('div'); footer.className = 'mfooter';
   var btnC = document.createElement('button'); btnC.className = 'btn-cancel';
@@ -3609,41 +3627,101 @@ function showBizSwitchModal(){
   btnC.onclick = function(){ mov.remove(); };
   footer.appendChild(btnC); inner.appendChild(footer);
   mov.appendChild(inner);
-  mov.addEventListener('click', function(e){ if(e.target===mov) mov.remove(); });
   document.body.appendChild(mov);
 
-  // Chaje lis biznis yo
+  // Chaje lis boutik yo
   loadUserBusinesses(function(bizList){
-    var listDiv = document.getElementById('biz-list');
-    if(!listDiv) return;
+    listDiv.innerHTML = '';
+    var activeBizId = CURRENT_BIZ_ID || S.settings.businessId;
 
-    // Toujou ajoute biznis prensipal la (kont aktyèl)
-    var currentBizId = S.settings.businessId;
-    var currentBizName = S.settings.bizname || 'Ma boutique principale';
+    var SECTOR_ICO = {
+      marche:'🛒', pharmacie:'💊', electronique:'📱', restaurant:'🍽️',
+      store:'👗', quincaillerie:'🔧', depot:'🏭', salon:'✂️', service:'🛠️'
+    };
 
+    // Si pa gen biznis nan cloud, ajoute aktyèl la
     if(!bizList.length){
-      // Pa gen biznis nan cloud — montre jis aktyèl la
-      listDiv.innerHTML = renderBizCard({
-        id: currentBizId, bizname: currentBizName,
-        secteur: S.settings.sector, plan: S.settings.plan
-      }, true);
-      return;
+      bizList = [{ id: S.settings.businessId, bizname: S.settings.bizname||'Ma boutique',
+                   secteur: S.settings.sector, plan: S.settings.plan||'trial' }];
+    } else {
+      // Ajoute biznis lokal si pa nan lis cloud
+      var inList = bizList.some(function(b){ return b.id === S.settings.businessId; });
+      if(!inList){
+        bizList.unshift({ id: S.settings.businessId, bizname: S.settings.bizname||'Ma boutique',
+                          secteur: S.settings.sector, plan: S.settings.plan||'trial' });
+      }
     }
 
-    var isInList = bizList.some(function(b){ return b.id === currentBizId; });
-    var html = '';
-    if(!isInList){
-      html += renderBizCard({
-        id: currentBizId, bizname: currentBizName,
-        secteur: S.settings.sector, plan: S.settings.plan
-      }, true);
-    }
     bizList.forEach(function(b){
-      html += renderBizCard(b, b.id === (CURRENT_BIZ_ID || currentBizId));
+      var isActive = b.id === activeBizId;
+      var card = document.createElement('div');
+      card.style.cssText = 'display:flex;align-items:center;gap:12px;padding:14px;border-radius:10px;'
+        + 'border:2px solid ' + (isActive ? 'var(--accent)' : 'var(--border)') + ';'
+        + 'background:' + (isActive ? 'rgba(34,197,94,.08)' : 'var(--bg)') + ';'
+        + 'margin-bottom:8px;cursor:' + (isActive ? 'default' : 'pointer') + ';'
+        + 'transition:all .15s;';
+
+      var ico = document.createElement('div');
+      ico.style.fontSize = '28px';
+      ico.textContent = SECTOR_ICO[b.secteur] || '🏪';
+
+      var info = document.createElement('div');
+      info.style.flex = '1';
+
+      var nameEl = document.createElement('div');
+      nameEl.style.cssText = 'font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;';
+      nameEl.textContent = b.bizname || '—';
+
+      if(isActive){
+        var activeDot = document.createElement('span');
+        activeDot.style.cssText = 'font-size:10px;color:var(--accent);font-weight:600;';
+        activeDot.textContent = '● Actif';
+        nameEl.appendChild(activeDot);
+      }
+
+      var secEl = document.createElement('div');
+      secEl.style.cssText = 'font-size:11px;color:var(--text3);text-transform:capitalize;margin-top:2px;';
+      secEl.textContent = b.secteur || '';
+
+      info.appendChild(nameEl);
+      info.appendChild(secEl);
+
+      var badge = document.createElement('span');
+      badge.style.cssText = b.plan === 'premium'
+        ? 'background:#f59e0b;color:#000;padding:3px 9px;border-radius:10px;font-size:11px;font-weight:800;'
+        : 'background:rgba(255,255,255,.1);color:var(--text3);padding:3px 9px;border-radius:10px;font-size:11px;';
+      badge.textContent = b.plan === 'premium' ? '⭐ Premium' : 'Trial';
+
+      card.appendChild(ico);
+      card.appendChild(info);
+      card.appendChild(badge);
+
+      // Si pa aktif — ajoute click pou chanje
+      if(!isActive){
+        (function(bizId, bizData){
+          card.addEventListener('click', function(){
+            // Vizyèlman montre loading
+            card.style.opacity = '0.6';
+            card.style.pointerEvents = 'none';
+            switchBusiness(bizId, bizData);
+            setTimeout(function(){ mov.remove(); }, 500);
+          });
+          card.addEventListener('mouseenter', function(){
+            card.style.borderColor = 'var(--accent)';
+            card.style.background = 'rgba(34,197,94,.04)';
+          });
+          card.addEventListener('mouseleave', function(){
+            card.style.borderColor = 'var(--border)';
+            card.style.background = 'var(--bg)';
+          });
+        })(b.id, b);
+      }
+
+      listDiv.appendChild(card);
     });
-    listDiv.innerHTML = html;
   });
 }
+
 
 function renderBizCard(b, isActive){
   var SECTOR_ICO = {
