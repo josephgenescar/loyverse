@@ -1,6 +1,6 @@
 // Konektem Service Worker v1777421194
-var CACHE_NAME = 'konektem-v1777819332';
-var STATIC_FILES = ['/', '/index.html', '/app.html', '/app.js', '/manifest.json',
+var CACHE_NAME = 'konektem-v1778101558';
+var STATIC_FILES = ['/', '/index.html', '/app.html', '/app.js', '/manifest.json', '/app.js',
   '/status.html'];
 
 self.addEventListener('install', function(e) {
