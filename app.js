@@ -276,13 +276,13 @@ function selPlan(el,id,txt){
 // ════════════════════════════════════════
 var MONCASH_NUM  = '509-4886-8964'; // ← Remplace ak nimewo MonCash ou
 var WHATSAPP_NUM = '50948868964';    // ← Remplace ak nimewo WhatsApp ou
-var PRIX_MENSUEL = 2500;
-var PRIX_ANNUEL  = 22000;
+var PRIX_MENSUEL = 10;
+var PRIX_ANNUEL  = 100;
 
 function doPremium(){
   var plan = S.selPlanId || 'mensuel';
   var prix = plan === 'annuel' ? PRIX_ANNUEL : PRIX_MENSUEL;
-  var unite= plan === 'annuel' ? 'HTG/an' : 'HTG/mois';
+  var unite= plan === 'annuel' ? 'USD/an' : 'USD/mois';
 
   // ── Jwenn email kliyan ──
   var userEmail = S.userEmail || (function(){
@@ -338,7 +338,7 @@ function resetPmBtn(plan, prix){
   if(!pmBtn) return;
   pmBtn.disabled = false;
   pmBtn.style.opacity = '1';
-  var txt = (plan==='annuel') ? '22 000 HTG/an' : '2 500 HTG/mois';
+  var txt = (plan==='annuel') ? '100 USD/an' : '10 USD/mois';
   pmBtn.textContent = 'Activer Premium — ' + txt + ' →';
 }
 
@@ -3181,8 +3181,8 @@ function renderMonPlan(){
   var remaining = Math.max(0, trialDays - elapsed);
   var isPrem = plan==='premium';
   var premDate = S.settings.premiumDate ? new Date(S.settings.premiumDate).toLocaleDateString('fr-FR') : '—';
-  var pm = S.settings.priceMensuel||2500;
-  var pa = S.settings.priceAnnuel||22000;
+  var pm = S.settings.priceMensuel||10;
+  var pa = S.settings.priceAnnuel||100;
   el.innerHTML = '<div style="max-width:480px;margin:0 auto;">'
     + '<div class="kpi '+(isPrem?'bl':'or')+'" style="margin-bottom:16px;padding:20px;">'
     + '<div style="font-size:28px;margin-bottom:6px;">'+(isPrem?'⭐ Premium':'⏳ Essai gratuit')+'</div>'

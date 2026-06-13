@@ -573,7 +573,7 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
     </div>
     <div class="plan-card featured">
       <div class="plan-name">Premium</div>
-      <div class="plan-price"><span class="curr">HTG</span> 2,500 <span class="per">/ mois</span></div>
+      <div class="plan-price"><span class="curr">$</span> 10 <span class="per">/ mois</span></div>
       <div class="plan-desc">Articles illimités, tout inclus.</div>
       <div class="plan-feats">
         <div class="pf-feat"><div class="pf-check gold"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Articles illimités</div>
@@ -657,8 +657,8 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
     <div class="pm-title">Passez au niveau supérieur</div>
     <div class="pm-sub">Articles illimités · API boutique · Back Office complet</div>
     <div class="pm-plans">
-      <div class="pm-plan sel" id="plan-mens-card" onclick="selPlan(this,'mensuel')"><div class="pm-plan-name">Mensuel</div><div class="pm-plan-price" id="landing-prix-mens">2 500 <span class="pm-plan-per">HTG/mois</span></div></div>
-      <div class="pm-plan" id="plan-ann-card" onclick="selPlan(this,'annuel')"><div class="pm-plan-name">Annuel</div><div class="pm-plan-price" id="landing-prix-ann">22 000 <span class="pm-plan-per">HTG/an</span></div><div class="pm-plan-save">💰 Économisez 8 000 HTG</div></div>
+      <div class="pm-plan sel" id="plan-mens-card" onclick="selPlan(this,'mensuel')"><div class="pm-plan-name">Mensuel</div><div class="pm-plan-price" id="landing-prix-mens">10 <span class="pm-plan-per">USD/mois</span></div></div>
+      <div class="pm-plan" id="plan-ann-card" onclick="selPlan(this,'annuel')"><div class="pm-plan-name">Annuel</div><div class="pm-plan-price" id="landing-prix-ann">100 <span class="pm-plan-per">USD/an</span></div><div class="pm-plan-save">💰 Économisez 20 USD</div></div>
     </div>
     <div class="pm-feats">
       <div class="pm-feat"><span class="pm-ck">✓</span> Articles et ventes illimités</div>
@@ -670,7 +670,7 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
     <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px;font-size:12px;color:rgba(255,255,255,.6);text-align:center;margin-bottom:13px">
       💳 Paiement : <strong style="color:#fbbf24">MonCash · Carte · Virement</strong>
     </div>
-    <button class="pm-btn" id="pm-btn" onclick="landingDoPremium()">Activer Premium — 2 500 HTG/mois →</button>
+    <button class="pm-btn" id="pm-btn" onclick="landingDoPremium()">Activer Premium — 10 USD/mois →</button>
   </div>
 </div>
 
@@ -1078,9 +1078,9 @@ function showAuthErr(form, msg) {
 
 // PREMIUM
 var landingSelPlan = 'mensuel';
-var landingSelPrix = 2500;
-var LANDING_PRIX_MENS    = 2500;
-var LANDING_PRIX_ANN     = 22000;
+var landingSelPrix = 10;
+var LANDING_PRIX_MENS    = 10;
+var LANDING_PRIX_ANN     = 100;
 var LANDING_MONCASH_NUM  = '509-4886-8964'; // ← Chanje ak nimewo ou
 var LANDING_WHATSAPP_NUM = '50948868964';    // ← Chanje ak WhatsApp ou
 
@@ -1093,7 +1093,7 @@ function loadLandingPrices(){
   .then(function(data){
     if(Array.isArray(data) && data.length > 0 && data[0].price_mensuel){
       LANDING_PRIX_MENS = data[0].price_mensuel;
-      LANDING_PRIX_ANN  = data[0].price_annuel || 22000;
+      LANDING_PRIX_ANN  = data[0].price_annuel || 100;
       updateLandingPriceDisplay();
     }
   })
@@ -1101,15 +1101,15 @@ function loadLandingPrices(){
 }
 
 function updateLandingPriceDisplay(){
-  var fmtP = function(n){ return n.toLocaleString('fr-HT'); };
+  var fmtP = function(n){ return n.toLocaleString('en-US'); };
   var elM = document.getElementById('landing-prix-mens');
   var elA = document.getElementById('landing-prix-ann');
-  if(elM) elM.innerHTML = fmtP(LANDING_PRIX_MENS) + ' <span class="pm-plan-per">HTG/mois</span>';
-  if(elA) elA.innerHTML = fmtP(LANDING_PRIX_ANN)  + ' <span class="pm-plan-per">HTG/an</span>';
+  if(elM) elM.innerHTML = fmtP(LANDING_PRIX_MENS) + ' <span class="pm-plan-per">USD/mois</span>';
+  if(elA) elA.innerHTML = fmtP(LANDING_PRIX_ANN)  + ' <span class="pm-plan-per">USD/an</span>';
   var btn = document.getElementById('pm-btn');
   if(btn){
     var prix = landingSelPlan === 'annuel' ? LANDING_PRIX_ANN : LANDING_PRIX_MENS;
-    btn.textContent = 'Activer Premium — ' + fmtP(prix) + ' ' + (landingSelPlan==='annuel'?'HTG/an':'HTG/mois') + ' →';
+    btn.textContent = 'Activer Premium — ' + fmtP(prix) + ' ' + (landingSelPlan==='annuel'?'USD/an':'USD/mois') + ' →';
   }
 }
 
@@ -1160,13 +1160,13 @@ function landingDoPremium(){
     + '1. Ouvri app <strong style="color:#fff;">MonCash</strong><br>'
     + '2. Klike <strong style="color:#fbbf24;">Envoyer de largent</strong><br>'
     + '3. Nimewo : <span style="font-size:19px;font-weight:800;color:#4ade80;letter-spacing:2px;display:block;margin:6px 0 4px;">'+ LANDING_MONCASH_NUM +'</span>'
-    + '4. Montan : <strong style="color:#fbbf24;font-size:16px;">'+ prix +' HTG</strong>'
+    + '4. Montan : <strong style="color:#fbbf24;font-size:16px;">'+ prix +' USD</strong>'
     + '</div>';
 
   // Section 2 — WhatsApp screenshot
   var sec2 = document.createElement('div');
   sec2.style.cssText = 'border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;';
-  var waMsg = 'Bonjour, mwen voye ' + prix + ' HTG pou plan Konektem ' + plan;
+  var waMsg = 'Bonjour, mwen voye ' + prix + ' USD pou plan Konektem ' + plan;
   var waUrl = 'https://wa.me/' + LANDING_WHATSAPP_NUM + '?text=' + encodeURIComponent(waMsg);
   var waLbl = document.createElement('div');
   waLbl.style.cssText = 'font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:8px;';

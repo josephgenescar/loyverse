@@ -116,7 +116,7 @@
   function generateCustomerDisplayHTML() {
     var cart = window.S ? window.S.cart : [];
     var settings = window.S ? window.S.settings : {};
-    var currency = settings.currency || 'HTG';
+    var currency = settings.currency || 'USD';
     
     // Kalkile total
     var subtotal = cart.reduce(function(a, x) { return a + (x.price * x.qty); }, 0);

@@ -79,7 +79,7 @@
   
   function generateReceiptText(sale) {
     var settings = window.S ? window.S.settings : {};
-    var currency = settings.currency || 'HTG';
+    var currency = settings.currency || 'USD';
     var bizname = settings.bizname || 'Konektem';
     
     var fmt = function(n) {

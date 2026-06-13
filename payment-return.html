@@ -69,7 +69,7 @@ function showDetail(orderId, plan, amount){
   el.innerHTML = [
     '<div class="detail-row"><span>Nimewo kòmand</span><span>' + orderId + '</span></div>',
     '<div class="detail-row"><span>Plan</span><span>' + (plan === 'annuel' ? 'Annuel' : 'Mensuel') + '</span></div>',
-    amount ? '<div class="detail-row"><span>Montan</span><span>' + Number(amount).toLocaleString('fr-HT') + ' HTG</span></div>' : '',
+    amount ? '<div class="detail-row"><span>Montan</span><span>$' + Number(amount).toLocaleString('en-US') + ' USD</span></div>' : '',
     '<div class="detail-row"><span>Méthode</span><span>MonCash</span></div>',
     '<div class="detail-row"><span>Date</span><span>' + new Date().toLocaleDateString('fr-FR') + '</span></div>',
   ].join('');
