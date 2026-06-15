@@ -401,11 +401,11 @@ function showManualPayModal(plan, prix, unite){
       + '1. Ouvri app <strong style="color:#fff;">MonCash</strong><br>'
       + '2. Klike <strong style="color:#fbbf24;">Envoyer de largent</strong><br>'
       + '3. Nimewo : <span style="font-size:19px;font-weight:800;color:#4ade80;letter-spacing:2px;display:block;margin:6px 0 4px;">'+MONCASH_NUM+'</span>'
-      + '4. Montan : <strong style="color:#fbbf24;font-size:16px;">'+prix+' HTG</strong>'
+      + '4. Montan : <strong style="color:#fbbf24;font-size:16px;">'+prix+' USD</strong>'
       + '</div>';
 
     // ── SECTION 2: Voye screenshot WhatsApp ──
-    var waMsg = 'Bonjour RIVAYO-TECH, mwen voye ' + prix + ' HTG sou MonCash pou plan ' + plan + '. Screenshot nan attachment la.';
+    var waMsg = 'Bonjour RIVAYO-TECH, mwen voye ' + prix + ' USD sou MonCash pou plan ' + plan + '. Screenshot nan attachment la.';
     var waUrl = 'https://wa.me/' + WHATSAPP_NUM + '?text=' + encodeURIComponent(waMsg);
     var sec2 = document.createElement('div');
     sec2.style.cssText = 'border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;';
@@ -421,7 +421,7 @@ function showManualPayModal(plan, prix, unite){
     var msg = '💳 *PEMAN KONEKTEM — ' + (plan==='mensuel'?'MENSUEL':'ANNUEL') + '*\n\n'
       + '👤 Boutique: ' + bizname + '\n'
       + '📧 Email: ' + email + '\n'
-      + '💰 Montan: ' + prix + ' HTG\n'
+      + '💰 Montan: ' + prix + ' USD\n'
       + '📅 Dat: ' + new Date().toLocaleString('fr-FR') + '\n\n'
       + '✅ Mwen fèk voye peman MonCash la. Screenshot konfirmasyon atache.';
     window.open('https://wa.me/50948868964?text=' + encodeURIComponent(msg), '_blank');
