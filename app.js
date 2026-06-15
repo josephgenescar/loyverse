@@ -274,8 +274,8 @@ function selPlan(el,id,txt){
 // ════════════════════════════════════════
 // CONFIG PEMAN — Mete done reyèl ou ici
 // ════════════════════════════════════════
-var MONCASH_NUM  = '509-4886-8964'; // ← Remplace ak nimewo MonCash ou
-var WHATSAPP_NUM = '50948868964';    // ← Remplace ak nimewo WhatsApp ou
+var MONCASH_NUM  = '+50948868964'; // ← Remplace ak nimewo MonCash ou
+var WHATSAPP_NUM = '+50948868964';    // ← Remplace ak nimewo WhatsApp ou
 var PRIX_MENSUEL = 10;
 var PRIX_ANNUEL  = 100;
 
@@ -391,7 +391,7 @@ function showManualPayModal(plan, prix, unite){
     hdr.style.cssText = 'text-align:center;margin-bottom:22px;';
     hdr.innerHTML = '<div style="font-size:36px;margin-bottom:8px;">📱</div>'
       + '<div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">Payer via MonCash</div>'
-      + '<div style="font-size:13px;color:rgba(255,255,255,.5);">Plan : <strong style="color:#86efac;">'+prix+' '+USD+'</strong></div>';
+      + '<div style="font-size:13px;color:rgba(255,255,255,.5);">Plan : <strong style="color:#86efac;">'+prix+' '+unite+'</strong></div>';
 
     // ── SECTION 1: Enstriksyon MonCash ──
     var sec1 = document.createElement('div');
