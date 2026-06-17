@@ -629,6 +629,7 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
     <div class="trial-info-box"><span style="font-size:18px">🎁</span><div class="ti-text"><strong>Essai Premium — 14 jours gratuits</strong>Toutes les fonctionnalités incluses<div class="ti-prog"><div class="ti-fill"></div></div></div></div>
     <div class="auth-field"><label class="auth-label">Nom complet</label><input class="auth-input" id="su-name" placeholder="Jean-Baptiste Pierre"></div>
     <div class="auth-field"><label class="auth-label">Email</label><input class="auth-input" id="su-email" type="email" placeholder="jean@exemple.com"></div>
+    <div class="auth-field"><label class="auth-label">Téléphone <span style="color:#ef4444">*</span></label><input class="auth-input" id="su-phone" type="tel" placeholder="509 4886 8964" required></div>
     <div class="auth-field"><label class="auth-label">Mot de passe</label><input class="auth-input" id="su-pass" type="password" placeholder="8 caractères minimum"></div>
     <button class="auth-btn" onclick="doSignup()">Créer mon compte gratuit →</button>
     <div class="auth-switch">Déjà un compte ? <a onclick="switchAuth('signin')">Se connecter</a></div>
@@ -845,11 +846,13 @@ document.querySelectorAll('.screen').forEach(function(s) {
 function doSignup() {
   var name  = document.getElementById('su-name').value.trim();
   var email = document.getElementById('su-email').value.trim();
+  var phone = document.getElementById('su-phone').value.trim();
   var pass  = document.getElementById('su-pass').value;
 
-  if (!name || !email || !pass) { showAuthErr('signup','Veuillez remplir tous les champs.'); return; }
+  if (!name || !email || !phone || !pass) { showAuthErr('signup','Veuillez remplir tous les champs.'); return; }
   if (pass.length < 8) { showAuthErr('signup','Mot de passe : 8 caractères minimum.'); return; }
   if (!email.includes('@') || !email.includes('.')) { showAuthErr('signup','Adresse email invalide.'); return; }
+  if (phone.length < 8) { showAuthErr('signup','Numéro de téléphone invalide (minimum 8 chiffres).'); return; }
 
   // Vérifier si un compte existe déjà sur cet appareil
   var existing = localStorage.getItem('konektem_user');
@@ -887,6 +890,7 @@ function doSignup() {
     body: JSON.stringify({
       email: email,
       bizname: name,
+      phone: phone,
       plan: 'trial',
       status: 'active',
       created_at: new Date().toISOString()
