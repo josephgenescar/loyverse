@@ -845,7 +845,7 @@ document.querySelectorAll('.screen').forEach(function(s) {
 // AUTH
 function doSignup() {
   var name  = document.getElementById('su-name').value.trim();
-  var email = document.getElementById('su-email').value.trim();
+  var email = document.getElementById('su-email').value.trim().toLowerCase();
   var phone = document.getElementById('su-phone').value.trim();
   var pass  = document.getElementById('su-pass').value;
 
@@ -853,53 +853,65 @@ function doSignup() {
   if (pass.length < 8) { showAuthErr('signup','Mot de passe : 8 caractères minimum.'); return; }
   if (!email.includes('@') || !email.includes('.')) { showAuthErr('signup','Adresse email invalide.'); return; }
 
-  // Vérifier si un compte existe déjà sur cet appareil
-  var existing = localStorage.getItem('konektem_user');
-  if (existing) {
-    var u = JSON.parse(existing);
-    // Compte existant → proposer de se connecter
-    showAuthErr('signup',
-      'Un compte existe déjà sur cet appareil (' + u.email + '). ' +
-      'Connectez-vous plutôt.'
-    );
-    // Surligner le lien "Se connecter"
-    setTimeout(function(){
-      document.querySelector('#screen-signup .auth-switch a').style.fontWeight='900';
-      document.querySelector('#screen-signup .auth-switch a').style.textDecoration='underline';
-    }, 100);
-    return;
-  }
+  var btn = document.querySelector('#screen-signup .auth-btn');
+  if(btn){ btn.textContent = '⏳ Vérification...'; btn.disabled = true; }
 
-  // Nouveau compte — sauvegarder localement
-  var userData = {
-    name: name, email: email, phone: phone, pass: btoa(pass),
-    startDate: new Date().toISOString(), plan: 'trial', trialDays: 14
-  };
-  localStorage.setItem('konektem_user', JSON.stringify(userData));
+  // ── Vérifier si le compte existe DANS SUPABASE ──
+  fetch(SUPA_URL + '/rest/v1/konektem_users?email=eq.' + encodeURIComponent(email) + '&select=email', {
+    headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data && data.length > 0){
+      // Email existe déjà — proposer de se connecter
+      if(btn){ btn.textContent = 'Créer mon compte gratuit →'; btn.disabled = false; }
+      showAuthErr('signup',
+        'Un compte avec cet email existe déjà. Connectez-vous plutôt.'
+      );
+      setTimeout(function(){
+        document.querySelector('#screen-signup .auth-switch a').style.fontWeight='900';
+        document.querySelector('#screen-signup .auth-switch a').style.textDecoration='underline';
+      }, 100);
+      return;
+    }
 
-  // ── Enregistrer dans Supabase ──
-  fetch(SUPA_URL + '/rest/v1/konektem_users', {
-    method: 'POST',
-    headers: {
-      'apikey': SUPA_KEY,
-      'Authorization': 'Bearer ' + SUPA_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal'
-    },
-    body: JSON.stringify({
-      email: email,
-      bizname: name,
-      telephone: phone || null,
-      plan: 'trial',
-      status: 'active',
-      created_at: new Date().toISOString()
-    })
-  }).catch(function(){
-    // Echec Supabase — pas grave, compte local toujours créé
+    // Email n'existe pas — créer le compte
+    var passHash = btoa(unescape(encodeURIComponent(pass)));
+    var userData = {
+      name: name, email: email, phone: phone, pass: passHash,
+      startDate: new Date().toISOString(), plan: 'trial', trialDays: 14
+    };
+    localStorage.setItem('konektem_user', JSON.stringify(userData));
+
+    // ── Enregistrer dans Supabase ──
+    fetch(SUPA_URL + '/rest/v1/konektem_users', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        email: email,
+        bizname: name,
+        telephone: phone || null,
+        plan: 'trial',
+        status: 'active',
+        created_at: new Date().toISOString()
+      })
+    }).catch(function(){
+      // Echec Supabase — pas grave, compte local toujours créé
+    });
+
+    if(btn){ btn.textContent = 'Créer mon compte gratuit →'; btn.disabled = false; }
+    hideScreen('signup');
+    setTimeout(function() { window.location.href = 'app.html'; }, 200);
+  })
+  .catch(function(err){
+    if(btn){ btn.textContent = 'Créer mon compte gratuit →'; btn.disabled = false; }
+    showAuthErr('signup','Erreur de vérification. Réessayez.');
   });
-
-  hideScreen('signup');
-  setTimeout(function() { window.location.href = 'app.html'; }, 200);
 }
 
 function doSignin() {
