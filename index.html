@@ -328,7 +328,7 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
     <button class="btn-hero green" onclick="showScreen('signup')">Démarrer gratuitement →</button>
     <button class="btn-hero outline" onclick="showScreen('signin')">Se connecter</button>
   </div>
-  <p class="hero-note"><span>14 jours d'essai complet gratuit</span> · Aucune carte bancaire requise</p>
+  <p class="hero-note"><span>5 jours d'essai complet gratuit</span> · Aucune carte bancaire requise</p>
 </section>
 
 <!-- DEVICE ILLUSTRATION — POS Setup style Loyverse -->
@@ -510,11 +510,11 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
 <div style="padding:0 5%;max-width:1100px;margin:0 auto">
   <div class="trial-banner">
     <div class="tb-left">
-      <h3>🎁 14 jours d'essai gratuit — Sans carte bancaire</h3>
-      <p>Accédez à toutes les fonctionnalités Premium pendant 14 jours.</p>
+      <h3>🎁 5 jours d'essai gratuit — Sans carte bancaire</h3>
+      <p>Accédez à toutes les fonctionnalités Premium pendant 5 jours.</p>
     </div>
     <div class="tb-stats">
-      <div class="tb-stat"><div class="num">14</div><div class="lab">Jours gratuits</div></div>
+      <div class="tb-stat"><div class="num">5</div><div class="lab">Jours gratuits</div></div>
       <div class="tb-stat"><div class="num">∞</div><div class="lab">Articles</div></div>
       <div class="tb-stat"><div class="num">9</div><div class="lab">Secteurs</div></div>
     </div>
@@ -561,8 +561,8 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
   <div class="pricing-grid">
     <div class="plan-card">
       <div class="plan-name">Essai Gratuit</div>
-      <div class="plan-price"><span class="curr">HTG</span> 0 <span class="per">/ 14 jours</span></div>
-      <div class="plan-desc">Toutes les fonctionnalités pendant 14 jours sans carte.</div>
+      <div class="plan-price"><span class="curr">HTG</span> 0 <span class="per">/ 5 jours</span></div>
+      <div class="plan-desc">Toutes les fonctionnalités pendant 5 jours sans carte.</div>
       <div class="plan-feats">
         <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Tous les secteurs</div>
         <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Jusqu'à 50 articles</div>
@@ -625,8 +625,8 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
     <button class="auth-close" onclick="hideScreen('signup')">✕</button>
     <div class="auth-logo"><svg width="40" height="40" viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="16" stroke="#22c55e" stroke-width="1.5" opacity=".4"/><path d="M5 17 A12 12 0 0 1 29 17" stroke="#22c55e" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="17" cy="17" r="4" fill="#22c55e"/><circle cx="6" cy="17" r="2.5" fill="#4ade80" opacity=".8"/><circle cx="28" cy="17" r="2.5" fill="#4ade80" opacity=".8"/><line x1="8.5" y1="17" x2="13" y2="17" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/><line x1="21" y1="17" x2="25.5" y2="17" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></svg></div>
     <div class="auth-title">Créer votre compte</div>
-    <div class="auth-sub">14 jours d'essai gratuit · Aucune carte requise</div>
-    <div class="trial-info-box"><span style="font-size:18px">🎁</span><div class="ti-text"><strong>Essai Premium — 14 jours gratuits</strong>Toutes les fonctionnalités incluses<div class="ti-prog"><div class="ti-fill"></div></div></div></div>
+    <div class="auth-sub">5 jours d'essai gratuit · Aucune carte requise</div>
+    <div class="trial-info-box"><span style="font-size:18px">🎁</span><div class="ti-text"><strong>Essai Premium — 5 jours gratuits</strong>Toutes les fonctionnalités incluses<div class="ti-prog"><div class="ti-fill"></div></div></div></div>
     <div class="auth-field"><label class="auth-label">Nom complet</label><input class="auth-input" id="su-name" placeholder="Jean-Baptiste Pierre"></div>
     <div class="auth-field"><label class="auth-label">Email</label><input class="auth-input" id="su-email" type="email" placeholder="jean@exemple.com"></div>
     <div class="auth-field"><label class="auth-label">Téléphone <span style="color:#ef4444">*</span></label><input class="auth-input" id="su-phone" type="tel" placeholder="509 4886 8964" required></div>
@@ -874,7 +874,7 @@ function doSignup() {
   // Nouveau compte — sauvegarder localement
   var userData = {
     name: name, email: email, pass: btoa(pass),
-    startDate: new Date().toISOString(), plan: 'trial', trialDays: 14
+    startDate: new Date().toISOString(), plan: 'trial', trialDays: 5
   };
   localStorage.setItem('konektem_user', JSON.stringify(userData));
 
@@ -969,7 +969,7 @@ function doSignin() {
       pass:        passHash,
       startDate:   trialStart,
       plan:        remote.plan || 'trial',
-      trialDays:   remote.trial_days || 14,
+      trialDays:   remote.trial_days || 5,
       bizname:     remote.bizname || '',
       sector:      remote.secteur || '',
       premiumDate: remote.premium_date || null,

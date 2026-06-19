@@ -187,7 +187,7 @@ function showExpiredWall(){
   var h = document.createElement('div');
   h.innerHTML = '<div style="font-size:50px;margin-bottom:14px;">⏰</div>'
     + '<div style="font-family:Syne,sans-serif;font-size:22px;font-weight:800;color:#fff;margin-bottom:10px;">Essai termine</div>'
-    + '<div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px;line-height:1.6;">Votre periode d essai de 14 jours est termine.<br>Passez au Premium pour continuer a utiliser Konektem.</div>';
+    + '<div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px;line-height:1.6;">Votre periode d essai de 5 jours est termine.<br>Passez au Premium pour continuer a utiliser Konektem.</div>';
 
   // Bouton peman
   var btn = document.createElement('button');
@@ -274,8 +274,8 @@ function selPlan(el,id,txt){
 // ════════════════════════════════════════
 // CONFIG PEMAN — Mete done reyèl ou ici
 // ════════════════════════════════════════
-var MONCASH_NUM  = '509-4886-8964'; // ← Remplace ak nimewo MonCash ou
-var WHATSAPP_NUM = '50948868964';    // ← Remplace ak nimewo WhatsApp ou
+var MONCASH_NUM  = '+50948868964'; // ← Remplace ak nimewo MonCash ou
+var WHATSAPP_NUM = '+50948868964';    // ← Remplace ak nimewo WhatsApp ou
 var PRIX_MENSUEL = 10;
 var PRIX_ANNUEL  = 100;
 
@@ -401,11 +401,11 @@ function showManualPayModal(plan, prix, unite){
       + '1. Ouvri app <strong style="color:#fff;">MonCash</strong><br>'
       + '2. Klike <strong style="color:#fbbf24;">Envoyer de largent</strong><br>'
       + '3. Nimewo : <span style="font-size:19px;font-weight:800;color:#4ade80;letter-spacing:2px;display:block;margin:6px 0 4px;">'+MONCASH_NUM+'</span>'
-      + '4. Montan : <strong style="color:#fbbf24;font-size:16px;">'+prix+' HTG</strong>'
+      + '4. Montan : <strong style="color:#fbbf24;font-size:16px;">'+prix+' USD</strong>'
       + '</div>';
 
     // ── SECTION 2: Voye screenshot WhatsApp ──
-    var waMsg = 'Bonjour RIVAYO-TECH, mwen voye ' + prix + ' HTG sou MonCash pou plan ' + plan + '. Screenshot nan attachment la.';
+    var waMsg = 'Bonjour RIVAYO-TECH, mwen voye ' + prix + ' USD sou MonCash pou plan ' + plan + '. Screenshot nan attachment la.';
     var waUrl = 'https://wa.me/' + WHATSAPP_NUM + '?text=' + encodeURIComponent(waMsg);
     var sec2 = document.createElement('div');
     sec2.style.cssText = 'border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;';
@@ -421,7 +421,7 @@ function showManualPayModal(plan, prix, unite){
     var msg = '💳 *PEMAN KONEKTEM — ' + (plan==='mensuel'?'MENSUEL':'ANNUEL') + '*\n\n'
       + '👤 Boutique: ' + bizname + '\n'
       + '📧 Email: ' + email + '\n'
-      + '💰 Montan: ' + prix + ' HTG\n'
+      + '💰 Montan: ' + prix + ' USD\n'
       + '📅 Dat: ' + new Date().toLocaleString('fr-FR') + '\n\n'
       + '✅ Mwen fèk voye peman MonCash la. Screenshot konfirmasyon atache.';
     window.open('https://wa.me/50948868964?text=' + encodeURIComponent(msg), '_blank');
@@ -3176,7 +3176,7 @@ function renderMonPlan(){
   var el = document.getElementById('monplanBody'); if(!el) return;
   var plan = S.settings.plan||'trial';
   var trialStart = new Date(S.settings.trialStart||Date.now());
-  var trialDays = S.settings.trialDays||14;
+  var trialDays = S.settings.trialDays||5;
   var elapsed = Math.floor((Date.now()-trialStart)/86400000);
   var remaining = Math.max(0, trialDays - elapsed);
   var isPrem = plan==='premium';
