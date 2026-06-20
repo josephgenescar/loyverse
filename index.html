@@ -629,7 +629,11 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
     <div class="trial-info-box"><span style="font-size:18px">🎁</span><div class="ti-text"><strong>Essai Premium — 5 jours gratuits</strong>Toutes les fonctionnalités incluses<div class="ti-prog"><div class="ti-fill"></div></div></div></div>
     <div class="auth-field"><label class="auth-label">Nom complet</label><input class="auth-input" id="su-name" placeholder="Jean-Baptiste Pierre"></div>
     <div class="auth-field"><label class="auth-label">Email</label><input class="auth-input" id="su-email" type="email" placeholder="jean@exemple.com"></div>
+<<<<<<< HEAD
     <div class="auth-field"><label class="auth-label">Téléphone <span style="color:#ef4444">*</span></label><input class="auth-input" id="su-phone" type="tel" placeholder="509 4886 8964" required></div>
+=======
+    <div class="auth-field"><label class="auth-label">Numéro de téléphone</label><input class="auth-input" id="su-phone" type="tel" placeholder="509 XX XX XX XX"></div>
+>>>>>>> 2707976f30c875894e9d0d1978d64369fa548877
     <div class="auth-field"><label class="auth-label">Mot de passe</label><input class="auth-input" id="su-pass" type="password" placeholder="8 caractères minimum"></div>
     <button class="auth-btn" onclick="doSignup()">Créer mon compte gratuit →</button>
     <div class="auth-switch">Déjà un compte ? <a onclick="switchAuth('signin')">Se connecter</a></div>
@@ -845,7 +849,11 @@ document.querySelectorAll('.screen').forEach(function(s) {
 // AUTH
 function doSignup() {
   var name  = document.getElementById('su-name').value.trim();
+<<<<<<< HEAD
   var email = document.getElementById('su-email').value.trim();
+=======
+  var email = document.getElementById('su-email').value.trim().toLowerCase();
+>>>>>>> 2707976f30c875894e9d0d1978d64369fa548877
   var phone = document.getElementById('su-phone').value.trim();
   var pass  = document.getElementById('su-pass').value;
 
@@ -854,53 +862,65 @@ function doSignup() {
   if (!email.includes('@') || !email.includes('.')) { showAuthErr('signup','Adresse email invalide.'); return; }
   if (phone.length < 8) { showAuthErr('signup','Numéro de téléphone invalide (minimum 8 chiffres).'); return; }
 
-  // Vérifier si un compte existe déjà sur cet appareil
-  var existing = localStorage.getItem('konektem_user');
-  if (existing) {
-    var u = JSON.parse(existing);
-    // Compte existant → proposer de se connecter
-    showAuthErr('signup',
-      'Un compte existe déjà sur cet appareil (' + u.email + '). ' +
-      'Connectez-vous plutôt.'
-    );
-    // Surligner le lien "Se connecter"
-    setTimeout(function(){
-      document.querySelector('#screen-signup .auth-switch a').style.fontWeight='900';
-      document.querySelector('#screen-signup .auth-switch a').style.textDecoration='underline';
-    }, 100);
-    return;
-  }
+  var btn = document.querySelector('#screen-signup .auth-btn');
+  if(btn){ btn.textContent = '⏳ Vérification...'; btn.disabled = true; }
 
-  // Nouveau compte — sauvegarder localement
-  var userData = {
-    name: name, email: email, pass: btoa(pass),
-    startDate: new Date().toISOString(), plan: 'trial', trialDays: 5
-  };
-  localStorage.setItem('konektem_user', JSON.stringify(userData));
+  // ── Vérifier si le compte existe DANS SUPABASE ──
+  fetch(SUPA_URL + '/rest/v1/konektem_users?email=eq.' + encodeURIComponent(email) + '&select=email', {
+    headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data && data.length > 0){
+      // Email existe déjà — proposer de se connecter
+      if(btn){ btn.textContent = 'Créer mon compte gratuit →'; btn.disabled = false; }
+      showAuthErr('signup',
+        'Un compte avec cet email existe déjà. Connectez-vous plutôt.'
+      );
+      setTimeout(function(){
+        document.querySelector('#screen-signup .auth-switch a').style.fontWeight='900';
+        document.querySelector('#screen-signup .auth-switch a').style.textDecoration='underline';
+      }, 100);
+      return;
+    }
 
-  // ── Enregistrer dans Supabase ──
-  fetch(SUPA_URL + '/rest/v1/konektem_users', {
-    method: 'POST',
-    headers: {
-      'apikey': SUPA_KEY,
-      'Authorization': 'Bearer ' + SUPA_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal'
-    },
-    body: JSON.stringify({
-      email: email,
-      bizname: name,
-      phone: phone,
-      plan: 'trial',
-      status: 'active',
-      created_at: new Date().toISOString()
-    })
-  }).catch(function(){
-    // Echec Supabase — pas grave, compte local toujours créé
+    // Email n'existe pas — créer le compte
+    var passHash = btoa(unescape(encodeURIComponent(pass)));
+    var userData = {
+      name: name, email: email, phone: phone, pass: passHash,
+      startDate: new Date().toISOString(), plan: 'trial', trialDays: 5
+    };
+    localStorage.setItem('konektem_user', JSON.stringify(userData));
+
+    // ── Enregistrer dans Supabase ──
+    fetch(SUPA_URL + '/rest/v1/konektem_users', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        email: email,
+        bizname: name,
+        phone: phone || null,
+        plan: 'trial',
+        status: 'active',
+        created_at: new Date().toISOString()
+      })
+    }).catch(function(){
+      // Echec Supabase — pas grave, compte local toujours créé
+    });
+
+    if(btn){ btn.textContent = 'Créer mon compte gratuit →'; btn.disabled = false; }
+    hideScreen('signup');
+    setTimeout(function() { window.location.href = 'app.html'; }, 200);
+  })
+  .catch(function(err){
+    if(btn){ btn.textContent = 'Créer mon compte gratuit →'; btn.disabled = false; }
+    showAuthErr('signup','Erreur de vérification. Réessayez.');
   });
-
-  hideScreen('signup');
-  setTimeout(function() { window.location.href = 'app.html'; }, 200);
 }
 
 function doSignin() {
