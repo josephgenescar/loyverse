@@ -958,7 +958,7 @@ function doSignin() {
   // ── ETAP 2: Chèche kont nan Supabase (SANS pass_hash) ──
   // Itilize sèlman champs ki egziste nan tab la
   var selectFields = 'email,bizname,secteur,plan,status,trial_days,premium_date,premium_plan,created_at,trial_start';
-  fetch(SUPA_URL + '/rest/v1/konektem_users?email=eq.' + encodeURIComponent(email) + '&select=' + selectFields, {
+  fetch(SUPA_URL + '/rest/v1/konektem_users?email=eq.' + encodeURIComponent(email) + '&select=' + encodeURIComponent(selectFields), {
     headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
   })
   .then(function(r){
