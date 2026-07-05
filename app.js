@@ -1429,22 +1429,45 @@ function renderProds(){
 }
 function filterProds(){renderProds();}
 
+function syncCustomerDisplayState(){
+  try {
+    if(typeof window.writeSharedCustomerState === 'function') {
+      window.writeSharedCustomerState();
+    }
+  } catch (error) {}
+}
+
+window.addEventListener('storage', function(event){
+  if(!event || event.key !== 'konektem_customer_action') return;
+  try {
+    var payload = JSON.parse(event.newValue || '{}');
+    if(payload && payload.productId && typeof addCart === 'function') {
+      addCart(payload.productId);
+      try {
+        var prod = S.products.find(function(p){ return String(p.id) === String(payload.productId); });
+        var total = S.cart.reduce(function(a,x){ return a + (x.price * x.qty); }, 0);
+        notif((prod?prod.name:payload.productId) + ' ajouté par le client — Total: ' + fmt(total), 'ok');
+      } catch (e) {}
+    }
+  } catch (error) {}
+});
+
 // ── CART ──
 function addCart(id){
   var p=S.products.find(function(x){return x.id===id;}); if(!p||p.stock===0)return;
   var ex=S.cart.find(function(x){return x.id===id;});
   if(ex){if(ex.qty>=p.stock){notif('Stock insuffisant !','err');return;}ex.qty++;}
   else S.cart.push(Object.assign({},p,{qty:1}));
-  renderCart(); renderProds();
+  renderCart(); renderProds(); syncCustomerDisplayState();
 }
-function removeCart(id){S.cart=S.cart.filter(function(x){return x.id!==id;});renderCart();renderProds();}
+function removeCart(id){S.cart=S.cart.filter(function(x){return x.id!==id;});renderCart();renderProds();syncCustomerDisplayState();}
 function chgQty(id,d){
   var it=S.cart.find(function(x){return x.id===id;});
   var pr=S.products.find(function(x){return x.id===id;});
   if(!it)return; it.qty+=d;
   if(it.qty<=0) S.cart=S.cart.filter(function(x){return x.id!==id;});
   else if(pr&&it.qty>pr.stock){it.qty--;notif('Stock insuffisant !','err');}
-  renderCart(); renderProds();
+  renderCart(); renderProds(); syncCustomerDisplayState();
 }
 function renderCart(){
   var oi=document.getElementById('ordItems');
