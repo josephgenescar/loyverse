@@ -1307,8 +1307,6 @@ function startApp(){
   setInterval(function(){
     if(document.visibilityState === 'visible') checkSupportReplies();
   }, 30000);
-  // Ajoute bouton SOS nan sidebar
-  setTimeout(addSupportButton, 500);
   // Sync tou lè itilizatè retounen sou app la
   document.addEventListener('visibilitychange', function(){
     if(document.visibilityState === 'visible'){
@@ -4196,7 +4194,7 @@ function showSupportModal(){
   inner.innerHTML =
     '<div style="text-align:center;margin-bottom:16px;">'
     + '<div style="font-size:40px;margin-bottom:8px;">🆘</div>'
-    + '<h3 style="margin:0 0 4px;">Signaler un problème</h3>'
+    + '<h3 style="margin:0 0 4px;">Support Konektem</h3>'
     + '<div style="font-size:12px;color:var(--text3);">Notre équipe répond sous 30 minutes</div>'
     + '</div>'
 
@@ -4285,24 +4283,6 @@ function showSupportModal(){
   footer.appendChild(btnC);
   footer.appendChild(btnS);
 }
-
-// ── Ajoute bouton SOS nan sidebar apre startApp ──
-function addSupportButton(){
-  // Verifye pa gen bouton deja
-  if(document.getElementById('sos-btn')) return;
-
-  var btn = document.createElement('div');
-  btn.id = 'sos-btn';
-  btn.className = 'sb-item';
-  btn.style.cssText = 'color:#ef4444;margin-top:auto;';
-  btn.innerHTML = '<span class="ico">🆘</span>Signaler un problème';
-  btn.onclick = function(){ closeSb(); showSupportModal(); };
-
-  // Mete nan fin sidebar anvan "Changer de boutique"
-  var sb = document.querySelector('.sb-nav');
-  if(sb) sb.appendChild(btn);
-}
-
 
 // Taux de change HTG/USD (opsyonèl — pa kririk)
 function fetchExchangeRate(){
