@@ -1300,9 +1300,13 @@ function startApp(){
   }, 30000);
   // Presence tracking — voye chak 60 segonn
   sendPresence();
+  checkSupportReplies();
   setInterval(function(){
     if(document.visibilityState === 'visible') sendPresence();
   }, 60000);
+  setInterval(function(){
+    if(document.visibilityState === 'visible') checkSupportReplies();
+  }, 30000);
   // Ajoute bouton SOS nan sidebar
   setTimeout(addSupportButton, 500);
   // Sync tou lè itilizatè retounen sou app la
@@ -1336,6 +1340,32 @@ function updateTopbar(){
   document.getElementById('sb-sector').textContent=SECTOR_LABELS[s.sector]||'';
 }
 
+
+// ── Tcheke repons admin sou ticket support yo ──
+function checkSupportReplies(){
+  var email = getOwnerEmail();
+  if(!email) return;
+  var key = 'konektem_last_support_reply_' + email;
+  var lastSeen = localStorage.getItem(key) || '';
+  fetch(SUPA_URL_APP + '/rest/v1/konektem_support?email=eq.' + encodeURIComponent(email) + '&admin_reply=not.is.null&order=replied_at.desc&limit=10', {
+    headers:{'apikey':SUPA_KEY_APP,'Authorization':'Bearer '+SUPA_KEY_APP}
+  })
+  .then(function(response){ if(!response.ok) throw new Error('Support reply '+response.status); return response.json(); })
+  .then(function(tickets){
+    if(!Array.isArray(tickets) || !tickets.length) return;
+    var latest = tickets[0];
+    var marker = String(latest.id || '') + ':' + String(latest.replied_at || '');
+    if(!lastSeen){ localStorage.setItem(key, marker); return; }
+    if(marker === lastSeen) return;
+    localStorage.setItem(key, marker);
+    var message = latest.admin_reply || 'Ekip Konektem voye yon repons sou ticket ou.';
+    notif('📨 Repons Konektem: ' + message, 'ok');
+    if('Notification' in window && Notification.permission === 'granted'){
+      new Notification('Konektem — Repons Support', {body:message});
+    }
+  })
+  .catch(function(error){ console.warn('[Support] Reply check failed:', error.message); });
+}
 // ── NAVIGATION ──
 var boOpen=false;
 
