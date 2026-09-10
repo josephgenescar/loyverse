@@ -915,7 +915,7 @@ function pushUserToSupabase(email){
     premium_date: S.settings.premiumDate||null
   });
   // Upsert — kreye si pa egziste, mete a jou si egziste
-  fetch(SUPA_URL_APP+'/rest/v1/konektem_users', {
+  fetch(SUPA_URL_APP+'/rest/v1/konektem_users?on_conflict=email', {
     method: 'POST',
     headers: {
       'apikey':        SUPA_KEY_APP,
