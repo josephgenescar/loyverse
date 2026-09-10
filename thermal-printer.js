@@ -11,8 +11,57 @@
   var thermalPrinter = {
     device: null,
     isEnabled: false,
-    autoPrint: false
+    autoPrint: true
   };
+
+  var PRINTER_CONFIG_KEY = 'konektem_thermal_printer_config';
+
+  function getPrinterFilters() {
+    return [
+      { classCode: 7 },
+      { vendorId: 0x0456, productId: 0x0808 }
+    ];
+  }
+
+  async function openPrinter(device) {
+    if (!device) return false;
+    if (!device.opened) await device.open();
+    if (device.configuration === null) await device.selectConfiguration(1);
+    await device.claimInterface(0);
+    thermalPrinter.device = device;
+    thermalPrinter.isEnabled = true;
+    thermalPrinter.autoPrint = true;
+    try {
+      localStorage.setItem(PRINTER_CONFIG_KEY, JSON.stringify({
+        vendorId: device.vendorId,
+        productId: device.productId,
+        serialNumber: device.serialNumber || ''
+      }));
+    } catch (e) {}
+    return true;
+  }
+
+  async function reconnectPrinter() {
+    if (!navigator.usb || !navigator.usb.getDevices) return false;
+    try {
+      var devices = await navigator.usb.getDevices();
+      var saved = null;
+      try { saved = JSON.parse(localStorage.getItem(PRINTER_CONFIG_KEY) || 'null'); } catch (e) {}
+      var device = devices.find(function(item) {
+        if (!saved) return false;
+        return item.vendorId === saved.vendorId &&
+          item.productId === saved.productId &&
+          (!saved.serialNumber || item.serialNumber === saved.serialNumber);
+      });
+      if (device && await openPrinter(device)) {
+        console.log('[ThermalPrinter] Enprimant rekonekte otomatikman');
+        return true;
+      }
+    } catch (error) {
+      console.warn('[ThermalPrinter] Rekoneksyon otomatik echwe:', error.message);
+    }
+    return false;
+  }
 
   // ═══════════════════════════════════════════════════════════════
   // KONEKTE AVEC ENPRIMANT (WebUSB)
@@ -26,16 +75,9 @@
       }
 
       // Demann pèmisyon ak konekte
-      thermalPrinter.device = await navigator.usb.requestDevice({ 
-        filters: [{ vendorId: 0x0456, productId: 0x0808 }] // EPSON TM-T88
-      });
+      var device = await navigator.usb.requestDevice({ filters: getPrinterFilters() });
 
-      if (thermalPrinter.device) {
-        await thermalPrinter.device.open();
-        await thermalPrinter.device.selectConfiguration(1);
-        await thermalPrinter.device.claimInterface(0);
-        
-        thermalPrinter.isEnabled = true;
+      if (await openPrinter(device)) {
         console.log('[ThermalPrinter] Enprimant konekte');
         alert('✅ Enprimant konekte avèk siksè!');
         return true;
@@ -125,7 +167,7 @@
     }
     
     text += '-'.repeat(32) + '\n';
-    text += ' '.repeat(10) + settings.receiptmsg || 'Merci pour votre confiance !' + '\n';
+    text += ' '.repeat(10) + (settings.receiptmsg || 'Merci pour votre confiance !') + '\n';
     text += '\n\n\n';
     
     return text;
@@ -225,6 +267,7 @@
   function init() {
     hookIntoCheckout(); // Imprime otomatik
     addPrinterControls(); // Bouton pou konekte
+    reconnectPrinter(); // Rekonekte apre premye otorizasyon an
   }
 
   if (document.readyState === 'loading') {
@@ -237,7 +280,8 @@
   window.thermalPrinterAPI = {
     connect: connectPrinter,
     print: printReceipt,
-    setAutoPrint: function(auto) { thermalPrinter.autoPrint = auto; }
+    setAutoPrint: function(auto) { thermalPrinter.autoPrint = auto; },
+    reconnect: reconnectPrinter
   };
 
 })();

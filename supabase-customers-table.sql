@@ -43,6 +43,7 @@ CREATE INDEX IF NOT EXISTS idx_customers_last_purchase ON customers(last_purchas
 ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Users can only see their own customers
+DROP POLICY IF EXISTS "Users can view their own customers" ON customers;
 CREATE POLICY "Users can view their own customers"
 ON customers FOR SELECT
 USING (auth.uid()::text = user_id::text OR user_id IN (
@@ -50,6 +51,7 @@ USING (auth.uid()::text = user_id::text OR user_id IN (
 ));
 
 -- Policy: Users can insert their own customers
+DROP POLICY IF EXISTS "Users can insert their own customers" ON customers;
 CREATE POLICY "Users can insert their own customers"
 ON customers FOR INSERT
 WITH CHECK (auth.uid()::text = user_id::text OR user_id IN (
@@ -57,6 +59,7 @@ WITH CHECK (auth.uid()::text = user_id::text OR user_id IN (
 ));
 
 -- Policy: Users can update their own customers
+DROP POLICY IF EXISTS "Users can update their own customers" ON customers;
 CREATE POLICY "Users can update their own customers"
 ON customers FOR UPDATE
 USING (auth.uid()::text = user_id::text OR user_id IN (
@@ -64,6 +67,7 @@ USING (auth.uid()::text = user_id::text OR user_id IN (
 ));
 
 -- Policy: Users can delete their own customers
+DROP POLICY IF EXISTS "Users can delete their own customers" ON customers;
 CREATE POLICY "Users can delete their own customers"
 ON customers FOR DELETE
 USING (auth.uid()::text = user_id::text OR user_id IN (
@@ -133,6 +137,9 @@ SELECT
 FROM customers
 WHERE is_active = true
 ORDER BY last_purchase_date DESC NULLS LAST;
+
+-- Make the view use the caller's permissions and RLS policies.
+ALTER VIEW public.customer_phone_directory SET (security_invoker = true);
 
 COMMENT ON VIEW customer_phone_directory IS 'Quick view of active customers with phone numbers for direct calls';
 
