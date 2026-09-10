@@ -1370,6 +1370,8 @@ function checkSupportReplies(){
 function showSupportReplyModal(ticket){
   var old = document.getElementById('supportReplyMov');
   if(old) old.remove();
+  var customerName = ticket.customer_name || ticket.bizname || 'Kliyan Konektem';
+  var customerEmail = ticket.email || '';
   var mov = document.createElement('div');
   mov.id = 'supportReplyMov';
   mov.className = 'mov show';
@@ -1380,7 +1382,9 @@ function showSupportReplyModal(ticket){
   inner.innerHTML = '<div style="text-align:center;margin-bottom:14px;">'
     + '<div style="font-size:38px;">📨</div>'
     + '<h3 style="margin:6px 0 3px;">Repons ekip Konektem</h3>'
-    + '<div style="font-size:11px;color:var(--text3);">Ticket #'+String(ticket.id || '')+'</div></div>'
+    + '<div style="font-size:13px;color:var(--text2);font-weight:700;">Pou: '+escapeSupportText(customerName)+'</div>'
+    + (customerEmail ? '<div style="font-size:11px;color:var(--text3);">'+escapeSupportText(customerEmail)+'</div>' : '')
+    + '<div style="font-size:11px;color:var(--text3);margin-top:3px;">Ticket #'+String(ticket.id || '')+'</div></div>'
     + '<div style="background:rgba(74,158,255,.1);border:1px solid rgba(74,158,255,.3);border-radius:8px;padding:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;">'
     + escapeSupportText(ticket.admin_reply || '') + '</div>'
     + '<div style="font-size:11px;color:var(--text3);margin-top:10px;">'+new Date(ticket.replied_at || Date.now()).toLocaleString('fr-FR')+'</div>'
@@ -4081,6 +4085,7 @@ function sosSendReport(){
     body: JSON.stringify({
       type:       'support_ticket',
       email:       email,
+      customer_name: S.settings.bizname || email,
       bizname:     S.settings.bizname || '',
       message:     msg,
       status:      'ouvert',
@@ -4236,6 +4241,7 @@ function showSupportModal(){
       },
       body: JSON.stringify({
         email:    email,
+        customer_name: bizname || email,
         bizname:  bizname,
         type:     type,
         message:  msg,
