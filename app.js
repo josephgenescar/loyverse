@@ -1355,16 +1355,48 @@ function checkSupportReplies(){
     if(!Array.isArray(tickets) || !tickets.length) return;
     var latest = tickets[0];
     var marker = String(latest.id || '') + ':' + String(latest.replied_at || '');
-    if(!lastSeen){ localStorage.setItem(key, marker); return; }
     if(marker === lastSeen) return;
     localStorage.setItem(key, marker);
     var message = latest.admin_reply || 'Ekip Konektem voye yon repons sou ticket ou.';
-    notif('📨 Repons Konektem: ' + message, 'ok');
+    notif('📨 Nouvo repons support', 'ok');
+    showSupportReplyModal(latest);
     if('Notification' in window && Notification.permission === 'granted'){
       new Notification('Konektem — Repons Support', {body:message});
     }
   })
   .catch(function(error){ console.warn('[Support] Reply check failed:', error.message); });
+}
+
+function showSupportReplyModal(ticket){
+  var old = document.getElementById('supportReplyMov');
+  if(old) old.remove();
+  var mov = document.createElement('div');
+  mov.id = 'supportReplyMov';
+  mov.className = 'mov show';
+  mov.style.zIndex = '3100';
+  var inner = document.createElement('div');
+  inner.className = 'modal';
+  inner.style.maxWidth = '440px';
+  inner.innerHTML = '<div style="text-align:center;margin-bottom:14px;">'
+    + '<div style="font-size:38px;">📨</div>'
+    + '<h3 style="margin:6px 0 3px;">Repons ekip Konektem</h3>'
+    + '<div style="font-size:11px;color:var(--text3);">Ticket #'+String(ticket.id || '')+'</div></div>'
+    + '<div style="background:rgba(74,158,255,.1);border:1px solid rgba(74,158,255,.3);border-radius:8px;padding:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;">'
+    + escapeSupportText(ticket.admin_reply || '') + '</div>'
+    + '<div style="font-size:11px;color:var(--text3);margin-top:10px;">'+new Date(ticket.replied_at || Date.now()).toLocaleString('fr-FR')+'</div>'
+    + '<div id="support-reply-footer" class="mfooter"></div>';
+  mov.appendChild(inner);
+  mov.addEventListener('click', function(e){ if(e.target === mov) mov.remove(); });
+  document.body.appendChild(mov);
+  var close = document.createElement('button');
+  close.className = 'btn-g';
+  close.textContent = 'Mwen konprann';
+  close.onclick = function(){ mov.remove(); };
+  document.getElementById('support-reply-footer').appendChild(close);
+}
+
+function escapeSupportText(value){
+  return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 // ── NAVIGATION ──
 var boOpen=false;
@@ -4039,8 +4071,8 @@ function sosSendReport(){
   var urgence = (document.getElementById('sos-urgence')||{}).value||'normal';
   var email   = getSyncEmail();
 
-  // Sove rapport nan Supabase (tab konektem_logs)
-  fetch(SUPA_URL_APP + '/rest/v1/konektem_logs', {
+  // Sove rapò a menm kote ak lòt tickets pou admin toujou wè li.
+  fetch(SUPA_URL_APP + '/rest/v1/konektem_support', {
     method: 'POST',
     headers:{
       'apikey': SUPA_KEY_APP, 'Authorization': 'Bearer ' + SUPA_KEY_APP,
@@ -4048,26 +4080,18 @@ function sosSendReport(){
     },
     body: JSON.stringify({
       type:       'support_ticket',
-      user_email: email,
-      details:    JSON.stringify({
-        category:  cat.id,
-        label:     cat.label,
-        urgence:   urgence,
-        message:   msg,
-        bizname:   S.settings.bizname,
-        plan:      S.settings.plan,
-        online:    navigator.onLine,
-        products:  (S.products||[]).length,
-        sales:     (S.sales||[]).length,
-        ua:        navigator.userAgent,
-        date:      new Date().toISOString()
-      }),
-      by: email || 'anonymous'
+      email:       email,
+      bizname:     S.settings.bizname || '',
+      message:     msg,
+      status:      'ouvert',
+      priority:    urgence === 'critique' || urgence === 'urgent' ? 'urgent' : 'normal',
+      admin_note:  'Catégorie: '+cat.label+' | Plan: '+(S.settings.plan||'trial')+' | Articles: '+(S.products||[]).length+' | Ventes: '+(S.sales||[]).length,
+      created_at:  new Date().toISOString()
     })
   })
   .then(function(r){
     if(r.ok || r.status === 201){
-      notif('✅ Rapport envoyé! Nous répondons sous 24h.', 'ok');
+      notif('✅ Ticket support envoyé! Nou pral reponn ou.', 'ok');
       var mov = document.getElementById('sosMov'); if(mov) mov.remove();
     } else {
       notif('Erreur envoi — essayez WhatsApp', 'err');
