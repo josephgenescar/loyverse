@@ -275,6 +275,7 @@ function selPlan(el,id,txt){
 // CONFIG PEMAN — Mete done reyèl ou ici
 // ════════════════════════════════════════
 var MONCASH_NUM  = '+50948868964'; // ← Remplace ak nimewo MonCash ou
+var NATCASH_NUM  = '+50940683108'; // ← Nimewo Natcash
 var WHATSAPP_NUM = '+50948868964';    // ← Remplace ak nimewo WhatsApp ou
 var PRIX_MENSUEL = 10;
 var PRIX_ANNUEL  = 100;
@@ -423,18 +424,19 @@ function showManualPayModal(plan, prix, unite){
     var hdr = document.createElement('div');
     hdr.style.cssText = 'text-align:center;margin-bottom:22px;';
     hdr.innerHTML = '<div style="font-size:36px;margin-bottom:8px;">📱</div>'
-      + '<div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">Payer via MonCash</div>'
+      + '<div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">Payer via MonCash ou Natcash</div>'
       + '<div style="font-size:13px;color:rgba(255,255,255,.5);">Plan : <strong style="color:#86efac;">'+prix+' '+unite+'</strong></div>';
 
     // ── SECTION 1: Enstriksyon MonCash ──
     var sec1 = document.createElement('div');
     sec1.style.cssText = 'border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;';
-    sec1.innerHTML = '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:12px;">① VOYE PEMAN NAN MONCASH</div>'
+    sec1.innerHTML = '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:12px;">① VOYE PEMAN NAN MONCASH OSWA NATCASH</div>'
       + '<div style="font-size:13px;color:rgba(255,255,255,.85);line-height:2;">'
-      + '1. Ouvri app <strong style="color:#fff;">MonCash</strong><br>'
+      + '1. Ouvri app <strong style="color:#fff;">MonCash oswa Natcash</strong><br>'
       + '2. Klike <strong style="color:#fbbf24;">Envoyer de largent</strong><br>'
-      + '3. Nimewo : <span style="font-size:19px;font-weight:800;color:#4ade80;letter-spacing:2px;display:block;margin:6px 0 4px;">'+MONCASH_NUM+'</span>'
-      + '4. Montan : <strong style="color:#fbbf24;font-size:16px;">'+prix+' USD</strong>'
+      + '3. MonCash : <strong style="color:#4ade80;">'+MONCASH_NUM+'</strong><br>'
+      + '4. Natcash : <strong style="color:#4ade80;">'+NATCASH_NUM+'</strong><br>'
+      + '5. Montan : <strong style="color:#fbbf24;font-size:16px;">'+prix+' USD</strong>'
       + '</div>';
 
     // ── SECTION 2: Voye screenshot WhatsApp ──
@@ -456,7 +458,7 @@ function showManualPayModal(plan, prix, unite){
       + '📧 Email: ' + email + '\n'
       + '💰 Montan: ' + prix + ' USD\n'
       + '📅 Dat: ' + new Date().toLocaleString('fr-FR') + '\n\n'
-      + '✅ Mwen fèk voye peman MonCash la. Screenshot konfirmasyon atache.';
+      + '✅ Mwen fèk voye peman MonCash/Natcash la. Screenshot konfirmasyon atache.';
     window.open('https://wa.me/50948868964?text=' + encodeURIComponent(msg), '_blank');
   };
     var sec2lbl = document.createElement('div');
