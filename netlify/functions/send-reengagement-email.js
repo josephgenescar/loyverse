@@ -48,7 +48,8 @@ function requestJson(hostname, path, method, headers, body) {
         if (response.statusCode >= 200 && response.statusCode < 300) {
           resolve(data);
         } else {
-          reject(new Error((data && (data.message || data.error)) || `HTTP ${response.statusCode}`));
+          const message = data && (data.message || data.error || data.code);
+          reject(new Error(message ? `${message} (HTTP ${response.statusCode})` : `HTTP ${response.statusCode}`));
         }
       });
     });

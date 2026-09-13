@@ -1094,7 +1094,8 @@ function campaignRequest(dryRun){
     if(data.dryRun){
       result.textContent = 'Lis la pare: '+data.count+' moun.\n'+(data.recipients || []).join('\n');
     } else {
-      result.textContent = 'Voye: '+data.sent.length+' | Sote: '+data.skipped.length+' | Echwe: '+data.failed.length;
+      var details = (data.failed || []).map(function(item){ return item.email+': '+item.error; }).join('\n');
+      result.textContent = 'Voye: '+data.sent.length+' | Sote: '+data.skipped.length+' | Echwe: '+data.failed.length+(details ? '\n\nDetay:\n'+details : '');
     }
   }).catch(function(error){
     if(error.message === 'Failed to fetch'){
