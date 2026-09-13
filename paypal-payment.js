@@ -44,13 +44,27 @@ exports.handler=async function(event){
     const action=event.queryStringParameters && event.queryStringParameters.action;
     const body=JSON.parse(event.body||'{}');
     const token=await accessToken();
-    const headers={Authorization:'Bearer '+token,'Content-Type':'application/json'};
+    const headers={Authorization:'Bearer '+token,'Content-Type':'application/json','Prefer':'return=representation'};
     if(event.httpMethod==='POST' && (!action || action==='create')){
       const plan=body.plan==='annuel'?'annuel':'mensuel', amount=plan==='annuel'?100:10;
-      const siteUrl=process.env.SITE_URL||'https://konektem.netlify.app';
-      const order=await request(paypalBase()+'/v2/checkout/orders',{method:'POST',headers},JSON.stringify({intent:'CAPTURE',purchase_units:[{reference_id:'KONEKTEM-'+plan,amount:{currency_code:'USD',value:String(amount)}}],application_context:{brand_name:'Konektem',user_action:'PAY_NOW',return_url:siteUrl+'/payment-return.html?provider=paypal&email='+encodeURIComponent(body.email||'')+'&plan='+plan,cancel_url:siteUrl+'/app.html?paypal=cancel'}}));
+      const siteUrl=(process.env.SITE_URL||'https://konektem.netlify.app').replace(/\/+$/,'');
+      const orderBody={
+        intent:'CAPTURE',
+        purchase_units:[{
+          reference_id:'KONEKTEM-'+plan,
+          amount:{currency_code:'USD',value:String(amount)}
+        }],
+        application_context:{
+          brand_name:'Konektem',
+          user_action:'PAY_NOW',
+          return_url:siteUrl+'/payment-return.html?provider=paypal&email='+encodeURIComponent(body.email||'')+'&plan='+plan,
+          cancel_url:siteUrl+'/app.html?paypal=cancel'
+        }
+      };
+      const order=await request(paypalBase()+'/v2/checkout/orders',{method:'POST',headers},JSON.stringify(orderBody));
       if(order.status<200 || order.status>=300 || !order.data.id){
-        const detail = order.data && (order.data.error_description || order.data.name || order.data.message);
+        const firstDetail = order.data && order.data.details && order.data.details[0];
+        const detail = firstDetail && (firstDetail.issue || firstDetail.description) || order.data && (order.data.error_description || order.data.name || order.data.message);
         throw new Error('Kreyasyon PayPal echwe' + (detail ? ': ' + detail : ' (verifye credentials ak mode Sandbox/Live)'));
       }
       await supabase('/rest/v1/konektem_payments','POST',{user_email:body.email||'',plan,amount,method:'PayPal',status:'pending',order_id:order.data.id,created_at:new Date().toISOString()});
