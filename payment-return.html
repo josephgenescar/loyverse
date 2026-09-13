@@ -33,7 +33,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#0D1F2D;color:#fff;mi
 <div class="card">
   <div id="ico" class="ico">⏳</div>
   <div id="title" class="title">Verifikasyon peman...</div>
-  <div id="sub" class="sub">Tanpri tann pandan n ap verifye peman MonCash ou a.</div>
+  <div id="sub" class="sub">Tanpri tann pandan n ap verifye peman ou a.</div>
   <div id="status" class="status checking">
     <div class="spinner"></div>
     Verifikasyon an kous...
@@ -48,9 +48,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#0D1F2D;color:#fff;mi
 <script>
 // Jwenn params URL
 var params = new URLSearchParams(window.location.search);
-var orderId = params.get('order') || '';
+var orderId = params.get('order') || params.get('token') || '';
 var email   = params.get('email') || '';
 var plan    = params.get('plan')  || 'mensuel';
+var provider = params.get('provider') || 'moncash';
 
 function setUI(type, ico, title, sub, statusTxt){
   document.getElementById('ico').textContent   = ico;
@@ -70,7 +71,7 @@ function showDetail(orderId, plan, amount){
     '<div class="detail-row"><span>Nimewo kòmand</span><span>' + orderId + '</span></div>',
     '<div class="detail-row"><span>Plan</span><span>' + (plan === 'annuel' ? 'Annuel' : 'Mensuel') + '</span></div>',
     amount ? '<div class="detail-row"><span>Montan</span><span>$' + Number(amount).toLocaleString('en-US') + ' USD</span></div>' : '',
-    '<div class="detail-row"><span>Méthode</span><span>MonCash</span></div>',
+    '<div class="detail-row"><span>Méthode</span><span>' + (provider === 'paypal' ? 'PayPal' : 'MonCash') + '</span></div>',
     '<div class="detail-row"><span>Date</span><span>' + new Date().toLocaleDateString('fr-FR') + '</span></div>',
   ].join('');
 }
@@ -84,10 +85,12 @@ async function verifyPayment(){
   }
 
   try {
-    var resp = await fetch('/.netlify/functions/moncash-payment?action=verify', {
+    var functionName = provider === 'paypal' ? 'paypal-payment' : 'moncash-payment';
+    var action = provider === 'paypal' ? 'capture' : 'verify';
+    var resp = await fetch('/.netlify/functions/' + functionName + '?action=' + action, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ orderId, email, plan })
+      body: JSON.stringify({ orderId, email, plan, paypalOrderId: params.get('token') || orderId })
     });
     var data = await resp.json();
 
@@ -114,7 +117,7 @@ async function verifyPayment(){
 
     } else if(data.status === 'pending'){
       // Toujou an atant — re-verifye nan 5s
-      setUI('checking','⏳','Peman an atant...','MonCash ap trete peman ou a. Sa ka pran 1-2 minit.','Toujou an atant...');
+      setUI('checking','⏳','Peman an atant...','Peman an poko fini. Sa ka pran kèk moman.','Toujou an atant...');
       setTimeout(verifyPayment, 5000);
 
     } else {
@@ -125,7 +128,7 @@ async function verifyPayment(){
 
   } catch(err){
     // Si function pa disponib — montre page manual
-    setUI('failed','⚠️','Verifikasyon echwe','Nou pa ka verifye peman ou kounye a. Voye screenshot MonCash ou sou WhatsApp pou nou ka aktive ou manyèlman.','Koneksyon echwe');
+    setUI('failed','⚠️','Verifikasyon echwe','Nou pa ka verifye peman ou kounye a. Eseye ankò oswa kontakte sipò a.','Koneksyon echwe');
     document.getElementById('actions').style.display = 'block';
   }
 }

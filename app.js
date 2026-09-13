@@ -279,6 +279,31 @@ var WHATSAPP_NUM = '+50948868964';    // ← Remplace ak nimewo WhatsApp ou
 var PRIX_MENSUEL = 10;
 var PRIX_ANNUEL  = 100;
 
+function getCurrentUserEmail(){
+  return S.userEmail || (function(){
+    try{ return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }catch(e){ return ''; }
+  })();
+}
+
+function doPayPal(){
+  var plan = S.selPlanId || 'mensuel';
+  var prix = plan === 'annuel' ? PRIX_ANNUEL : PRIX_MENSUEL;
+  var email = getCurrentUserEmail();
+  var btn = document.getElementById('paypal-btn');
+  if(!email){ notif('Konekte ak yon email anvan ou peye ak PayPal.', 'err'); return; }
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Koneksyon PayPal...'; }
+  fetch('/.netlify/functions/paypal-payment', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ email: email, plan: plan, amount: prix })
+  }).then(function(r){ return r.json(); }).then(function(data){
+    if(data.success && data.redirectUrl){ window.location.href = data.redirectUrl; return; }
+    throw new Error(data.error || 'PayPal pa disponib');
+  }).catch(function(err){
+    if(btn){ btn.disabled = false; btn.textContent = '🅿️ Peye ak PayPal'; }
+    notif(err.message || 'PayPal pa disponib kounye a.', 'err');
+  });
+}
+
 function doPremium(){
   var plan = S.selPlanId || 'mensuel';
   var prix = plan === 'annuel' ? PRIX_ANNUEL : PRIX_MENSUEL;
