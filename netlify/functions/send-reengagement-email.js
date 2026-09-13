@@ -137,24 +137,36 @@ exports.handler = async function(event) {
     const emailFilter = testEmail ? `&email=eq.${encodeURIComponent(testEmail)}` : '';
     const users = await supabaseRequest(`/rest/v1/konektem_users?select=email,bizname&email=not.is.null${emailFilter}&order=created_at.asc&offset=${offset}&limit=${limit}`, 'GET');
     const uniqueUsers = Array.from(new Map((users || []).filter(user => user.email).map(user => [user.email.toLowerCase(), user])).values());
+    if (testEmail && !uniqueUsers.some(user => user.email.toLowerCase() === testEmail)) {
+      uniqueUsers.push({ email: testEmail, bizname: 'zanmi Konektem' });
+    }
     if (dryRun) return json(200, { dryRun: true, campaignId: selectedCampaignId, count: uniqueUsers.length, recipients: uniqueUsers.map(user => user.email) });
 
     const results = { sent: [], skipped: [], failed: [] };
     for (const user of uniqueUsers) {
       const email = user.email.toLowerCase();
-      const existing = await supabaseRequest(`/rest/v1/email_campaign_sends?campaign_id=eq.${encodeURIComponent(selectedCampaignId)}&email=eq.${encodeURIComponent(email)}&status=eq.sent&select=id&limit=1`, 'GET');
-      if (existing.length) { results.skipped.push(email); continue; }
+      const existing = await supabaseRequest(`/rest/v1/email_campaign_sends?campaign_id=eq.${encodeURIComponent(selectedCampaignId)}&email=eq.${encodeURIComponent(email)}&select=id,status&limit=1`, 'GET');
+      if (existing.some(function(row){ return row.status === 'sent'; })) { results.skipped.push(email); continue; }
       try {
         const provider = await sendEmail(Object.assign({}, user, { email }));
-        await supabaseRequest('/rest/v1/email_campaign_sends', 'POST', {
-          campaign_id: selectedCampaignId, email, status: 'sent', provider_id: provider.id || null
-        }, { Prefer: 'resolution=ignore-duplicates' });
+        const sendLog = {
+          campaign_id: selectedCampaignId, email, status: 'sent', provider_id: provider.id || null,
+          error_message: null, sent_at: new Date().toISOString()
+        };
+        if (existing.length) {
+          await supabaseRequest('/rest/v1/email_campaign_sends?id=eq.' + encodeURIComponent(existing[0].id), 'PATCH', sendLog);
+        } else {
+          await supabaseRequest('/rest/v1/email_campaign_sends', 'POST', sendLog, { Prefer: 'resolution=ignore-duplicates' });
+        }
         results.sent.push(email);
       } catch (error) {
         results.failed.push({ email, error: error.message });
-        await supabaseRequest('/rest/v1/email_campaign_sends', 'POST', {
-          campaign_id: selectedCampaignId, email, status: 'failed', error_message: error.message
-        }, { Prefer: 'resolution=ignore-duplicates' }).catch(() => {});
+        const failureLog = { campaign_id: selectedCampaignId, email, status: 'failed', error_message: error.message, sent_at: new Date().toISOString() };
+        if (existing.length) {
+          await supabaseRequest('/rest/v1/email_campaign_sends?id=eq.' + encodeURIComponent(existing[0].id), 'PATCH', failureLog).catch(() => {});
+        } else {
+          await supabaseRequest('/rest/v1/email_campaign_sends', 'POST', failureLog, { Prefer: 'resolution=ignore-duplicates' }).catch(() => {});
+        }
       }
     }
     return json(200, Object.assign({ dryRun: false, campaignId: selectedCampaignId }, results));
