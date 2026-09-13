@@ -78,17 +78,19 @@ function createEmail(user) {
   const name = escapeHtml(user.bizname || 'zanmi Konektem');
   const paymentUrl = `${siteUrl}/index.html#premium`;
   return {
-    subject: 'Retounen sou Konektem epi kontinye jere biznis ou',
-    text: `Bonjou ${user.bizname || 'zanmi'},\n\nNou sonje ou sou Konektem. Retounen sèvi ak kas ou, stock ou ak rapò ou.\n\nPou aktive Premium: 10 USD pa mwa oswa 100 USD pa ane. Ou ka peye sou ${paymentUrl}, oswa voye peman MonCash sou +50948868964 oswa Natcash sou +50940683108. Apre sa, voye screenshot konfimasyon an sou WhatsApp +50948868964.\n\nPayPal disponib tou sou paj Premium la.\n\nPou pa resevwa lòt rapèl, reponn UNSUBSCRIBE.`,
+    subject: 'Konektem vous invite à reprendre votre activité',
+    text: `Bonjour ${user.bizname || 'cher client'},\n\nNous vous invitons à revenir sur Konektem, votre plateforme de gestion de caisse, de stock et de ventes.\n\nAvec Konektem, vous pouvez gérer votre activité plus facilement, suivre vos produits et consulter vos rapports.\n\nPour activer Premium : 10 USD par mois ou 100 USD par an. Vous pouvez payer sur ${paymentUrl}, ou envoyer le paiement par MonCash au +50948868964 ou par Natcash au +50940683108. Après le paiement, envoyez la capture de confirmation sur WhatsApp au +50948868964.\n\nPayPal est également disponible depuis la page Premium.\n\nPour ne plus recevoir ces rappels, répondez UNSUBSCRIBE.`,
     html: `<div style="font-family:Arial,sans-serif;max-width:600px;color:#17251d;line-height:1.6">
-      <h2 style="color:#15803d">Bonjou ${name}!</h2>
-      <p>Nou sonje ou sou <strong>Konektem</strong>. Retounen sèvi ak kas ou, jere stock ou epi suiv biznis ou pi fasil.</p>
-      <p><strong>Premium:</strong> 10 USD pa mwa oswa 100 USD pa ane.</p>
-      <p><a href="${paymentUrl}" style="display:inline-block;background:#15803d;color:white;padding:12px 18px;text-decoration:none;border-radius:6px">Retounen sou Konektem</a></p>
-      <p><strong>MonCash:</strong> <strong>+50948868964</strong><br><strong>Natcash:</strong> <strong>+50940683108</strong></p>
-      <p>Apre peman an, voye screenshot konfimasyon an sou WhatsApp <strong>+50948868964</strong>.</p>
-      <p><strong>PayPal:</strong> ouvri paj Premium nan sou sit la epi chwazi "Peye ak PayPal".</p>
-      <p style="font-size:12px;color:#64748b">Si ou pa vle resevwa rapèl sa yo ankò, reponn ak mo UNSUBSCRIBE.</p>
+      <div style="display:none;max-height:0;overflow:hidden;color:#fff">Reprenez la gestion de votre activité avec Konektem.</div>
+      <h2 style="color:#15803d">Bonjour ${name} !</h2>
+      <p>Nous vous invitons à revenir sur <strong>Konektem</strong>, votre plateforme de gestion de caisse, de stock et de ventes.</p>
+      <p>Gérez votre activité plus facilement, suivez vos produits et consultez vos rapports depuis une seule plateforme.</p>
+      <p><strong>Premium :</strong> 10 USD par mois ou 100 USD par an.</p>
+      <p><a href="${paymentUrl}" style="display:inline-block;background:#15803d;color:white;padding:12px 18px;text-decoration:none;border-radius:6px">Revenir sur Konektem</a></p>
+      <p><strong>MonCash :</strong> <strong>+50948868964</strong><br><strong>Natcash :</strong> <strong>+50940683108</strong></p>
+      <p>Après le paiement, envoyez la capture de confirmation sur WhatsApp au <strong>+50948868964</strong>.</p>
+      <p><strong>PayPal :</strong> disponible depuis la page Premium.</p>
+      <p style="font-size:12px;color:#64748b">Pour ne plus recevoir ces rappels, répondez UNSUBSCRIBE.</p>
     </div>`
   };
 }
