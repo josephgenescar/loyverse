@@ -47,7 +47,8 @@ exports.handler=async function(event){
     const headers={Authorization:'Bearer '+token,'Content-Type':'application/json','Prefer':'return=representation'};
     if(event.httpMethod==='POST' && (!action || action==='create')){
       const plan=body.plan==='annuel'?'annuel':'mensuel', amount=plan==='annuel'?100:10;
-      const siteUrl=(process.env.SITE_URL||'https://konektem.netlify.app').replace(/\/+$/,'');
+      const siteUrl=(process.env.SITE_URL||'https://konektem.netlify.app').trim().replace(/^['"]|['"]$/g,'').replace(/\/+$/,'');
+      try{ new URL(siteUrl); }catch(e){ throw new Error('SITE_URL pa yon URL valid nan Netlify'); }
       const orderBody={
         intent:'CAPTURE',
         purchase_units:[{
@@ -57,8 +58,8 @@ exports.handler=async function(event){
         application_context:{
           brand_name:'Konektem',
           user_action:'PAY_NOW',
-          return_url:siteUrl+'/payment-return.html?provider=paypal&email='+encodeURIComponent(body.email||'')+'&plan='+plan,
-          cancel_url:siteUrl+'/app.html?paypal=cancel'
+          return_url:siteUrl+'/payment-return.html?provider=paypal',
+          cancel_url:siteUrl+'/app.html'
         }
       };
       const order=await request(paypalBase()+'/v2/checkout/orders',{method:'POST',headers},JSON.stringify(orderBody));
