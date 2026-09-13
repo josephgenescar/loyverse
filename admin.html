@@ -749,10 +749,6 @@ tr:hover td{background:var(--surface2);}
 var SUPA_URL = 'https://mnpgapvltdrpztnjmeie.supabase.co';
 var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE';
 
-// Admin credentials — CHANJE SA!
-var ADMIN_USER = 'admin';
-var ADMIN_PASS  = 'Konektem2025'; // Modpas senp — CHANJE SA
-
 // Plans par defaut
 var PLANS = {
   mensuel: { name: 'Mensuel', price: 2500, period: '/mois', active: true, color: 'var(--accent)' },
@@ -790,49 +786,55 @@ function doLogin(){
   var u   = document.getElementById('l-user').value.trim();
   var p   = document.getElementById('l-pass').value;
   var err = document.getElementById('login-err');
-  
-  // Verifye: modpas lokal (si moun te chanje li) OU modpas defò
-  var savedPw  = localStorage.getItem('konektem_admin_pw');
-  var validPw  = savedPw || ADMIN_PASS;
-  
-  // Accepte aussi ADMIN_PASS dirèk (reset si bloke)
-  var ok = (u === ADMIN_USER) && (p === validPw || p === ADMIN_PASS);
-  
-  if(ok){
-    // Si tap itilize ADMIN_PASS defò, klare vye modpas lokal
-    if(p === ADMIN_PASS && savedPw && savedPw !== ADMIN_PASS){
-      localStorage.removeItem('konektem_admin_pw');
-    }
+  var button = document.querySelector('.login-btn');
+  if(button) button.disabled = true;
+  fetch('/.netlify/functions/admin-auth', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username:u, password:p})
+  }).then(function(response){
+    return response.json().then(function(data){
+      if(!response.ok) throw new Error(data.error || 'Identifiants incorrects.');
+      return data;
+    });
+  }).then(function(data){
     err.style.display = 'none';
     sessionStorage.setItem('ka', '1');
+    sessionStorage.setItem('konektem_admin_token', data.token);
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     initAdmin();
-  } else {
+  }).catch(function(error){
     err.style.display = 'block';
-    err.textContent = 'Identifiants incorrects. User: admin | Pass: Konektem2025';
-  }
+    err.textContent = error.message === 'Failed to fetch' ? 'Koneksyon ak server la echwe.' : 'Identifiants incorrects.';
+  }).finally(function(){ if(button) button.disabled = false; });
 }
 
 // Reset lokal si bloke
 function resetAdminLogin(){
-  localStorage.removeItem('konektem_admin_pw');
   var err = document.getElementById('login-err');
-  if(err){ err.style.display='block'; err.style.background='rgba(34,197,94,.2)'; err.style.color='#22c55e'; err.textContent='✅ Reset fait! Essayez: admin / Konektem2025'; }
+  if(err){ err.style.display='block'; err.style.background='rgba(255,190,0,.12)'; err.style.color='#ffbe00'; err.textContent='Kontakte administratè a pou verifye aksè a.'; }
 }
 
 function doLogout(){
   sessionStorage.removeItem('ka');
+  sessionStorage.removeItem('konektem_admin_token');
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('l-pass').value = '';
 }
 
 function checkAuth(){
-  if(sessionStorage.getItem('ka') === '1'){
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    initAdmin();
+  var token = sessionStorage.getItem('konektem_admin_token');
+  if(sessionStorage.getItem('ka') === '1' && token){
+    fetch('/.netlify/functions/admin-auth', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'verify', token:token})
+    }).then(function(response){
+      if(!response.ok) throw new Error('expired');
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      initAdmin();
+    }).catch(function(){ doLogout(); });
   }
 }
 
@@ -2064,11 +2066,9 @@ function changePassword(){
   if(!np){ notif('Entrez un nouveau mot de passe', 'err'); return; }
   if(np !== cp){ notif('Les mots de passe ne correspondent pas', 'err'); return; }
   if(np.length < 8){ notif('Minimum 8 caractères', 'err'); return; }
-  ADMIN_PASS = np;
-  localStorage.setItem('konektem_admin_pw', np);
   document.getElementById('new-admin-pw').value = '';
   document.getElementById('conf-admin-pw').value = '';
-  notif('✅ Mot de passe changé! Reconnectez-vous.', 'ok');
+  notif('Chanje modpas la nan Netlify: ADMIN_PASSWORD.', 'ok');
 }
 
 function saveContactConfig(){
@@ -2259,10 +2259,6 @@ function getDemoLogs(){
 // ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
-// Verifier si deja auth
-var savedPw = localStorage.getItem('konektem_admin_pw');
-if(savedPw) ADMIN_PASS = savedPw;
-
 document.addEventListener('keydown', function(e){
   if(e.key==='Escape') document.querySelectorAll('.modal-bg.show').forEach(function(m){ m.classList.remove('show'); });
 });
