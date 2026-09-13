@@ -1,0 +1,2643 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Konektem Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#05080d;
+  --surface:#0a0f1a;
+  --surface2:#0f1520;
+  --border:#1a2535;
+  --border2:#243045;
+  --text:#e8edf5;
+  --text2:#8896b0;
+  --text3:#4a5a72;
+  --accent:#00d4aa;
+  --accent-d:#00a882;
+  --accent-glow:rgba(0,212,170,.15);
+  --red:#ff4757;
+  --red-s:rgba(255,71,87,.12);
+  --amber:#ffbe00;
+  --amber-s:rgba(255,190,0,.12);
+  --blue:#4a9eff;
+  --blue-s:rgba(74,158,255,.12);
+  --green:#00d4aa;
+  --green-s:rgba(0,212,170,.12);
+  --purple:#b347ff;
+  --sh:0 4px 24px rgba(0,0,0,.4);
+  --r:12px;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ── NOISE TEXTURE OVERLAY ── */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+  opacity:.4;}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:100;
+  background:radial-gradient(ellipse at 50% 30%,rgba(0,212,170,.08) 0%,transparent 60%),var(--bg);}
+.login-card{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:40px;width:100%;max-width:420px;position:relative;}
+.login-card::before{content:'';position:absolute;inset:-1px;border-radius:21px;background:linear-gradient(135deg,var(--accent),transparent 40%,transparent 60%,#4a9eff);opacity:.15;pointer-events:none;}
+.login-logo{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--accent);margin-bottom:4px;letter-spacing:-1px;}
+.login-sub{font-size:12px;color:var(--text3);margin-bottom:32px;font-family:'JetBrains Mono',monospace;}
+.login-lbl{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;display:block;}
+.login-inp{width:100%;background:var(--surface2);border:1.5px solid var(--border2);border-radius:8px;padding:12px 14px;color:var(--text);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color .2s;margin-bottom:14px;}
+.login-inp:focus{border-color:var(--accent);}
+.login-btn{width:100%;padding:13px;background:var(--accent);border:none;border-radius:8px;color:#05080d;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;margin-top:4px;}
+.login-btn:hover{background:var(--accent-d);transform:translateY(-1px);}
+.login-err{background:var(--red-s);border:1px solid rgba(255,71,87,.3);border-radius:7px;padding:9px 12px;font-size:13px;color:var(--red);margin-bottom:12px;display:none;}
+
+/* ── APP SHELL ── */
+#app{display:none;min-height:100vh;}
+.shell{display:flex;min-height:100vh;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;}
+.sb-logo{padding:18px 18px 16px;border-bottom:1px solid var(--border);}
+.sb-logo-txt{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--accent);}
+.sb-logo-sub{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:2px;}
+.sb-nav{flex:1;padding:8px 10px;overflow-y:auto;}
+.sb-section{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;padding:11px 10px 5px;}
+.sb-item{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all .15s;margin-bottom:1px;}
+.sb-item:hover{background:var(--surface2);color:var(--text);}
+.sb-item.on{background:var(--accent-glow);color:var(--accent);border:1px solid rgba(0,212,170,.2);}
+.sb-item .si{font-size:16px;width:20px;text-align:center;}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;border-radius:20px;padding:2px 7px;font-size:10px;font-weight:700;}
+.sb-footer{padding:16px;border-top:1px solid var(--border);}
+.sb-user{display:flex;align-items:center;gap:10px;}
+.sb-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent-glow);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--accent);}
+.sb-uname{font-size:13px;font-weight:600;}
+.sb-urole{font-size:11px;color:var(--text3);}
+.logout-btn{margin-left:auto;background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;transition:color .15s;}
+.logout-btn:hover{color:var(--red);}
+
+/* ── MAIN CONTENT ── */
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:13px 22px;display:flex;align-items:center;justify-content:space-between;}
+.page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;}
+.page-sub{font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+.topbar-r{display:flex;align-items:center;gap:12px;}
+.menu-btn{display:none;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:7px;padding:7px 10px;font-size:18px;cursor:pointer;}
+.sidebar-backdrop{display:none;}
+.status-pill{display:flex;align-items:center;gap:6px;background:var(--green-s);border:1px solid rgba(0,212,170,.2);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--accent);}
+.status-pill.offline{background:var(--red-s);border-color:rgba(255,71,87,.3);color:var(--red);}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;}
+.status-pill.offline .status-dot{background:var(--red);}
+.notify-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:7px;padding:6px 10px;font-size:12px;cursor:pointer;}
+.notify-btn:hover{border-color:var(--accent);color:var(--accent);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.content{padding:18px 22px;flex:1;}
+.content .admin-extra-view{margin-left:0;padding:0;}
+.admin-extra-view{padding:18px 22px;margin-left:240px;}
+.page-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;}
+.page-header .page-title{font-size:20px;}
+
+/* ── VIEWS ── */
+.view{display:none;}
+.view.on{display:block;}
+
+/* ── STAT CARDS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:15px 16px;position:relative;overflow:hidden;transition:border-color .2s;}
+.stat-card:hover{border-color:var(--border2);}
+.stat-card::after{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:50%;opacity:.06;transform:translate(30%,-30%);}
+.stat-card.green::after{background:var(--accent);}
+.stat-card.blue::after{background:var(--blue);}
+.stat-card.amber::after{background:var(--amber);}
+.stat-card.red::after{background:var(--red);}
+.stat-ico{font-size:20px;margin-bottom:10px;}
+.stat-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:2px;}
+.stat-lbl{font-size:12px;color:var(--text3);}
+.stat-trend{font-size:11px;font-weight:600;margin-top:6px;}
+.stat-trend.up{color:var(--accent);}
+.stat-trend.dn{color:var(--red);}
+
+/* ── TABLE ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px;}
+.card-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.card-title{font-size:14px;font-weight:700;}
+.card-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.tab-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.tab-summary{display:flex;gap:7px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.015);}
+.summary-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);font-size:11px;color:var(--text2);}
+.summary-chip strong{color:var(--text);font-size:13px;}
+.table-wrap{overflow:auto;max-height:calc(100vh - 230px);}
+.table-wrap table{min-width:980px;}
+.table-wrap{max-width:100%;scrollbar-width:auto;scrollbar-color:var(--border2) var(--surface2);}
+.table-wrap::-webkit-scrollbar{width:10px;height:12px;}
+.table-wrap::-webkit-scrollbar-track{background:var(--surface2);}
+.table-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:6px;}
+#users-table{min-width:0;width:100%;table-layout:fixed;}
+#users-table th,#users-table td{padding-left:8px;padding-right:8px;white-space:normal;overflow-wrap:anywhere;}
+#users-table th:nth-child(1),#users-table td:nth-child(1){width:18%;}
+#users-table th:nth-child(2),#users-table td:nth-child(2){width:9%;}
+#users-table th:nth-child(3),#users-table td:nth-child(3){width:12%;}
+#users-table th:nth-child(4),#users-table td:nth-child(4){width:8%;}
+#users-table th:nth-child(5),#users-table td:nth-child(5){width:15%;}
+#users-table th:nth-child(6),#users-table td:nth-child(6){width:10%;}
+#users-table th:nth-child(7),#users-table td:nth-child(7){width:8%;}
+#users-table th:nth-child(8),#users-table td:nth-child(8){width:10%;}
+#users-table th:nth-child(9),#users-table td:nth-child(9){width:10%;}
+#users-table td:last-child{white-space:normal;}
+.search-inp{background:var(--surface2);border:1.5px solid var(--border2);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:220px;}
+.search-inp:focus{border-color:var(--accent);}
+.filter-sel{background:var(--surface2);border:1.5px solid var(--border2);border-radius:7px;padding:7px 10px;color:var(--text2);font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;cursor:pointer;}
+table{width:100%;border-collapse:collapse;}
+th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface2);}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge.green{background:var(--green-s);color:var(--accent);border:1px solid rgba(0,212,170,.2);}
+.badge.red{background:var(--red-s);color:var(--red);border:1px solid rgba(255,71,87,.2);}
+.badge.amber{background:var(--amber-s);color:var(--amber);border:1px solid rgba(255,190,0,.2);}
+.badge.blue{background:var(--blue-s);color:var(--blue);border:1px solid rgba(74,158,255,.2);}
+.badge.gray{background:var(--surface2);color:var(--text3);border:1px solid var(--border);}
+.badge.purple{background:rgba(179,71,255,.12);color:var(--purple);border:1px solid rgba(179,71,255,.2);}
+.act-btn{background:none;border:1.5px solid var(--border2);border-radius:6px;padding:5px 10px;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;}
+.act-btn:hover{border-color:var(--accent);color:var(--accent);}
+.act-btn.red:hover{border-color:var(--red);color:var(--red);}
+.act-btn.green{border-color:rgba(0,212,170,.3);color:var(--accent);}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;}
+.btn-primary{background:var(--accent);color:#05080d;}
+.btn-primary:hover{background:var(--accent-d);transform:translateY(-1px);}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1.5px solid var(--border2);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-danger{background:var(--red-s);color:var(--red);border:1px solid rgba(255,71,87,.3);}
+.btn-danger:hover{background:var(--red);color:#fff;}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
+.modal-bg.show{display:flex;}
+.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px;width:100%;max-width:760px;max-height:90vh;overflow-y:auto;}
+.modal-box h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:20px;}
+.form-group{margin-bottom:14px;}
+.form-lbl{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;display:block;}
+.form-inp{width:100%;background:var(--surface2);border:1.5px solid var(--border2);border-radius:7px;padding:10px 13px;color:var(--text);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color .15s;}
+.form-inp:focus{border-color:var(--accent);}
+.form-sel{width:100%;background:var(--surface2);border:1.5px solid var(--border2);border-radius:7px;padding:10px 13px;color:var(--text);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;cursor:pointer;}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+
+/* ── PLANS EDITOR ── */
+.plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.plan-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;position:relative;}
+.plan-card.active-plan{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 30px rgba(0,212,170,.08);}
+.plan-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px;}
+.plan-price-row{display:flex;align-items:center;gap:10px;margin:12px 0;}
+.price-inp{background:var(--surface2);border:2px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--accent);font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace;width:150px;outline:none;transition:border-color .2s;}
+.price-inp:focus{border-color:var(--accent);}
+.price-currency{font-size:14px;color:var(--text3);font-weight:600;}
+.plan-toggle{display:flex;align-items:center;gap:8px;margin-top:14px;}
+.toggle{width:40px;height:22px;background:var(--border2);border-radius:11px;position:relative;cursor:pointer;transition:background .2s;}
+.toggle.on{background:var(--accent);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s;}
+.toggle.on::after{transform:translateX(18px);}
+
+/* ── CODES ── */
+.code-pill{display:inline-flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;padding:7px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;}
+.code-pill.used{opacity:.45;text-decoration:line-through;}
+.copy-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;transition:color .15s;}
+.copy-btn:hover{color:var(--accent);}
+
+/* ── CHART MINI ── */
+.mini-chart{display:flex;align-items:flex-end;gap:3px;height:40px;}
+.bar{flex:1;border-radius:3px 3px 0 0;background:var(--accent);opacity:.6;min-height:4px;transition:opacity .2s;}
+.bar:hover{opacity:1;}
+
+/* ── LOGS ── */
+.log-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.log-row:last-child{border-bottom:none;}
+.log-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.log-ico.green{background:var(--green-s);}
+.log-ico.red{background:var(--red-s);}
+.log-ico.blue{background:var(--blue-s);}
+.log-ico.amber{background:var(--amber-s);}
+.log-body{flex:1;}
+.log-title{font-size:13px;font-weight:600;margin-bottom:2px;}
+.log-meta{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:30px 20px;color:var(--text3);}
+.empty-ico{font-size:40px;margin-bottom:12px;opacity:.4;}
+.empty-txt{font-size:14px;}
+
+/* ── LOADING ── */
+.loading{text-align:center;padding:30px;color:var(--text3);}
+.spinner{width:32px;height:32px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── NOTIF ── */
+.notif{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 18px;font-size:13px;font-weight:600;z-index:500;transform:translateY(100px);opacity:0;transition:all .3s;max-width:320px;}
+.notif.show{transform:translateY(0);opacity:1;}
+.notif.ok{border-color:rgba(0,212,170,.4);color:var(--accent);}
+.notif.err{border-color:rgba(255,71,87,.4);color:var(--red);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .menu-btn{display:inline-flex;align-items:center;justify-content:center;}
+  .sidebar{transform:translateX(-100%);transition:transform .3s;}
+  .sidebar.open{transform:translateX(0);}
+  .sidebar-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:40;}
+  .sidebar-backdrop.show{display:block;}
+  .main{margin-left:0;}
+  .admin-extra-view{margin-left:0;padding:16px 12px;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .plans-grid{grid-template-columns:1fr;}
+  .dash-grid{grid-template-columns:1fr !important;gap:12px !important;}
+  .topbar{padding:12px 14px;gap:8px;}
+  .topbar-r{gap:6px;}
+  .topbar-r #top-time{display:none;}
+  .notify-btn{font-size:0;padding:7px 9px;}
+  .notify-btn:first-letter{font-size:16px;}
+  .content{padding:16px 12px;}
+  .card-hdr{padding:13px 14px;}
+  .card-hdr .card-actions{width:100%;}
+  .search-inp,.filter-sel{width:100%;}
+  .modal-box{padding:20px 16px;max-height:92vh;}
+  .tab-toolbar{width:100%;}
+  .tab-toolbar .search-inp,.tab-toolbar .filter-sel{flex:1;min-width:140px;width:auto;}
+  .tab-summary{padding:8px 12px;}
+  .table-wrap{max-height:none;}
+  .stats-grid{gap:8px;margin-bottom:12px;}
+  .stat-card{padding:12px;}
+  .stat-val{font-size:23px;}
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--surface);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px;}
+::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+</style>
+<rect width='36' height='36' rx='8' fill='%231a3a6b'/><text x='9' y='27' font-family='Arial Black' font-size='22' font-weight='900' fill='%234ade80'>K</text></svg>">
+</head>
+<body>
+
+<!-- ══════════════════════════════════ -->
+<!-- LOGIN SCREEN                       -->
+<!-- ══════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">⚡ Konektem</div>
+    <div class="login-sub">// ADMIN CONTROL PANEL</div>
+    <div class="login-err" id="login-err">Identifiants incorrects</div>
+    <label class="login-lbl">Identifiant Admin</label>
+    <input class="login-inp" id="l-user" type="text" placeholder="admin" autocomplete="off">
+    <label class="login-lbl">Mot de passe</label>
+    <input class="login-inp" id="l-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Accéder au panneau →</button>
+    <div style="text-align:center;margin-top:12px;">
+      <span onclick="resetAdminLogin()" style="font-size:11px;color:var(--text3);cursor:pointer;text-decoration:underline;">
+        Mot de passe oublié? Cliquez ici pour réinitialiser
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- APP                                -->
+<!-- ══════════════════════════════════ -->
+<div id="app">
+  <div class="shell">
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeMobileMenu()"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sb-logo">
+        <div class="sb-logo-txt">⚡ Konektem</div>
+        <div class="sb-logo-sub">// ADMIN PANEL v3.0</div>
+      </div>
+      <nav class="sb-nav">
+        <div class="sb-section">Aperçu</div>
+        <div class="sb-item on" onclick="nav('dashboard',this)"><span class="si">📊</span>Dashboard</div>
+
+        <div class="sb-section">Gestion</div>
+        <div class="sb-item" onclick="nav('users',this)"><span class="si">👥</span>Utilisateurs<span class="sb-badge" id="badge-users">—</span></div>
+        <div class="sb-item" onclick="nav('payments',this)"><span class="si">💳</span>Paiements<span class="sb-badge" id="badge-payments" style="background:var(--amber)">—</span></div>
+        <div class="sb-item" onclick="nav('codes',this)"><span class="si">🔑</span>Codes Activation</div>
+
+        <div class="sb-section">Système</div>
+        <div class="sb-item" onclick="nav('plans',this)"><span class="si">💰</span>Plans & Tarifs</div>
+        <div class="sb-item" onclick="nav('campaign',this)"><span class="si">📧</span>Campagne Email</div>
+        <div class="sb-item" onclick="nav('logs',this)"><span class="si">📋</span>Logs Activité</div>
+        <div class="sb-item" onclick="nav('settings',this)"><span class="si">⚙️</span>Paramètres</div>
+        <div class="sb-div"></div>
+        <div class="sb-item" onclick="nav('monitoring',this)"><span class="si">🟢</span>Monitoring Live<span class="sb-badge" id="badge-online" style="background:#22c55e;">0</span></div>
+        <div class="sb-item" onclick="nav('support',this)"><span class="si">🆘</span>Support Tickets<span class="sb-badge" id="badge-support" style="background:#ef4444;">0</span></div>
+      </nav>
+      <div class="sb-footer">
+        <div class="sb-user">
+          <div class="sb-avatar">A</div>
+          <div><div class="sb-uname">RIVAYO-TECH</div><div class="sb-urole">Super Admin</div></div>
+          <button class="logout-btn" onclick="doLogout()" title="Déconnexion">⏻</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <button class="menu-btn" onclick="toggleMobileMenu()" aria-label="Ouvri menu">☰</button>
+          <div class="page-title" id="page-title">Dashboard</div>
+          <div class="page-sub" id="page-sub">Vue d'ensemble — Konektem</div>
+        </div>
+        <div class="topbar-r">
+          <button class="notify-btn" id="notify-btn" onclick="enableAdminNotifications()" title="Activer alertes navigatè">🔔 Alertes</button>
+          <div class="status-pill" id="connection-status"><div class="status-dot"></div><span id="connection-label">Supabase connecté</span></div>
+          <div style="font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace;" id="top-time"></div>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- ── DASHBOARD ── -->
+        <div class="view on" id="view-dashboard">
+          <div class="stats-grid">
+            <div class="stat-card green">
+              <div class="stat-ico">👥</div>
+              <div class="stat-val" id="s-users">—</div>
+              <div class="stat-lbl">Utilisateurs total</div>
+              <div class="stat-trend up" id="s-users-trend"></div>
+            </div>
+            <div class="stat-card blue">
+              <div class="stat-ico">⭐</div>
+              <div class="stat-val" id="s-premium">—</div>
+              <div class="stat-lbl">Comptes Premium</div>
+              <div class="stat-trend up" id="s-prem-trend"></div>
+            </div>
+            <div class="stat-card amber">
+              <div class="stat-ico">💰</div>
+              <div class="stat-val" id="s-revenue">—</div>
+              <div class="stat-lbl">Revenus (HTG)</div>
+              <div class="stat-trend up" id="s-rev-trend"></div>
+            </div>
+            <div class="stat-card red">
+              <div class="stat-ico">⏳</div>
+              <div class="stat-val" id="s-pending">—</div>
+              <div class="stat-lbl">Paiements en attente</div>
+              <div class="stat-trend dn" id="s-pend-trend"></div>
+            </div>
+          </div>
+
+          <!-- Recent activity + chart -->
+          <div class="dash-grid" style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;">
+            <div class="card">
+              <div class="card-hdr">
+                <div class="card-title">📈 Inscriptions récentes</div>
+                <div style="font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace;" id="dash-date"></div>
+              </div>
+              <table>
+                <thead><tr><th>Utilisateur</th><th>Plan</th><th>Date</th><th>Statut</th></tr></thead>
+                <tbody id="dash-users"></tbody>
+              </table>
+            </div>
+            <div class="card">
+              <div class="card-hdr"><div class="card-title">💰 Paiements récents</div><button class="btn btn-ghost btn-sm" onclick="removeDuplicatePayments()">🧹 Nettoyer doublons</button></div>
+              <div style="padding:12px 16px;" id="dash-payments-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── USERS ── -->
+        <div class="view" id="view-users">
+          <div class="card">
+            <div class="card-hdr">
+              <div class="card-title">👥 Utilisateurs</div>
+              <div class="tab-toolbar">
+                <input class="search-inp" type="text" id="user-search" placeholder="Email, boutique ou téléphone..." oninput="filterUsers()">
+                <select class="filter-sel" id="user-filter" onchange="filterUsers()">
+                  <option value="">Tous</option><option value="trial">Trial</option><option value="premium">Premium</option>
+                  <option value="active">Actifs</option><option value="locked">Bloqués</option><option value="banned">Bannis</option>
+                </select>
+                <button class="btn btn-ghost btn-sm" onclick="exportUsersCSV()">↓ CSV</button>
+                <button class="btn btn-ghost btn-sm" onclick="loadUsers()">🔄</button>
+              </div>
+            </div>
+            <div class="tab-summary" id="users-summary"></div>
+            <div id="users-loading" class="loading"><div class="spinner"></div></div>
+            <div class="table-wrap">
+              <table class="data-table" id="users-table" style="display:none;">
+                <thead><tr>
+                  <th>Email</th><th>Téléphone</th><th>Boutique</th><th>Secteur</th><th>Plan / Expiration</th>
+                  <th>Inscription</th><th>Statut</th><th>Dernière activité</th><th>Actions</th>
+                </tr></thead>
+                <tbody id="users-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PAYMENTS ── -->
+        <div class="view" id="view-payments">
+          <div class="card">
+            <div class="card-hdr">
+              <div><div class="card-title">💳 Paiements</div><div style="font-size:11px;color:var(--text3);margin-top:3px;">Suivi des abonnements et transactions</div></div>
+              <div class="tab-toolbar">
+                <select class="filter-sel" id="pay-filter" onchange="filterPayments()">
+                  <option value="all">Tous</option>
+                  <option value="pending">En attente</option>
+                  <option value="confirmed">Confirmés</option>
+                </select>
+                <button class="btn btn-ghost btn-sm" onclick="loadPayments()">🔄</button>
+              </div>
+            </div>
+            <div class="tab-summary" id="payments-summary"></div>
+            <div id="payments-loading" class="loading"><div class="spinner"></div></div>
+            <div class="table-wrap">
+              <table class="data-table" id="payments-table" style="display:none;">
+                <thead><tr>
+                  <th>Email</th><th>Montant</th><th>Plan</th>
+                  <th>Méthode</th><th>Statut</th><th>Date</th><th>Actions</th>
+                </tr></thead>
+                <tbody id="payments-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── CODES ── -->
+        <div class="view" id="view-codes">
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-hdr"><div class="card-title">⚡ Générer des codes</div></div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+              <div class="fg"><label class="flbl">Quantité</label>
+                <input class="finp" id="gen-qty" type="number" value="1" min="1" max="50" style="width:80px;">
+              </div>
+              <div class="fg"><label class="flbl">Plan</label>
+                <select class="fsel" id="gen-plan">
+                  <option value="mensuel">Mensuel (2500 HTG)</option>
+                  <option value="annuel">Annuel (22000 HTG)</option>
+                </select>
+              </div>
+              <div class="fg"><label class="flbl">Expiration (jours)</label>
+                <input class="finp" id="gen-exp" type="number" value="30" min="-1" style="width:100px;">
+              </div>
+              <button class="btn btn-success" onclick="generateCodes()">⚡ Générer</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hdr">
+              <div class="card-title">🔑 Codes d'activation</div>
+              <button class="btn btn-ghost btn-sm" onclick="loadCodes()">🔄</button>
+            </div>
+            <div id="codes-loading" class="loading"><div class="spinner"></div></div>
+            <div style="overflow-x:auto;">
+              <table class="data-table" id="codes-table" style="display:none;">
+                <thead><tr>
+                  <th>Code</th><th>Plan</th><th>Statut</th>
+                  <th>Utilisé par</th><th>Date création</th><th>Actions</th>
+                </tr></thead>
+                <tbody id="codes-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PLANS ── -->
+        <div class="view" id="view-plans">
+          <div class="card">
+            <div class="card-hdr"><div class="card-title">💎 Plans & Tarifs</div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+              <div class="fg">
+                <label class="flbl">Prix mensuel (HTG)</label>
+                <input class="finp" id="plan-mensuel" type="number" value="2500">
+              </div>
+              <div class="fg">
+                <label class="flbl">Prix annuel (HTG)</label>
+                <input class="finp" id="plan-annuel" type="number" value="22000">
+              </div>
+            </div>
+            <div class="fg">
+              <label class="flbl">Message global (affiché à tous les clients)</label>
+              <textarea class="finp" id="global-msg" rows="3" placeholder="Ex: Maintenance prévue dimanche 10h-12h..."></textarea>
+            </div>
+            <div style="margin-top:12px;">
+              <button class="btn btn-success" onclick="savePlans()">💾 Enregistrer les tarifs</button>
+              <button class="btn btn-ghost" onclick="sendGlobalMessage()" style="margin-left:8px;">📢 Envoyer message</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── LOGS ── -->
+        <div class="view" id="view-logs">
+          <div class="card">
+            <div class="card-hdr">
+              <div class="card-title">📋 Journaux d'activité</div>
+              <button class="btn btn-ghost btn-sm" onclick="loadLogs()">🔄</button>
+            </div>
+            <div id="logs-loading" class="loading"><div class="spinner"></div></div>
+            <div style="overflow-x:auto;">
+              <table class="data-table" id="logs-table" style="display:none;">
+                <thead><tr><th>Date</th><th>Type</th><th>Email</th><th>Détails</th></tr></thead>
+                <tbody id="logs-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SETTINGS ── -->
+        <div class="view" id="view-settings">
+          <div class="card">
+            <div class="card-hdr"><div class="card-title">⚙️ Paramètres Admin</div></div>
+            <div class="fg">
+              <label class="flbl">Nouveau mot de passe admin</label>
+              <input class="finp" type="password" id="new-admin-pw" placeholder="Nouveau mot de passe">
+            </div>
+            <div class="fg">
+              <label class="flbl">Confirmer mot de passe</label>
+              <input class="finp" type="password" id="conf-admin-pw" placeholder="Confirmer">
+            </div>
+            <button class="btn btn-success" onclick="changePassword()" style="margin-top:8px;">🔐 Changer mot de passe</button>
+            <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+              <div class="flbl" style="margin-bottom:8px;">Supabase Status</div>
+              <div id="supa-stats"><div class="loading"><div class="spinner"></div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── EMAIL CAMPAIGN ── -->
+        <div class="view" id="view-campaign">
+          <div class="card">
+            <div class="card-hdr">
+              <div><div class="card-title">📧 Rappel kliyan Konektem</div><div style="font-size:11px;color:var(--text3);margin-top:3px;">Teste anvan ou voye kanpay la bay kliyan yo.</div></div>
+            </div>
+            <div style="padding:16px;">
+              <div class="fg">
+                <label class="flbl">REENGAGEMENT_ADMIN_SECRET</label>
+                <input class="finp" id="campaign-secret" type="password" autocomplete="off" placeholder="Antre secret Netlify la">
+              </div>
+              <div class="fg">
+                <label class="flbl">Email tès (opsyonel)</label>
+                <input class="finp" id="campaign-test-email" type="email" placeholder="Mete email pa w pou teste sèlman">
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 120px;gap:12px;">
+                <div class="fg"><label class="flbl">Non kanpay</label><input class="finp" id="campaign-id" value="return-to-konektem-2026-09"></div>
+                <div class="fg"><label class="flbl">Kantite</label><input class="finp" id="campaign-limit" type="number" min="1" max="100" value="10"></div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+                <button class="btn btn-ghost" id="campaign-preview-btn" onclick="previewReengagement()">🔎 Teste lis la</button>
+                <button class="btn btn-primary" id="campaign-send-btn" onclick="sendReengagement()">📧 Voye kanpay la</button>
+              </div>
+              <div id="campaign-result" style="white-space:pre-wrap;margin-top:14px;padding:10px;border-radius:7px;background:var(--surface2);color:var(--text2);font-size:12px;line-height:1.5;min-height:20px;"></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /content -->
+    </main>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-bg" id="user-modal">
+  <div class="modal-box">
+    <h3 id="user-modal-title">Détail Utilisateur</h3>
+    <div id="user-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('user-modal')">Fermer</button>
+      <button class="btn btn-danger" id="ban-btn">🚫 Bannir</button>
+      <button class="btn btn-primary" id="activate-btn">⭐ Activer Premium</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="pay-modal">
+  <div class="modal-box">
+    <h3>Ajouter un paiement</h3>
+    <div class="form-group">
+      <label class="form-lbl">Email utilisateur</label>
+      <input class="form-inp" id="pm-email" type="email" placeholder="client@email.com">
+    </div>
+    <div class="form-group">
+      <label class="form-lbl">Plan</label>
+      <select class="form-sel" id="pm-plan">
+        <option value="mensuel">Mensuel — 2 500 HTG</option>
+        <option value="annuel">Annuel — 22 000 HTG</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-lbl">Montant (HTG)</label>
+      <input class="form-inp" id="pm-amount" type="number" placeholder="2500">
+    </div>
+    <div class="form-group">
+      <label class="form-lbl">Méthode</label>
+      <select class="form-sel" id="pm-method">
+        <option>MonCash</option>
+        <option>Carte bancaire</option>
+        <option>Virement</option>
+        <option>Cash</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-lbl">Note</label>
+      <input class="form-inp" id="pm-note" placeholder="Référence transaction...">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('pay-modal')">Annuler</button>
+      <button class="btn btn-primary" onclick="savePayment()">✅ Confirmer paiement</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+      <!-- ══ PAGE: MONITORING LIVE ══ -->
+      <div class="view admin-extra-view" id="view-monitoring">
+        <div class="page-header">
+          <div class="page-title">🟢 Monitoring Live</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div id="monitoring-last-update" style="font-size:12px;color:var(--text-muted);"></div>
+            <button class="btn btn-ghost btn-sm" onclick="loadMonitoring()">🔄 Actualiser</button>
+          </div>
+        </div>
+
+        <!-- Stats rapide -->
+        <div class="stats-grid" style="margin-bottom:20px;">
+          <div class="stat-card">
+            <div class="stat-val" id="mon-online" style="color:#22c55e;">0</div>
+            <div class="stat-lbl">🟢 En ligne maintenant</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="mon-today">0</div>
+            <div class="stat-lbl">📱 Actifs aujourd'hui</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="mon-revenue">0</div>
+            <div class="stat-lbl">💰 Revenu total aujourd'hui</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="mon-sales">0</div>
+            <div class="stat-lbl">🛒 Ventes aujourd'hui</div>
+          </div>
+        </div>
+
+        <!-- Filtre -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-hdr">
+            <div class="card-title">📡 Clients actifs</div>
+            <div style="display:flex;gap:8px;">
+              <select class="filter-sel" id="mon-filter" onchange="filterMonitoring()">
+                <option value="all">Tous</option>
+                <option value="online">En ligne seulement</option>
+                <option value="premium">Premium</option>
+                <option value="trial">Trial</option>
+              </select>
+            </div>
+          </div>
+          <div id="monitoring-list" style="overflow-x:auto;">
+            <div style="text-align:center;padding:40px;color:var(--text-muted);">⏳ Chargement...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PAGE: SUPPORT TICKETS ══ -->
+      <div class="view admin-extra-view" id="view-support">
+        <div class="page-header">
+          <div class="page-title">🆘 Tickets Support</div>
+          <div style="display:flex;gap:8px;">
+            <select class="filter-sel" id="sup-filter" onchange="filterSupport()">
+              <option value="ouvert">Ouverts</option>
+              <option value="en_cours">En cours</option>
+              <option value="resolu">Résolus</option>
+              <option value="all">Tous</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="loadSupport()">🔄 Actualiser</button>
+          </div>
+        </div>
+
+        <!-- Stats tickets -->
+        <div class="stats-grid" style="margin-bottom:20px;">
+          <div class="stat-card">
+            <div class="stat-val" id="sup-open" style="color:#ef4444;">0</div>
+            <div class="stat-lbl">🔴 Ouverts</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="sup-inprog" style="color:#f59e0b;">0</div>
+            <div class="stat-lbl">🟡 En cours</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="sup-resolved" style="color:#22c55e;">0</div>
+            <div class="stat-lbl">🟢 Résolus</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="sup-urgent" style="color:#ef4444;">0</div>
+            <div class="stat-lbl">🚨 Urgents</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div id="support-list">
+            <div style="text-align:center;padding:40px;color:var(--text-muted);">⏳ Chargement...</div>
+          </div>
+        </div>
+      </div>
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════
+var SUPA_URL = 'https://mnpgapvltdrpztnjmeie.supabase.co';
+var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE';
+
+// Admin credentials — CHANJE SA!
+var ADMIN_USER = 'admin';
+var ADMIN_PASS  = 'Konektem2025'; // Modpas senp — CHANJE SA
+
+// Plans par defaut
+var PLANS = {
+  mensuel: { name: 'Mensuel', price: 2500, period: '/mois', active: true, color: 'var(--accent)' },
+  annuel:  { name: 'Annuel',  price: 22000, period: '/an',  active: true, color: 'var(--blue)' }
+};
+
+// Donnees en memoire
+var allUsers = [];
+var allPayments = [];
+var allCodes = [];
+var allLogs = [];
+var currentUser = null;
+
+function moveExtraViewsIntoContent(){
+  var content = document.querySelector('.content');
+  if(!content) return;
+  ['view-monitoring', 'view-support'].forEach(function(id){
+    var view = document.getElementById(id);
+    if(view && view.parentNode !== content) content.appendChild(view);
+  });
+}
+
+function setSupabaseStatus(connected){
+  var pill = document.getElementById('connection-status');
+  var label = document.getElementById('connection-label');
+  if(!pill || !label) return;
+  pill.classList.toggle('offline', !connected);
+  label.textContent = connected ? 'Supabase connecté' : 'Supabase déconnecté';
+}
+
+// ══════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════
+function doLogin(){
+  var u   = document.getElementById('l-user').value.trim();
+  var p   = document.getElementById('l-pass').value;
+  var err = document.getElementById('login-err');
+  
+  // Verifye: modpas lokal (si moun te chanje li) OU modpas defò
+  var savedPw  = localStorage.getItem('konektem_admin_pw');
+  var validPw  = savedPw || ADMIN_PASS;
+  
+  // Accepte aussi ADMIN_PASS dirèk (reset si bloke)
+  var ok = (u === ADMIN_USER) && (p === validPw || p === ADMIN_PASS);
+  
+  if(ok){
+    // Si tap itilize ADMIN_PASS defò, klare vye modpas lokal
+    if(p === ADMIN_PASS && savedPw && savedPw !== ADMIN_PASS){
+      localStorage.removeItem('konektem_admin_pw');
+    }
+    err.style.display = 'none';
+    sessionStorage.setItem('ka', '1');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initAdmin();
+  } else {
+    err.style.display = 'block';
+    err.textContent = 'Identifiants incorrects. User: admin | Pass: Konektem2025';
+  }
+}
+
+// Reset lokal si bloke
+function resetAdminLogin(){
+  localStorage.removeItem('konektem_admin_pw');
+  var err = document.getElementById('login-err');
+  if(err){ err.style.display='block'; err.style.background='rgba(34,197,94,.2)'; err.style.color='#22c55e'; err.textContent='✅ Reset fait! Essayez: admin / Konektem2025'; }
+}
+
+function doLogout(){
+  sessionStorage.removeItem('ka');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('l-pass').value = '';
+}
+
+function checkAuth(){
+  if(sessionStorage.getItem('ka') === '1'){
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initAdmin();
+  }
+}
+
+// ══════════════════════════════════════════════
+// SUPABASE HELPER
+// ══════════════════════════════════════════════
+// ── SUPABASE HELPERS — versi konplè ak bon headers ──
+function supaFetch(path, method, body, prefer){
+  var headers = {
+    'apikey':        SUPA_KEY,
+    'Authorization': 'Bearer ' + SUPA_KEY,
+    'Content-Type':  'application/json'
+  };
+  if(prefer) headers['Prefer'] = prefer;
+  var opts = { method: method, headers: headers };
+  if(body)  opts.body = JSON.stringify(body);
+  return fetch(SUPA_URL + '/rest/v1/' + path, opts)
+    .then(function(r){
+      console.log('[Supa] ' + method + ' ' + path + ' → ' + r.status);
+      setSupabaseStatus(r.ok);
+      if(r.status === 204 || r.status === 200){ return r.text().then(function(t){ try{ return JSON.parse(t); }catch(e){ return []; } }); }
+      if(!r.ok){ return r.text().then(function(t){ throw new Error(r.status + ': ' + t); }); }
+      return r.json().catch(function(){ return []; });
+    });
+}
+
+function supa(endpoint, opts){
+  opts = opts || {};
+  var headers = Object.assign({
+    'apikey':        SUPA_KEY,
+    'Authorization': 'Bearer ' + SUPA_KEY,
+    'Content-Type':  'application/json',
+    'Prefer':        'return=representation'
+  }, opts.headers || {});
+  return fetch(SUPA_URL + '/rest/v1/' + endpoint, Object.assign({}, opts, { headers: headers }))
+    .then(function(r){
+      setSupabaseStatus(r.ok);
+      if(r.status === 204) return [];
+      if(!r.ok) return r.text().then(function(t){ throw new Error(t); });
+      return r.json().catch(function(){ return []; });
+    });
+}
+
+function supaInsert(table, data){
+  return supaFetch(table, 'POST', data, 'return=minimal');
+}
+
+function supaUpdate(table, filter, data){
+  return supaFetch(table + '?' + filter, 'PATCH', data, 'return=minimal');
+}
+
+function supaDelete(table, filter){
+  return supaFetch(table + '?' + filter, 'DELETE', null, 'return=representation')
+    .then(function(rows){
+      if(!Array.isArray(rows) || rows.length === 0){
+        throw new Error('Supabase pa efase okenn liy. Verifye RLS DELETE policy a ak ID peman an.');
+      }
+      return rows;
+    });
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+function initAdmin(){
+  startClock();
+  loadDashboard();
+  loadPlansFromStorage();
+  initAdminAlerts();
+  // Mete a jou konteur yo chak minit
+  setInterval(function(){
+    var tbody = document.getElementById('users-body');
+    if(tbody && tbody.rows.length > 0) renderUsers(allUsers);
+  }, 60000);
+}
+
+var ADMIN_ALERT_KEY = 'konektem_admin_alert_state';
+var adminAlertReady = false;
+
+function enableAdminNotifications(){
+  if(!('Notification' in window)){
+    notif('Navigatè sa a pa sipòte notifikasyon.', 'err');
+    return;
+  }
+  Notification.requestPermission().then(function(permission){
+    if(permission === 'granted'){
+      notif('✅ Alertes navigatè aktive.', 'ok');
+      new Notification('Konektem Admin', { body:'Ou pral resevwa alèt pou nouvo kliyan ak peman.' });
+      document.getElementById('notify-btn').textContent = '🔔 Aktif';
+    } else {
+      notif('Navigatè a pa bay pèmisyon pou alèt yo.', 'err');
+    }
+  });
+}
+
+function notifyAdmin(title, message){
+  notif(title + ' — ' + message, 'ok');
+  if('Notification' in window && Notification.permission === 'granted'){
+    new Notification(title, { body: message });
+  }
+}
+
+function readAdminAlertState(){
+  try { return JSON.parse(localStorage.getItem(ADMIN_ALERT_KEY) || '{}'); }
+  catch(e) { return {}; }
+}
+
+function writeAdminAlertState(state){
+  try { localStorage.setItem(ADMIN_ALERT_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+function initAdminAlerts(){
+  var button = document.getElementById('notify-btn');
+  if('Notification' in window && Notification.permission === 'granted' && button) button.textContent = '🔔 Aktif';
+  if(window._adminAlertTimer) clearInterval(window._adminAlertTimer);
+  window._adminAlertTimer = setInterval(checkAdminAlerts, 30000);
+  setTimeout(function(){ checkAdminAlerts(true); }, 2000);
+}
+
+function checkAdminAlerts(isInitial){
+  Promise.all([
+    supa('konektem_users?select=id,email,bizname,created_at,plan,premium_date,premium_plan&order=created_at.desc&limit=30'),
+    supa('konektem_payments?select=id,user_email,amount,plan,status,created_at&order=created_at.desc&limit=30')
+  ]).then(function(result){
+    var users = result[0] || [];
+    var payments = (result[1] || []).filter(function(payment){ return payment.status !== 'deleted'; });
+    var state = readAdminAlertState();
+    var newestUser = users[0] && users[0].created_at;
+    var newestPayment = payments[0] && payments[0].created_at;
+
+    if(!state.usersInitialized || isInitial){
+      state.userIds = users.map(function(u){ return String(u.id); });
+      state.paymentIds = payments.map(function(p){ return String(p.id); });
+      state.usersInitialized = true;
+      state.lastUser = newestUser || null;
+      state.lastPayment = newestPayment || null;
+    } else {
+      var knownUsers = state.userIds || [];
+      var newUsers = users.filter(function(u){ return knownUsers.indexOf(String(u.id)) === -1; });
+      newUsers.forEach(function(u){
+        notifyAdmin('👤 Nouvo enskripsyon', (u.email || 'Kliyan san email') + ' antre sou platform nan.');
+        logAction('signup', 'Nouvo itilizatè: ' + (u.email || u.bizname || '—'));
+      });
+      state.userIds = users.map(function(u){ return String(u.id); }).concat(knownUsers).slice(0, 100);
+
+      var knownPayments = state.paymentIds || [];
+      var newPayments = payments.filter(function(p){ return knownPayments.indexOf(String(p.id)) === -1; });
+      newPayments.forEach(function(p){
+        notifyAdmin('💳 Nouvo peman', (p.user_email || 'Kliyan') + ' — ' + Number(p.amount || 0).toLocaleString('fr-HT') + ' HTG (' + (p.status || 'pending') + ').');
+      });
+      state.paymentIds = payments.map(function(p){ return String(p.id); }).concat(knownPayments).slice(0, 100);
+    }
+
+    users.forEach(function(u){
+      if(u.plan !== 'premium' || !u.premium_date) return;
+      var days = u.premium_plan === 'annuel' ? 365 : 30;
+      var expiry = new Date(u.premium_date).getTime() + days * 86400000;
+      var remaining = expiry - Date.now();
+      var key = String(u.id) + ':' + new Date(expiry).toISOString().slice(0, 10);
+      var knownExpiryKeys = state.expiryKeys || [];
+      if(remaining <= 3 * 86400000 && remaining > 0 && knownExpiryKeys.indexOf(key) === -1){
+        notifyAdmin('⏰ Abonman prèske ekspire', (u.email || u.bizname || 'Kliyan') + ' gen apeprè ' + Math.ceil(remaining / 86400000) + ' jou ki rete.');
+        state.expiryKeys = (state.expiryKeys || []).concat(key).slice(-100);
+      }
+    });
+    writeAdminAlertState(state);
+  }).catch(function(){ setSupabaseStatus(false); });
+}
+
+function startClock(){
+  function tick(){
+    var d = new Date();
+    document.getElementById('top-time').textContent =
+      d.toLocaleDateString('fr-FR') + ' ' +
+      d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  }
+  tick(); setInterval(tick, 1000);
+}
+
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+var PAGE_META = {
+  dashboard: ['Dashboard', 'Vue d ensemble — Konektem'],
+  users:     ['Utilisateurs', 'Gestion des comptes et abonnements'],
+  payments:  ['Paiements', 'Suivi des transactions et revenus'],
+  codes:     ['Codes Activation', 'Generateur et gestion des codes Premium'],
+  plans:     ['Plans & Tarifs', 'Modifier les prix et options des abonnements'],
+  campaign:  ['Campagne Email', 'Rappeler les clients et expliquer le paiement'],
+  logs:      ['Logs Activite', 'Journal des actions et connexions'],
+  settings:  ['Parametres', 'Configuration systeme et securite'],
+  monitoring:['Monitoring Live', 'Activite des clients en temps reel'],
+  support:   ['Support Tickets', 'Demandes et suivi des clients']
+};
+
+function nav(view, el){
+  closeMobileMenu();
+  document.querySelectorAll('.sb-item').forEach(function(x){ x.classList.remove('on'); });
+  if(el) el.classList.add('on');
+  document.querySelectorAll('.view').forEach(function(x){ x.classList.remove('on'); });
+  var v = document.getElementById('view-'+view);
+  if(v) v.classList.add('on');
+  var meta = PAGE_META[view] || [view, ''];
+  document.getElementById('page-title').textContent = meta[0];
+  document.getElementById('page-sub').textContent = meta[1];
+  // Load data pou chak paj
+  if(view === 'dashboard')  loadDashboard();
+  if(view === 'users')      loadUsers();
+  if(view === 'payments')   loadPayments();
+  if(view === 'codes')      loadCodes();
+  if(view === 'logs')       loadLogs();
+  if(view === 'settings')   loadSettings();
+  if(view === 'monitoring') loadMonitoring();
+  if(view === 'support')    loadSupport();
+}
+
+function toggleMobileMenu(){
+  var sidebar = document.querySelector('.sidebar');
+  var backdrop = document.getElementById('sidebar-backdrop');
+  if(sidebar) sidebar.classList.toggle('open');
+  if(backdrop) backdrop.classList.toggle('show');
+}
+
+function closeMobileMenu(){
+  var sidebar = document.querySelector('.sidebar');
+  var backdrop = document.getElementById('sidebar-backdrop');
+  if(sidebar) sidebar.classList.remove('open');
+  if(backdrop) backdrop.classList.remove('show');
+}
+
+function campaignRequest(dryRun){
+  var secret = (document.getElementById('campaign-secret').value || '').trim();
+  var testEmail = (document.getElementById('campaign-test-email').value || '').trim().toLowerCase();
+  var campaignId = (document.getElementById('campaign-id').value || '').trim();
+  var limit = Math.min(Math.max(parseInt(document.getElementById('campaign-limit').value, 10) || 10, 1), 100);
+  var result = document.getElementById('campaign-result');
+  var button = document.getElementById(dryRun ? 'campaign-preview-btn' : 'campaign-send-btn');
+  if(!secret){ result.textContent = 'Antre admin secret la anvan.'; return; }
+  if(!dryRun && !testEmail && !window.confirm('Ou pral voye email bay '+limit+' moun. Kontinye?')) return;
+  button.disabled = true;
+  result.textContent = 'Koneksyon ak Netlify...';
+  fetch('/.netlify/functions/send-reengagement-email', {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+secret },
+    body: JSON.stringify({
+      dryRun: dryRun,
+      testEmail: testEmail,
+      campaignId: campaignId || undefined,
+      limit: limit
+    })
+  }).then(function(response){
+    return response.json().then(function(data){
+      if(!response.ok) throw new Error(data.error || 'Netlify echwe.');
+      return data;
+    });
+  }).then(function(data){
+    if(data.dryRun){
+      result.textContent = 'Lis la pare: '+data.count+' moun.\n'+(data.recipients || []).join('\n');
+    } else {
+      result.textContent = 'Voye: '+data.sent.length+' | Sote: '+data.skipped.length+' | Echwe: '+data.failed.length;
+    }
+  }).catch(function(error){
+    if(error.message === 'Failed to fetch'){
+      result.textContent = 'Erè koneksyon. Verifye 2 bagay:\n1. Admin lan dwe louvri sou sit Netlify la, pa kòm yon fichye lokal.\n2. Fè yon nouvo deploy Netlify pou fonksyon an disponib.\n\nURL paj la: '+window.location.href;
+    } else {
+      result.textContent = 'Erè: '+error.message;
+    }
+  }).finally(function(){
+    button.disabled = false;
+  });
+}
+
+function previewReengagement(){ campaignRequest(true); }
+function sendReengagement(){ campaignRequest(false); }
+
+// ══════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════
+function loadDashboard(){
+  document.getElementById('dash-date').textContent = new Date().toLocaleDateString('fr-FR', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  // Konteur global ki mete a jou chak minit
+  if(window._dashTimer) clearInterval(window._dashTimer);
+  window._dashTimer = setInterval(function(){ updateAdminClock(); }, 1000);
+  updateAdminClock();
+
+  // Charger users depuis Supabase
+  supa('konektem_users?select=*&order=created_at.desc')
+  .then(function(users){
+    allUsers = users || [];
+    updateDashStats();
+    renderDashUsers();
+    updateBadge('badge-users', allUsers.length);
+  })
+  .catch(function(err){
+    setSupabaseStatus(false);
+    allUsers = [];
+    updateDashStats();
+    renderDashUsers();
+    updateBadge('badge-users', allUsers.length);
+  });
+
+  supa('konektem_payments?select=*&order=created_at.desc')
+  .then(function(pays){
+    allPayments = (pays || []).filter(function(payment){ return payment.status !== 'deleted'; });
+    renderDashPayments();
+    var pending = allPayments.filter(function(p){ return p.status === 'pending'; });
+    updateBadge('badge-payments', pending.length, true);
+  })
+  .catch(function(){
+    setSupabaseStatus(false);
+    allPayments = [];
+    renderDashPayments();
+    var pending = allPayments.filter(function(p){ return p.status === 'pending'; });
+    updateBadge('badge-payments', pending.length, true);
+  });
+}
+
+function updateDashStats(){
+  var premium = allUsers.filter(function(u){ return u.plan === 'premium'; });
+  var expired = allUsers.filter(function(u){ return u.plan === 'expired' || u.status === 'expired'; });
+  var revenue = allPayments.filter(function(p){ return p.status === 'confirmed'; })
+                           .reduce(function(a,p){ return a + (p.amount||0); }, 0);
+  var pending = allPayments.filter(function(p){ return p.status === 'pending'; });
+
+  animate('s-users', allUsers.length);
+  animate('s-premium', premium.length);
+  animate('s-revenue', revenue, true);
+  animate('s-pending', pending.length);
+
+  document.getElementById('s-users-trend').textContent = '+ ' + getNewThisMonth(allUsers) + ' ce mois';
+  document.getElementById('s-prem-trend').textContent = Math.round(premium.length / Math.max(allUsers.length,1) * 100) + '% de conversion';
+  document.getElementById('s-rev-trend').textContent = '+ ' + getNewThisMonth(allPayments.filter(function(p){return p.status==='confirmed';})) + ' paiements ce mois';
+}
+
+function getNewThisMonth(arr){
+  var now = new Date();
+  return arr.filter(function(x){
+    var d = new Date(x.created_at);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+}
+
+function updateAdminClock(){
+  var now = new Date();
+  var el  = document.getElementById('top-time');
+  if(el) el.textContent = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  // Chèche kliyan ki ekspire oswa prèske ekspire
+  var expired  = [];
+  var expiring = [];
+  allUsers.forEach(function(u){
+    var exp = getExpiryDate(u);
+    if(!exp) return;
+    exp = exp.getTime();
+    var diff  = exp - now.getTime();
+    if(diff <= 0)             expired.push(u);
+    else if(diff < 3*86400000) expiring.push(u);
+  });
+
+  // Badge rouge si kliyan ekspire
+  var badge = document.getElementById('badge-expiring');
+  if(!badge){
+    badge = document.createElement('span');
+    badge.id = 'badge-expiring';
+    badge.className = 'sb-badge';
+    var expItem = document.querySelector('.sb-item[onclick*="users"]');
+    if(expItem) expItem.appendChild(badge);
+  }
+  var total = expired.length + expiring.length;
+  badge.textContent = total > 0 ? total : '';
+  badge.style.display  = total > 0 ? 'inline' : 'none';
+  badge.style.background = expired.length > 0 ? 'var(--red)' : 'var(--amber)';
+
+  // Alèt dashboard si gen kliyan ekspire
+  var alertBox = document.getElementById('dash-expiry-alert');
+  if(expired.length > 0){
+    if(!alertBox){
+      alertBox = document.createElement('div');
+      alertBox.id = 'dash-expiry-alert';
+      alertBox.style.cssText = 'background:var(--red-s);border:1px solid rgba(255,71,87,.3);border-radius:10px;padding:12px 16px;margin-bottom:18px;display:flex;align-items:center;gap:10px;cursor:pointer;';
+      alertBox.onclick = function(){ nav('users', document.querySelector('.sb-item[onclick*="users"]')); };
+      var statsGrid = document.querySelector('.stats-grid');
+      if(statsGrid) statsGrid.parentNode.insertBefore(alertBox, statsGrid);
+    }
+    alertBox.innerHTML = '<span style="font-size:20px;">🚨</span>'
+      + '<div><div style="font-size:13px;font-weight:700;color:var(--red);">'+expired.length+' client(s) avec plan expiré</div>'
+      + '<div style="font-size:11px;color:var(--text3);">'+expired.map(function(u){return u.email||u.bizname||'?';}).join(', ')+'</div></div>'
+      + '<div style="margin-left:auto;font-size:11px;font-weight:700;color:var(--red);">Cliquez →</div>';
+  } else if(alertBox){
+    alertBox.remove();
+  }
+}
+
+function animate(id, target, isMoney){
+  var el = document.getElementById(id);
+  if(!el) return;
+  var start = 0, steps = 30, step = 0;
+  var timer = setInterval(function(){
+    step++;
+    var val = Math.round(start + (target - start) * step / steps);
+    el.textContent = isMoney ? val.toLocaleString('fr-HT') + ' HTG' : val;
+    if(step >= steps){ clearInterval(timer); el.textContent = isMoney ? target.toLocaleString('fr-HT') + ' HTG' : target; }
+  }, 30);
+}
+
+function renderDashUsers(){
+  var tbody = document.getElementById('dash-users');
+  var recent = allUsers.slice(0,8);
+  if(!recent.length){ tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px">Aucun utilisateur</td></tr>'; return; }
+  tbody.innerHTML = recent.map(function(u){
+    return '<tr onclick="openUserModal(\''+u.id+'\')" style="cursor:pointer;">' +
+      '<td><div style="font-weight:600">'+safeStr(u.email||u.name||'—')+'</div><div style="font-size:11px;color:var(--text3)">'+safeStr(u.bizname||'')+'</div></td>' +
+      '<td>'+planBadge(u.plan||'trial')+'</td>' +
+      '<td style="font-family:\'JetBrains Mono\',monospace;font-size:12px;color:var(--text3)">'+fmtDate(u.created_at)+'</td>' +
+      '<td>'+statusBadge(u.status||'active')+'</td></tr>';
+  }).join('');
+}
+
+function renderDashPayments(){
+  var el = document.getElementById('dash-payments-list');
+  var recent = allPayments.slice(0,6);
+  if(!recent.length){ el.innerHTML = '<div class="empty"><div class="empty-ico">💳</div><div class="empty-txt">Aucun paiement</div></div>'; return; }
+  el.innerHTML = recent.map(function(p){
+    var ico = p.status==='confirmed' ? '✅' : p.status==='pending' ? '⏳' : '❌';
+    var col = p.status==='confirmed' ? 'var(--accent)' : p.status==='pending' ? 'var(--amber)' : 'var(--red)';
+    var duplicate = isDuplicatePayment(p);
+    return '<div class="log-row">' +
+      '<div class="log-ico '+(p.status==='confirmed'?'green':p.status==='pending'?'amber':'red')+'">'+ico+'</div>' +
+      '<div class="log-body">' +
+        '<div class="log-title">'+safeStr(p.user_email||'—')+'</div>' +
+        '<div class="log-meta">'+(p.amount||0).toLocaleString('fr-HT')+' HTG · '+safeStr(p.method||'')+'</div>' +
+      '</div>' +
+      '<div style="text-align:right;"><div style="font-size:12px;font-weight:700;color:'+col+'">'+fmtDate(p.created_at)+'</div>'+
+      (duplicate ? '<button class="act-btn red" style="margin-top:5px;" onclick="deletePayment(\''+safeStr(p.id)+'\')">🗑️ Doublon</button>' : '')+'</div></div>';
+  }).join('');
+}
+
+function paymentDuplicateKey(payment){
+  return [String(payment.user_email || '').trim().toLowerCase(), Number(payment.amount || 0), String(payment.plan || '').toLowerCase(), String(payment.method || '').trim().toLowerCase()].join('|');
+}
+
+function isDuplicatePayment(payment){
+  var key = paymentDuplicateKey(payment);
+  return allPayments.filter(function(item){ return paymentDuplicateKey(item) === key; }).length > 1;
+}
+
+function removeDuplicatePayments(){
+  var groups = {};
+  allPayments.forEach(function(payment){
+    var key = paymentDuplicateKey(payment);
+    groups[key] = groups[key] || [];
+    groups[key].push(payment);
+  });
+  var duplicates = [];
+  Object.keys(groups).forEach(function(key){
+    var group = groups[key].slice().sort(function(a,b){ return new Date(a.created_at || 0) - new Date(b.created_at || 0); });
+    if(group.length > 1) duplicates = duplicates.concat(group.slice(1));
+  });
+  if(!duplicates.length){ notif('Pa gen peman doublon pou efase.', 'ok'); return; }
+  if(!confirm('Efase '+duplicates.length+' peman doublon? Premye peman nan chak gwoup ap rete.')) return;
+  Promise.all(duplicates.map(function(payment){ return removePaymentRecord(payment.id); }))
+    .then(function(){
+      notif('✅ '+duplicates.length+' doublon efase.', 'ok');
+      loadDashboard();
+      if(document.getElementById('view-payments').classList.contains('on')) loadPayments();
+    })
+    .catch(function(error){ notif('Efasman/archivaj echwe: '+error.message, 'err'); });
+}
+
+function removePaymentRecord(id){
+  return supaDelete('konektem_payments', 'id=eq.'+encodeURIComponent(id)).catch(function(deleteError){
+    return supaUpdate('konektem_payments', 'id=eq.'+encodeURIComponent(id), {
+      status: 'deleted',
+      deleted_at: new Date().toISOString()
+    }).then(function(){ return { archived: true, reason: deleteError.message }; });
+  });
+}
+
+function deletePayment(id){
+  var payment = allPayments.find(function(item){ return String(item.id) === String(id); });
+  if(!payment || !isDuplicatePayment(payment)){
+    notif('Sèlman peman ki konfime kòm doublon ka efase.', 'err');
+    return;
+  }
+  if(!confirm('Efase peman doublon sa a pou '+(payment.user_email || 'kliyan sa a')+'?')) return;
+  removePaymentRecord(id)
+    .then(function(){
+      notif('✅ Peman doublon efase.', 'ok');
+      allPayments = allPayments.filter(function(item){ return String(item.id) !== String(id); });
+      renderDashPayments();
+      renderPayments(allPayments);
+    })
+    .catch(function(error){ notif('Efasman/archivaj echwe: '+error.message, 'err'); });
+}
+
+// ══════════════════════════════════════════════
+// USERS
+// ══════════════════════════════════════════════
+function loadUsers(){
+  document.getElementById('users-loading').style.display='block';
+  document.getElementById('users-table').style.display='none';
+
+  supa('konektem_users?select=*&order=created_at.desc')
+  .then(function(data){
+    allUsers = data || [];
+    renderUsers(allUsers);
+  })
+  .catch(function(){
+    setSupabaseStatus(false);
+    allUsers = [];
+    renderUsers(allUsers);
+  });
+}
+
+function getExpiryCountdown(u){
+  var expiry = getExpiryDate(u);
+  if(!expiry) return '<div style="font-size:10px;color:var(--text3);margin-top:3px;">Dat fen pa disponib</div>';
+  var exp   = expiry.getTime();
+  var diff  = exp - Date.now();
+  var dateText = expiry.toLocaleDateString('fr-FR', {day:'2-digit', month:'short', year:'numeric'});
+  if(diff <= 0) return '<div style="font-size:10px;color:var(--red);font-weight:700;margin-top:3px;">⚠️ Expiré le '+dateText+'</div>';
+  var jou = Math.floor(diff/86400000);
+  var h   = Math.floor((diff%86400000)/3600000);
+  var m   = Math.floor((diff%3600000)/60000);
+  var col = jou<3?'var(--red)':jou<7?'var(--amber)':'var(--accent)';
+  var txt = jou>0 ? jou+'j '+h+'h '+m+'m' : h+'h '+m+'m';
+  return '<div style="font-size:10px;font-weight:700;color:'+col+';margin-top:3px;">⏱ '+txt+' restant · '+dateText+'</div>';
+}
+
+function getExpiryDate(u){
+  var start = null;
+  var days = 0;
+  if(u.plan === 'premium' && u.premium_date){
+    start = new Date(u.premium_date);
+    days = u.premium_plan === 'annuel' ? 365 : 30;
+  } else if(u.plan === 'trial' || u.status === 'active'){
+    start = new Date(u.trial_start || u.created_at);
+    days = Number(u.trial_days || 5);
+  }
+  if(!start || isNaN(start.getTime()) || !days) return null;
+  return new Date(start.getTime() + days * 86400000);
+}
+
+function renderUsers(users){
+  document.getElementById('users-loading').style.display='none';
+  var summary = document.getElementById('users-summary');
+  if(summary) summary.innerHTML = '<span class="summary-chip">👥 <strong>'+users.length+'</strong> affichés</span>'
+    + '<span class="summary-chip">⭐ <strong>'+users.filter(function(u){return u.plan==='premium';}).length+'</strong> Premium</span>'
+    + '<span class="summary-chip">🟢 <strong>'+users.filter(function(u){return u.status==='active';}).length+'</strong> actifs</span>'
+    + '<span class="summary-chip">⏳ <strong>'+users.filter(function(u){return u.plan==='trial';}).length+'</strong> trial</span>';
+  var tbl = document.getElementById('users-table');
+  tbl.style.display='table';
+  var tbody = document.getElementById('users-body');
+  if(!users.length){
+    tbody.innerHTML='<tr><td colspan="9"><div class="empty"><div class="empty-ico">👥</div><div class="empty-txt">Aucun utilisateur</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML='';
+  users.forEach(function(u){
+    var exp      = getExpiryCountdown(u);
+    var isLocked = u.status==='locked';
+    var isBanned = u.status==='banned';
+    var tr = document.createElement('tr');
+    if(isLocked) tr.style.background='rgba(245,158,11,.04)';
+    if(isBanned) tr.style.background='rgba(255,71,87,.04)';
+    tr.innerHTML = '<td><div style="font-weight:600">'+safeStr(u.email||u.name||'—')+'</div></td>'
+      +'<td style="white-space:nowrap;">'+(u.phone ? '<a href="tel:'+safeStr(u.phone)+'" style="color:var(--accent);font-weight:700;text-decoration:none;">'+safeStr(u.phone)+'</a>' : '<span style="color:var(--text3);">—</span>')+'</td>'
+      +'<td>'+safeStr(u.bizname||'—')+'</td>'
+      +'<td>'+safeStr(u.secteur||'—')+'</td>'
+      +'<td>'+planBadge(u.plan||'trial')+exp+'</td>'
+      +'<td style="font-size:11px;color:var(--text3)">'+fmtDate(u.created_at)+'</td>'
+      +'<td>'+statusBadge(u.status||'active')+'</td>'
+      +'<td style="font-size:11px;color:var(--text3)">'+fmtDate(u.last_seen||u.created_at)+'</td>'
+      +'<td><div style="display:flex;gap:5px;flex-wrap:wrap;" id="act-'+u.id+'"></div></td>';
+    tbody.appendChild(tr);
+    // Boutons via DOM pou evite pwoblèm quote
+    var actDiv = document.getElementById('act-'+u.id);
+    // Voir
+    var btnV = document.createElement('button');
+    btnV.className='act-btn'; btnV.textContent='👁️ Voir';
+    btnV.onclick=(function(uid){ return function(){ openUserModal(uid); }; })(u.id);
+    actDiv.appendChild(btnV);
+    // Bouton Message
+    var btnM = document.createElement('button');
+    btnM.className='act-btn'; btnM.textContent='📨 Message';
+    btnM.style.cssText='border-color:rgba(99,102,241,.4);color:#818cf8;';
+    btnM.onclick=(function(uemail){ return function(){ sendMessageModal(uemail); }; })(u.email||'');
+    actDiv.appendChild(btnM);
+    if(u.phone){
+      var btnCall = document.createElement('button');
+      btnCall.className='act-btn green'; btnCall.textContent='📞 Rele';
+      btnCall.onclick=(function(phone){ return function(){ window.location.href='tel:'+phone; }; })(u.phone);
+      actDiv.appendChild(btnCall);
+      var btnWa = document.createElement('button');
+      btnWa.className='act-btn'; btnWa.textContent='💬 WhatsApp';
+      btnWa.style.cssText='border-color:rgba(34,197,94,.4);color:#4ade80;';
+      btnWa.onclick=(function(phone){ return function(){
+        var digits = normalizeWhatsAppNumber(phone);
+        if(digits) window.open('https://web.whatsapp.com/send/?phone='+digits, '_blank');
+      }; })(u.phone);
+      actDiv.appendChild(btnWa);
+    }
+    // Premium
+    var btnP = document.createElement('button');
+    btnP.className='act-btn green'; btnP.textContent='⭐ Premium';
+    btnP.onclick=(function(uid,uemail){ return function(){ activateUser(uid,uemail); }; })(u.id, u.email||'');
+    actDiv.appendChild(btnP);
+    // Lock / Unlock
+    if(isLocked){
+      var btnU = document.createElement('button');
+      btnU.className='act-btn green'; btnU.textContent='🔓 Débloquer';
+      btnU.onclick=(function(uid,uemail){ return function(){ unlockUser(uid,uemail); }; })(u.id, u.email||'');
+      actDiv.appendChild(btnU);
+    } else {
+      var btnL = document.createElement('button');
+      btnL.className='act-btn'; btnL.style.cssText='border-color:rgba(245,158,11,.4);color:#d97706;';
+      btnL.textContent='🔒 Bloquer';
+      btnL.onclick=(function(uid,uemail){ return function(){ lockUser(uid,uemail); }; })(u.id, u.email||'');
+      actDiv.appendChild(btnL);
+    }
+    // Ban / Unban
+    if(isBanned){
+      var btnUb = document.createElement('button');
+      btnUb.className='act-btn'; btnUb.textContent='🔓 Débannir';
+      btnUb.onclick=(function(uid,uemail){ return function(){ unlockUser(uid,uemail); }; })(u.id, u.email||'');
+      actDiv.appendChild(btnUb);
+    } else {
+      var btnB = document.createElement('button');
+      btnB.className='act-btn red'; btnB.textContent='🚫 Ban';
+      btnB.onclick=(function(uid,uemail){ return function(){ banUser(uid,uemail); }; })(u.id, u.email||'');
+      actDiv.appendChild(btnB);
+    }
+  });
+}
+
+
+function filterUsers(){
+  var q      = document.getElementById('user-search').value.toLowerCase();
+  var filter = document.getElementById('user-filter').value;
+  var filtered = allUsers.filter(function(u){
+    var matchQ = !q || (u.email||'').toLowerCase().includes(q) || (u.name||'').toLowerCase().includes(q) || (u.bizname||'').toLowerCase().includes(q) || (u.phone||'').toLowerCase().includes(q);
+    var matchF = !filter || u.plan === filter || u.status === filter;
+    return matchQ && matchF;
+  });
+  renderUsers(filtered);
+}
+
+function openUserModal(id){
+  var u = allUsers.find(function(x){ return x.id == id; });
+  if(!u) return;
+  currentUser = u;
+  document.getElementById('user-modal-title').textContent = safeStr(u.email || u.name || 'Utilisateur');
+  document.getElementById('user-modal-body').innerHTML = [
+    row('Email',       u.email || '—'),
+    row('Téléphone',   u.phone || '—'),
+    row('Nom boutique',u.bizname || '—'),
+    row('Secteur',     u.secteur || '—'),
+    row('Plan',        planBadge(u.plan||'trial')),
+    row('Expiration',  getExpiryDate(u) ? getExpiryDate(u).toLocaleString('fr-FR') : '—'),
+    row('Statut',      statusBadge(u.status||'active')),
+    row('Inscription', fmtDate(u.created_at)),
+    row('Derniere vue',fmtDate(u.last_seen||u.created_at)),
+    row('Premium code',u.premium_code||'—'),
+    row('Premium date',fmtDate(u.premium_date)),
+  ].join('') + '<div id="customer-business-details" style="margin-top:18px;border-top:1px solid var(--border);padding-top:16px;"><div style="color:var(--text3);font-size:12px;">⏳ Chargement produits, ventes et activité...</div></div>';
+  document.getElementById('ban-btn').onclick = function(){ banUser(u.id, u.email); closeModal('user-modal'); };
+  document.getElementById('activate-btn').onclick = function(){ activateUser(u.id, u.email); closeModal('user-modal'); };
+  document.getElementById('user-modal').classList.add('show');
+  loadCustomerBusinessDetails(u);
+}
+
+function parseCustomerData(value){
+  if(Array.isArray(value)) return value;
+  if(typeof value !== 'string') return [];
+  try { return JSON.parse(value) || []; } catch(e) { return []; }
+}
+
+function loadCustomerBusinessDetails(user){
+  var box = document.getElementById('customer-business-details');
+  if(!box) return;
+  var email = encodeURIComponent(user.email || '');
+  Promise.all([
+    supa('konektem_data?email=eq.'+email+'&select=products,sales,clients,employees,categories,updated_at').catch(function(){ return []; }),
+    supa('konektem_products?user_email=eq.'+email+'&select=*').catch(function(){ return []; }),
+    supa('konektem_sales?user_email=eq.'+email+'&select=*').catch(function(){ return []; })
+  ]).then(function(result){
+    var snapshot = result[0] && result[0][0] ? result[0][0] : {};
+    var products = result[1] && result[1].length ? result[1] : parseCustomerData(snapshot.products);
+    var sales = result[2] && result[2].length ? result[2] : parseCustomerData(snapshot.sales);
+    var clients = parseCustomerData(snapshot.clients);
+    var employees = parseCustomerData(snapshot.employees);
+    var categories = parseCustomerData(snapshot.categories);
+    var total = sales.reduce(function(sum, sale){ return sum + Number(sale.total || 0); }, 0);
+    var recentSales = sales.slice().sort(function(a,b){ return new Date(b.date || b.created_at) - new Date(a.date || a.created_at); }).slice(0,5);
+    box.innerHTML = '<div style="font-size:14px;font-weight:700;margin-bottom:12px;">📊 Aktivite boutik</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">'
+      +detailStat('📦','Produits',products.length)
+      +detailStat('🧾','Ventes',sales.length)
+      +detailStat('💰','Total',total.toLocaleString('fr-HT')+' HTG')
+      +detailStat('👥','Clients',clients.length)
+      +detailStat('👔','Employés',employees.length)
+      +detailStat('🏷️','Catégories',categories.length)
+      +'</div>'
+      +'<div style="font-size:12px;font-weight:700;margin-bottom:7px;">Dernières ventes</div>'
+      +(recentSales.length ? recentSales.map(function(sale){
+        return '<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px;">'
+          +'<span>'+safeStr(sale.cashier || sale.clientNom || 'Vente')+' · '+fmtDate(sale.date || sale.created_at)+'</span>'
+          +'<strong style="color:var(--accent);">'+Number(sale.total || 0).toLocaleString('fr-HT')+' HTG</strong></div>';
+      }).join('') : '<div style="font-size:12px;color:var(--text3);">Pa gen lavant anrejistre pou kliyan sa a.</div>')
+      +(snapshot.updated_at ? '<div style="font-size:10px;color:var(--text3);margin-top:10px;">Dènye synchronization: '+fmtDate(snapshot.updated_at)+'</div>' : '');
+  }).catch(function(){
+    box.innerHTML = '<div style="font-size:12px;color:var(--amber);">Done boutik yo poko disponib oswa tab sync yo pa aksesib.</div>';
+  });
+}
+
+function detailStat(icon, label, value){
+  return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px;"><div style="font-size:15px;">'+icon+'</div><div style="font-size:15px;font-weight:800;margin-top:3px;">'+value+'</div><div style="font-size:10px;color:var(--text3);">'+label+'</div></div>';
+}
+
+function activateUser(id, email){
+  if(!confirm('Activer Premium pour ' + email + ' ?')) return;
+  console.log('[Admin] Activation Premium pour id='+id+' email='+email);
+  supaFetch('konektem_users?id=eq.'+id, 'PATCH', {
+    plan:'premium', status:'active', premium_date: new Date().toISOString()
+  }, 'return=minimal')
+  .then(function(){
+    notif('✅ Premium activé pour ' + email, 'ok');
+    logAction('premium', 'Premium activé pour ' + email);
+    loadUsers();
+  })
+  .catch(function(err){
+    console.error('[Admin] activateUser error:', err);
+    // Fallback lokal
+    var u = allUsers.find(function(x){ return x.id == id; });
+    if(u){ u.plan='premium'; u.status='active'; }
+    renderUsers(allUsers);
+    notif('⭐ Premium activé (local) — verifye Supabase', 'ok');
+  });
+}
+
+// Modifier jou trial depuis admin
+
+
+function setTrialDays(id, email){
+  var days = prompt('Combien de jours d\'essai pour ' + email + ' ?\nActuel: 14 jours', '14');
+  if(!days || isNaN(parseInt(days))) return;
+  supaUpdate('konektem_users', 'id=eq.'+id, { trial_days: parseInt(days) })
+  .then(function(){
+    notif('✅ Trial mis à jour: ' + days + ' jours pour ' + email, 'ok');
+    logAction('trial', 'Trial modifié: ' + days + ' jours pour ' + email);
+  })
+  .catch(function(){
+    notif('✅ Modifié (local)', 'ok');
+  });
+}
+
+function banUser(id, email){
+  if(!confirm('Bannir ' + email + ' ?')) return;
+  console.log('[Admin] Ban pour id='+id);
+  supaFetch('konektem_users?id=eq.'+id, 'PATCH', { status:'banned' }, 'return=minimal')
+  .then(function(){
+    notif('🚫 ' + email + ' banni', 'ok');
+    logAction('ban', 'Banni: ' + email);
+    loadUsers();
+  })
+  .catch(function(err){
+    console.error('[Admin] banUser error:', err);
+    var u = allUsers.find(function(x){ return x.id == id; });
+    if(u) u.status='banned';
+    renderUsers(allUsers);
+    notif('🚫 Banni (local)', 'ok');
+  });
+}
+
+
+
+function getExpiryInfo(u){
+  if(!u.premium_date) return null;
+  var premDate = new Date(u.premium_date);
+  var nbJou    = (u.premium_plan==='annuel') ? 365 : 30;
+  var expDate  = new Date(premDate.getTime() + nbJou*86400000);
+  var diff     = expDate - new Date();
+  return {
+    expired: diff <= 0,
+    days: Math.max(0, Math.ceil(diff/86400000)),
+    hours: Math.max(0, Math.ceil(diff/3600000)),
+    expDate: expDate,
+    formatted: expDate.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})
+  };
+}
+
+function lockUser(id, email){
+  if(!confirm('Bloquer ' + email + ' ? Ce client devra payer pour retrouver acces.')) return;
+  console.log('[Admin] Lock pour id='+id);
+  supaFetch('konektem_users?id=eq.'+id, 'PATCH', { status:'locked', plan:'expired' }, 'return=minimal')
+  .then(function(){
+    notif('🔒 ' + email + ' bloque', 'ok');
+    logAction('lock', 'Bloque: ' + email);
+    loadUsers();
+  })
+  .catch(function(err){
+    console.error('[Admin] lockUser error:', err);
+    var u = allUsers.find(function(x){ return x.id == id; });
+    if(u){ u.status='locked'; u.plan='expired'; }
+    renderUsers(allUsers);
+    notif('🔒 Bloque (local)', 'ok');
+  });
+}
+
+
+
+function unlockUser(id, email){
+  if(!confirm('Debloquer ' + email + ' ?')) return;
+  console.log('[Admin] Unlock pour id='+id);
+  supaFetch('konektem_users?id=eq.'+id, 'PATCH', { status:'active' }, 'return=minimal')
+  .then(function(){
+    notif('🔓 ' + email + ' debloque', 'ok');
+    logAction('unlock', 'Debloque: ' + email);
+    loadUsers();
+  })
+  .catch(function(err){
+    console.error('[Admin] unlockUser error:', err);
+    var u = allUsers.find(function(x){ return x.id == id; });
+    if(u) u.status = 'active';
+    renderUsers(allUsers);
+    notif('🔓 Debloque (local)', 'ok');
+  });
+}
+
+
+
+function exportUsersCSV(){
+  var rows = [['ID','Email','Nom boutique','Secteur','Plan','Statut','Inscription']];
+  allUsers.forEach(function(u){
+    rows.push([u.id||'',u.email||u.name||'',u.bizname||'',u.secteur||'',u.plan||'',u.status||'',u.created_at||'']);
+  });
+  var csv = '\uFEFF' + rows.map(function(r){ return r.map(function(v){ return '"'+(v+'').replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'konektem-users-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  notif('✅ CSV exporté — ' + allUsers.length + ' utilisateurs', 'ok');
+}
+
+// ══════════════════════════════════════════════
+// PAYMENTS
+// ══════════════════════════════════════════════
+function loadPayments(){
+  document.getElementById('payments-loading').style.display='block';
+  document.getElementById('payments-table').style.display='none';
+
+  supa('konektem_payments?select=*&order=created_at.desc')
+  .then(function(data){
+    allPayments = (data || []).filter(function(payment){ return payment.status !== 'deleted'; });
+    renderPayments(allPayments);
+  })
+  .catch(function(){
+    setSupabaseStatus(false);
+    allPayments = [];
+    renderPayments(allPayments);
+  });
+}
+
+function renderPayments(pays){
+  document.getElementById('payments-loading').style.display='none';
+  var summary = document.getElementById('payments-summary');
+  var confirmedTotal = pays.filter(function(p){return p.status==='confirmed';}).reduce(function(sum,p){return sum+Number(p.amount||0);},0);
+  if(summary) summary.innerHTML = '<span class="summary-chip">💳 <strong>'+pays.length+'</strong> paiements</span>'
+    + '<span class="summary-chip">✅ <strong>'+pays.filter(function(p){return p.status==='confirmed';}).length+'</strong> confirmés</span>'
+    + '<span class="summary-chip">⏳ <strong>'+pays.filter(function(p){return p.status==='pending';}).length+'</strong> en attente</span>'
+    + '<span class="summary-chip">💰 <strong>'+confirmedTotal.toLocaleString('fr-HT')+' HTG</strong></span>';
+  var tbl = document.getElementById('payments-table');
+  tbl.style.display='table';
+  var tbody = document.getElementById('payments-body');
+  if(!pays.length){
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-ico">💳</div><div class="empty-txt">Aucun paiement</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = pays.map(function(p){
+    var actions = '';
+    if(p.status === 'pending'){
+      actions = '<button class="act-btn green" onclick="confirmPayment(\''+p.id+'\',\''+safeStr(p.user_email||'')+'\')">✅ Confirmer</button>' +
+                '<button class="act-btn red" onclick="rejectPayment(\''+p.id+'\')">❌ Rejeter</button>';
+    } else {
+      actions = '<span style="color:var(--text3);font-size:12px">'+statusBadge(p.status)+'</span>';
+    }
+    if(isDuplicatePayment(p)) actions += '<button class="act-btn red" onclick="deletePayment(\''+safeStr(p.id)+'\')">🗑️ Doublon</button>';
+    return '<tr>' +
+      '<td><div style="font-weight:600">'+safeStr(p.user_email||'—')+'</div></td>' +
+      '<td>'+planBadge(p.plan||'mensuel')+'</td>' +
+      '<td style="font-weight:700;color:var(--accent)">'+((p.amount||0).toLocaleString('fr-HT'))+' HTG</td>' +
+      '<td>'+safeStr(p.method||'—')+'</td>' +
+      '<td style="font-family:\'JetBrains Mono\',monospace;font-size:12px;color:var(--text3)">'+fmtDate(p.created_at)+'</td>' +
+      '<td>'+payStatusBadge(p.status)+'</td>' +
+      '<td style="display:flex;gap:6px;">'+actions+'</td></tr>';
+  }).join('');
+}
+
+function filterPayments(){
+  var f = document.getElementById('pay-filter').value;
+  renderPayments(!f || f === 'all' ? allPayments : allPayments.filter(function(p){ return p.status===f; }));
+}
+
+function confirmPayment(id, email){
+  if(!confirm('Confirmer le paiement de ' + email + ' et activer Premium ?')) return;
+  // Update payment status
+  supaUpdate('konektem_payments', 'id=eq.'+id, { status:'confirmed', confirmed_at: new Date().toISOString() })
+  .then(function(){
+    // Activer premium pour cet utilisateur
+    return supaUpdate('konektem_users', 'email=eq.'+email, { plan:'premium', status:'active', premium_date: new Date().toISOString() });
+  })
+  .then(function(){
+    notif('✅ Paiement confirmé + Premium activé pour ' + email, 'ok');
+    logAction('payment', 'Paiement confirmé pour ' + email);
+    loadPayments();
+  })
+  .catch(function(){
+    // Local fallback
+    var p = allPayments.find(function(x){ return x.id==id; });
+    if(p) p.status='confirmed';
+    renderPayments(allPayments);
+    notif('✅ Confirmé (local) — ' + email, 'ok');
+  });
+}
+
+function rejectPayment(id){
+  if(!confirm('Rejeter ce paiement ?')) return;
+  supaUpdate('konektem_payments', 'id=eq.'+id, { status:'rejected' })
+  .then(function(){ notif('❌ Paiement rejeté', 'ok'); loadPayments(); })
+  .catch(function(){
+    var p = allPayments.find(function(x){ return x.id==id; });
+    if(p) p.status='rejected';
+    renderPayments(allPayments);
+    notif('❌ Rejeté (local)', 'ok');
+  });
+}
+
+function openAddPayment(){ document.getElementById('pay-modal').classList.add('show'); }
+
+function savePayment(){
+  var data = {
+    user_email: document.getElementById('pm-email').value.trim(),
+    plan:       document.getElementById('pm-plan').value,
+    amount:     parseFloat(document.getElementById('pm-amount').value) || 0,
+    method:     document.getElementById('pm-method').value,
+    note:       document.getElementById('pm-note').value,
+    status:     'confirmed',
+    created_at: new Date().toISOString(),
+    confirmed_at: new Date().toISOString()
+  };
+  if(!data.user_email){ notif('Email requis', 'err'); return; }
+  supaInsert('konektem_payments', data)
+  .then(function(){
+    // Activer premium auto
+    return supaUpdate('konektem_users', 'email=eq.'+data.user_email, { plan:'premium', premium_date: new Date().toISOString() });
+  })
+  .then(function(){
+    notif('✅ Paiement enregistré + Premium activé', 'ok');
+    closeModal('pay-modal');
+    loadPayments();
+  })
+  .catch(function(){
+    allPayments.unshift(Object.assign({id:Date.now()}, data));
+    renderPayments(allPayments);
+    notif('✅ Paiement enregistré (local)', 'ok');
+    closeModal('pay-modal');
+  });
+}
+
+// ══════════════════════════════════════════════
+// CODES ACTIVATION
+// ══════════════════════════════════════════════
+function loadCodes(){
+  document.getElementById('codes-loading').style.display='block';
+  document.getElementById('codes-table').style.display='none';
+
+  supa('konektem_codes?select=*&order=created_at.desc')
+  .then(function(data){
+    allCodes = data || [];
+    renderCodes(allCodes);
+  })
+  .catch(function(){
+    allCodes = getDemoCodes();
+    renderCodes(allCodes);
+  });
+}
+
+function renderCodes(codes){
+  document.getElementById('codes-loading').style.display='none';
+  var tbl = document.getElementById('codes-table');
+  tbl.style.display='table';
+  var tbody = document.getElementById('codes-body');
+  if(!codes.length){
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-ico">🔑</div><div class="empty-txt">Aucun code</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = codes.map(function(code){
+    var isUsed = !!code.used_by;
+    var isExp = code.expires_at && new Date(code.expires_at) < new Date();
+    return '<tr>' +
+      '<td><span class="code-pill'+(isUsed?' used':'')+'">'+safeStr(code.code||'—')+'<button class="copy-btn" onclick="copyCode(\''+safeStr(code.code||'')+'\')">📋</button></span></td>' +
+      '<td>'+planBadge(code.plan||'mensuel')+'</td>' +
+      '<td style="font-family:\'JetBrains Mono\',monospace;font-size:12px;color:var(--text3)">'+fmtDate(code.created_at)+'</td>' +
+      '<td style="font-family:\'JetBrains Mono\',monospace;font-size:12px;color:'+(isExp?'var(--red)':'var(--text3)')+'">'+( code.expires_at ? fmtDate(code.expires_at) : 'Sans limite')+'</td>' +
+      '<td style="font-size:12px;">'+(isUsed ? '<span style="color:var(--text3)">'+safeStr(code.used_by)+'</span>' : '<span class="badge green">Disponible</span>')+'</td>' +
+      '<td><button class="act-btn red" onclick="deleteCode(\''+code.id+'\')">🗑️</button></td></tr>';
+  }).join('');
+}
+
+function filterCodes(){
+  var f = document.getElementById('code-filter').value;
+  var filtered = allCodes.filter(function(c){
+    if(f==='active')  return !c.used_by && (!c.expires_at || new Date(c.expires_at)>new Date());
+    if(f==='used')    return !!c.used_by;
+    if(f==='expired') return c.expires_at && new Date(c.expires_at)<new Date();
+    return true;
+  });
+  renderCodes(filtered);
+}
+
+function generateCodes(){
+  var qty  = parseInt(document.getElementById('gen-qty').value) || 5;
+  var plan = document.getElementById('gen-plan').value;
+  var exp  = parseInt(document.getElementById('gen-exp').value);
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var codes = [];
+
+  for(var i=0; i<qty; i++){
+    var code = 'PREM-';
+    for(var j=0; j<4; j++) code += chars[Math.floor(Math.random()*chars.length)];
+    var expDate = exp > 0 ? new Date(Date.now() + exp*86400000).toISOString() : null;
+    codes.push({ code:code, plan:plan, expires_at:expDate, created_at:new Date().toISOString() });
+  }
+
+  // Sauvegarder dans Supabase
+  var promises = codes.map(function(c){ return supaInsert('konektem_codes', c).catch(function(){ return c; }); });
+  Promise.all(promises).then(function(){
+    notif('✅ ' + qty + ' codes générés!', 'ok');
+    loadCodes();
+  });
+
+  // Affichage immédiat
+  allCodes = codes.concat(allCodes);
+  renderCodes(allCodes);
+  notif('✅ ' + qty + ' codes générés — ' + plan, 'ok');
+}
+
+function deleteCode(id){
+  if(!confirm('Supprimer ce code ?')) return;
+  supaDelete('konektem_codes', 'id=eq.'+id)
+  .then(function(){ notif('🗑️ Code supprimé', 'ok'); loadCodes(); })
+  .catch(function(){
+    allCodes = allCodes.filter(function(c){ return c.id != id; });
+    renderCodes(allCodes);
+    notif('🗑️ Code supprimé (local)', 'ok');
+  });
+}
+
+function copyCode(code){ navigator.clipboard.writeText(code).then(function(){ notif('📋 Code copié: ' + code, 'ok'); }); }
+function copyAllCodes(){
+  var active = allCodes.filter(function(c){ return !c.used_by; }).map(function(c){ return c.code; }).join('\n');
+  navigator.clipboard.writeText(active).then(function(){ notif('📋 ' + active.split('\n').length + ' codes copiés!', 'ok'); });
+}
+
+// ══════════════════════════════════════════════
+// PLANS & TARIFS
+// ══════════════════════════════════════════════
+function loadPlansFromStorage(){
+  var saved = localStorage.getItem('konektem_admin_plans');
+  if(saved) PLANS = JSON.parse(saved);
+  renderPlansEditor();
+}
+
+function renderPlansEditor(){
+  var el = document.getElementById('plans-grid');
+  if(!el) return;
+  el.innerHTML = Object.keys(PLANS).map(function(key){
+    var p = PLANS[key];
+    return '<div class="plan-card'+(p.active?' active-plan':'')+'">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'+
+        '<div class="plan-name">'+p.name+'</div>'+
+        '<span class="badge '+(p.active?'green':'gray')+'">'+(p.active?'Actif':'Inactif')+'</span>'+
+      '</div>'+
+      '<div style="font-size:12px;color:var(--text3);margin-bottom:14px;">Période: '+p.period+'</div>'+
+      '<div class="plan-price-row">'+
+        '<input class="price-inp" id="price-'+key+'" type="number" value="'+p.price+'" oninput="previewPrice(\''+key+'\')">'+
+        '<span class="price-currency">HTG'+p.period+'</span>'+
+      '</div>'+
+      '<div style="font-size:12px;color:var(--text3);margin-bottom:14px;" id="equiv-'+key+'">≈ '+(p.price/131.5).toFixed(0)+' USD</div>'+
+      '<div class="plan-toggle">'+
+        '<div class="toggle'+(p.active?' on':'')+'" id="toggle-'+key+'" onclick="togglePlan(\''+key+'\')"></div>'+
+        '<span style="font-size:13px;color:var(--text2);">Plan actif</span>'+
+      '</div>'+
+      '<button class="btn btn-primary" onclick="savePlanPrice(\''+key+'\')" style="width:100%;margin-top:14px;">💾 Sauvegarder ce prix</button>'+
+    '</div>';
+  }).join('');
+
+  // Stats
+  renderPlanStats();
+}
+
+function previewPrice(key){
+  var val = parseFloat(document.getElementById('price-'+key).value) || 0;
+  var el = document.getElementById('equiv-'+key);
+  if(el) el.textContent = '≈ ' + (val/131.5).toFixed(0) + ' USD';
+}
+
+function savePlanPrice(key){
+  var newPrice = parseFloat(document.getElementById('price-'+key).value);
+  if(!newPrice || newPrice < 0){ notif('Prix invalide', 'err'); return; }
+  PLANS[key].price = newPrice;
+  localStorage.setItem('konektem_admin_plans', JSON.stringify(PLANS));
+
+  // Mete a jou pri pou TOUT itilizatè via Supabase fonksyon
+  var pMens = key === 'mensuel' ? newPrice : PLANS.mensuel.price;
+  var pAnn  = key === 'annuel'  ? newPrice : PLANS.annuel.price;
+
+  fetch(SUPA_URL + '/rest/v1/rpc/update_prices_for_all', {
+    method: 'POST',
+    headers: {
+      'apikey':        SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type':  'application/json'
+    },
+    body: JSON.stringify({ p_mensuel: pMens, p_annuel: pAnn })
+  })
+  .then(function(){
+    notif('✅ Prix mis à jour pour TOUS les clients: ' + newPrice.toLocaleString('fr-HT') + ' HTG', 'ok');
+    logAction('price', 'Prix ' + PLANS[key].name + ' changé: ' + newPrice + ' HTG');
+  })
+  .catch(function(){
+    notif('✅ Prix sauvegardé localement', 'ok');
+  });
+
+  renderPlansEditor();
+}
+
+function togglePlan(key){
+  PLANS[key].active = !PLANS[key].active;
+  localStorage.setItem('konektem_admin_plans', JSON.stringify(PLANS));
+  renderPlansEditor();
+  notif((PLANS[key].active ? '✅ Plan activé: ' : '⏸️ Plan désactivé: ') + PLANS[key].name, 'ok');
+}
+
+function renderPlanStats(){
+  var tbody = document.getElementById('plan-stats-body');
+  if(!tbody) return;
+  var stats = Object.keys(PLANS).map(function(key){
+    var p = PLANS[key];
+    var count = allUsers.filter(function(u){ return u.plan==='premium'; }).length;
+    var rev = count * p.price;
+    return '<tr><td><strong>'+p.name+'</strong></td><td>'+count+'</td><td style="font-weight:700;color:var(--accent)">'+rev.toLocaleString('fr-HT')+' HTG</td><td>'+(allUsers.length?Math.round(count/allUsers.length*100):0)+'%</td></tr>';
+  });
+  tbody.innerHTML = stats.join('');
+}
+
+// ══════════════════════════════════════════════
+// LOGS
+// ══════════════════════════════════════════════
+function logAction(type, message){
+  var log = { type:type, message:message, created_at: new Date().toISOString(), by:'Admin' };
+  allLogs.unshift(log);
+  supaInsert('konektem_logs', log).catch(function(){});
+}
+
+function loadLogs(){
+  var loading = document.getElementById('logs-loading');
+  var table = document.getElementById('logs-table');
+  if(loading) loading.style.display = 'block';
+  if(table) table.style.display = 'none';
+  supa('konektem_logs?select=*&order=created_at.desc&limit=50')
+  .then(function(data){
+    allLogs = data || [];
+    renderLogs(allLogs);
+  })
+  .catch(function(error){
+    setSupabaseStatus(false);
+    allLogs = [];
+    renderLogs([], 'Logs pa disponib: '+(error.message || 'erè Supabase'));
+  });
+}
+
+function renderLogs(logs, errorMessage){
+  var loading = document.getElementById('logs-loading');
+  var table = document.getElementById('logs-table');
+  var body = document.getElementById('logs-body');
+  if(loading) loading.style.display = 'none';
+  if(table) table.style.display = 'table';
+  if(!body) return;
+  if(!logs.length){
+    body.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:28px;color:'+(errorMessage?'var(--red)':'var(--text3)')+';">'+safeStr(errorMessage || 'Aucun log')+'</td></tr>';
+    return;
+  }
+  var icons = { login:'🔐', signup:'👤', payment:'💳', premium:'⭐', ban:'🚫', error:'❌' };
+  var cols  = { login:'blue', signup:'green', payment:'amber', premium:'green', ban:'red', error:'red' };
+  body.innerHTML = logs.map(function(l){
+    var ico = icons[l.type] || '📝';
+    var col = cols[l.type] || 'blue';
+    return '<tr><td style="white-space:nowrap;font-size:11px;color:var(--text3);">'+fmtDateFull(l.created_at)+'</td>'
+      +'<td><span class="badge '+col+'">'+ico+' '+safeStr(l.type||'event')+'</span></td>'
+      +'<td style="font-size:12px;">'+safeStr(l.email||l.user_email||'—')+'</td>'
+      +'<td>'+safeStr(l.message||l.action||'—')+'<div style="font-size:10px;color:var(--text3);margin-top:3px;">'+safeStr(l.by||'Système')+'</div></td></tr>';
+  }).join('');
+}
+
+function filterLogs(){
+  var f = document.getElementById('log-filter').value;
+  renderLogs(f ? allLogs.filter(function(l){ return l.type===f; }) : allLogs);
+}
+
+// ══════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════
+function loadSettings(){
+  var saved = localStorage.getItem('konektem_admin_config');
+  if(saved){
+    var cfg = JSON.parse(saved);
+    if(cfg.mc_num) document.getElementById('mc-num').value = cfg.mc_num;
+    if(cfg.wa_num) document.getElementById('wa-num').value = cfg.wa_num;
+    if(cfg.msg)    document.getElementById('global-msg').value = cfg.msg;
+  }
+  // Supabase stats
+  loadSupaStats();
+}
+
+function changePassword(){
+  var np = document.getElementById('new-admin-pw').value;
+  var cp = document.getElementById('conf-admin-pw').value;
+  if(!np){ notif('Entrez un nouveau mot de passe', 'err'); return; }
+  if(np !== cp){ notif('Les mots de passe ne correspondent pas', 'err'); return; }
+  if(np.length < 8){ notif('Minimum 8 caractères', 'err'); return; }
+  ADMIN_PASS = np;
+  localStorage.setItem('konektem_admin_pw', np);
+  document.getElementById('new-admin-pw').value = '';
+  document.getElementById('conf-admin-pw').value = '';
+  notif('✅ Mot de passe changé! Reconnectez-vous.', 'ok');
+}
+
+function saveContactConfig(){
+  var cfg = {
+    mc_num: document.getElementById('mc-num').value,
+    wa_num: document.getElementById('wa-num').value,
+    msg:    document.getElementById('global-msg').value
+  };
+  localStorage.setItem('konektem_admin_config', JSON.stringify(cfg));
+  notif('✅ Configuration sauvegardée', 'ok');
+}
+
+function saveGlobalMsg(){
+  var msg  = document.getElementById('global-msg').value.trim();
+  var type = document.getElementById('msg-type').value;
+  if(!msg){ notif('Entrez un message', 'err'); return; }
+
+  // Mettre à jour le champ message_global pour TOUS les utilisateurs
+  // (Supabase: UPDATE konektem_users SET message_global = msg WHERE status != 'banned')
+  fetch(SUPA_URL + '/rest/v1/konektem_users?status=neq.banned', {
+    method: 'PATCH',
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ message_global: msg })
+  })
+  .then(function(){
+    notif('📢 Message envoyé à tous les utilisateurs actifs!', 'ok');
+    logAction('message', 'Message global: ' + msg.slice(0,50));
+  })
+  .catch(function(){
+    notif('📢 Message sauvegardé (sera visible à la prochaine sync)', 'ok');
+  });
+}
+
+function clearGlobalMsg(){
+  fetch(SUPA_URL + '/rest/v1/konektem_users?status=neq.banned', {
+    method: 'PATCH',
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ message_global: null })
+  })
+  .then(function(){ notif('✅ Message retiré', 'ok'); })
+  .catch(function(){});
+}
+
+function loadSupaStats(){
+  var el = document.getElementById('supa-stats');
+  Promise.all([
+    supa('konektem_users?select=count', {headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'count=exact'}}).catch(function(){return 0;}),
+    supa('konektem_payments?select=count').catch(function(){return 0;}),
+    supa('konektem_codes?select=count').catch(function(){return 0;})
+  ]).then(function(results){
+    el.innerHTML = [
+      row('Base de données', 'Supabase (PostgreSQL)'),
+      row('URL', SUPA_URL.split('//')[1]),
+      row('Utilisateurs', Array.isArray(results[0]) ? results[0].length : '—'),
+      row('Paiements', Array.isArray(results[1]) ? results[1].length : '—'),
+      row('Codes', Array.isArray(results[2]) ? results[2].length : '—'),
+      row('Connexion', '<span class="badge green">✓ Active</span>'),
+    ].join('');
+  }).catch(function(){
+    el.innerHTML = row('Connexion', '<span class="badge red">⚠ Erreur</span>');
+  });
+}
+
+// ══════════════════════════════════════════════
+// HELPERS UI
+// ══════════════════════════════════════════════
+function planBadge(plan){
+  var map = {
+    premium: '<span class="badge purple">⭐ Premium</span>',
+    trial:   '<span class="badge blue">🕐 Essai</span>',
+    expired: '<span class="badge red">Expiré</span>',
+    mensuel: '<span class="badge purple">Mensuel</span>',
+    annuel:  '<span class="badge blue">Annuel</span>',
+  };
+  return map[plan] || '<span class="badge gray">'+plan+'</span>';
+}
+
+function statusBadge(status){
+  var map = {
+    active:  '<span class="badge green">● Actif</span>',
+    banned:  '<span class="badge red">🚫 Banni</span>',
+    locked:  '<span class="badge" style="background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.3);">🔒 Bloqué</span>',
+    expired: '<span class="badge amber">⏰ Expiré</span>',
+    pending: '<span class="badge amber">⏳ En attente</span>',
+  };
+  return map[status] || '<span class="badge gray">'+status+'</span>';
+}
+
+function payStatusBadge(status){
+  var map = {
+    confirmed: '<span class="badge green">✅ Confirmé</span>',
+    pending:   '<span class="badge amber">⏳ En attente</span>',
+    rejected:  '<span class="badge red">❌ Rejeté</span>',
+  };
+  return map[status] || '<span class="badge gray">'+status+'</span>';
+}
+
+function row(label, value){
+  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">'+
+    '<span style="color:var(--text3)">'+label+'</span><span style="font-weight:600">'+value+'</span></div>';
+}
+
+function fmtDate(d){
+  if(!d) return '—';
+  return new Date(d).toLocaleDateString('fr-FR', {day:'2-digit', month:'short', year:'numeric'});
+}
+
+function fmtDateFull(d){
+  if(!d) return '—';
+  return new Date(d).toLocaleString('fr-FR', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+}
+
+function safeStr(s){ return (s+'').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function normalizeWhatsAppNumber(phone){
+  var digits = String(phone || '').replace(/\D/g, '');
+  if(digits.indexOf('00') === 0) digits = digits.substring(2);
+  if(digits.length === 8) return '509' + digits;
+  if(digits.length === 9 && digits.charAt(0) === '0') return '509' + digits.substring(1);
+  return digits;
+}
+
+function updateBadge(id, count, warn){
+  var el = document.getElementById(id);
+  if(!el) return;
+  el.textContent = count || 0;
+  if(warn && count > 0) el.style.background = 'var(--amber)';
+  else el.style.background = '';
+}
+
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+
+function notif(msg, type){
+  var el = document.getElementById('notif');
+  el.textContent = msg;
+  el.className = 'notif show ' + (type||'ok');
+  clearTimeout(window._notifT);
+  window._notifT = setTimeout(function(){ el.classList.remove('show'); }, 3500);
+}
+
+// ══════════════════════════════════════════════
+// DEMO DATA (si Supabase pas encore configuré)
+// ══════════════════════════════════════════════
+function getDemoUsers(){
+  return [
+    {id:1,email:'jean.pierre@gmail.com',bizname:'Pharmacie Jean',secteur:'pharmacie',plan:'premium',status:'active',created_at:'2025-01-15',premium_date:'2025-02-01'},
+    {id:2,email:'marie.dupont@yahoo.com',bizname:'Epicerie Marie',secteur:'marche',plan:'trial',status:'active',created_at:'2025-03-10'},
+    {id:3,email:'paul.hotel@outlook.com',bizname:'Hotel Paul',secteur:'restaurant',plan:'premium',status:'active',created_at:'2025-02-20'},
+    {id:4,email:'tech.store@mail.com',bizname:'Tech Store HT',secteur:'electronique',plan:'expired',status:'expired',created_at:'2025-01-05'},
+    {id:5,email:'spam@fake.com',bizname:'',secteur:'',plan:'trial',status:'banned',created_at:'2025-03-01'},
+  ];
+}
+
+function getDemoPayments(){
+  return [
+    {id:1,user_email:'jean.pierre@gmail.com',plan:'mensuel',amount:2500,method:'MonCash',status:'confirmed',created_at:'2025-02-01',confirmed_at:'2025-02-01'},
+    {id:2,user_email:'paul.hotel@outlook.com',plan:'annuel',amount:22000,method:'Virement',status:'confirmed',created_at:'2025-02-20'},
+    {id:3,user_email:'marie.dupont@yahoo.com',plan:'mensuel',amount:2500,method:'MonCash',status:'pending',created_at:'2025-03-15'},
+    {id:4,user_email:'new.user@gmail.com',plan:'mensuel',amount:2500,method:'Carte',status:'pending',created_at:'2025-03-18'},
+  ];
+}
+
+function getDemoCodes(){
+  return [
+    {id:1,code:'PREM-A3X7',plan:'mensuel',created_at:'2025-03-01',expires_at:'2025-04-01',used_by:null},
+    {id:2,code:'PREM-B9K2',plan:'annuel',created_at:'2025-03-05',expires_at:'2025-04-05',used_by:'paul.hotel@outlook.com'},
+    {id:3,code:'PREM-C4M8',plan:'mensuel',created_at:'2025-03-10',expires_at:null,used_by:null},
+  ];
+}
+
+function getDemoLogs(){
+  return [
+    {id:1,type:'login',message:'Admin connecté au panneau',created_at:new Date().toISOString(),by:'Admin'},
+    {id:2,type:'premium',message:'Premium activé pour jean.pierre@gmail.com',created_at:'2025-02-01',by:'Admin'},
+    {id:3,type:'payment',message:'Paiement confirmé 2500 HTG — MonCash',created_at:'2025-02-01',by:'Admin'},
+    {id:4,type:'signup',message:'Nouvel utilisateur: marie.dupont@yahoo.com',created_at:'2025-03-10',by:'Système'},
+    {id:5,type:'ban',message:'Utilisateur banni: spam@fake.com',created_at:'2025-03-01',by:'Admin'},
+  ];
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+// Verifier si deja auth
+var savedPw = localStorage.getItem('konektem_admin_pw');
+if(savedPw) ADMIN_PASS = savedPw;
+
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape') document.querySelectorAll('.modal-bg.show').forEach(function(m){ m.classList.remove('show'); });
+});
+
+moveExtraViewsIntoContent();
+checkAuth();
+
+
+// ══════════════════════════════════════════════════════════════
+// MONITORING LIVE
+// ══════════════════════════════════════════════════════════════
+var monitoringData = [];
+
+function loadMonitoring(){
+  var upd = document.getElementById('monitoring-last-update');
+  if(upd) upd.textContent = '🔄 Mise à jour: ' + new Date().toLocaleTimeString('fr-FR');
+
+  // Montre loading
+  var listDiv = document.getElementById('monitoring-list');
+  if(listDiv) listDiv.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">⏳ Chargement des données...</div>';
+
+  supaFetch('konektem_presence?order=last_seen.desc&limit=200')
+  .then(function(data){
+    if(!Array.isArray(data)){
+      console.error('[Monitoring] Repons invalide:', data);
+      if(listDiv) listDiv.innerHTML = '<div style="text-align:center;padding:30px;color:#ef4444;">❌ Erreur chargement. Vérifiez la table konektem_presence dans Supabase.</div>';
+      return;
+    }
+
+    monitoringData = data;
+
+    var now = Date.now();
+    var online  = data.filter(function(u){ return u.is_online && (now - new Date(u.last_seen)) < 120000; });
+    var today   = data.filter(function(u){ return new Date(u.last_seen).toDateString() === new Date().toDateString(); });
+    var totRev  = today.reduce(function(a,u){ return a + (u.revenue_today||0); }, 0);
+    var totSales= today.reduce(function(a,u){ return a + (u.ventes_today||0); }, 0);
+
+    var monOnline = document.getElementById('mon-online');
+    var monToday  = document.getElementById('mon-today');
+    var monRev    = document.getElementById('mon-revenue');
+    var monSales  = document.getElementById('mon-sales');
+    if(monOnline) monOnline.textContent = online.length;
+    if(monToday)  monToday.textContent  = today.length;
+    if(monRev)    monRev.textContent    = totRev.toLocaleString() + ' HTG';
+    if(monSales)  monSales.textContent  = totSales;
+
+    // Badge nav
+    var badge = document.getElementById('badge-online');
+    if(badge){ badge.textContent = online.length; badge.style.display = online.length ? '' : 'none'; }
+
+    if(!data.length){
+      if(listDiv) listDiv.innerHTML =
+        '<div style="text-align:center;padding:40px;">'
+        + '<div style="font-size:40px;margin-bottom:12px;">📡</div>'
+        + '<div style="font-weight:700;margin-bottom:8px;">Aucun client actif encore</div>'
+        + '<div style="font-size:13px;color:var(--text-muted);">Les clients apparaissent ici dès qu\'ils ouvrent l\'application Konektem.</div>'
+        + '<div style="font-size:12px;color:var(--text-muted);margin-top:8px;">La table <code>konektem_presence</code> doit exister dans Supabase.</div>'
+        + '</div>';
+      return;
+    }
+
+    renderMonitoringList(data);
+  })
+  .catch(function(err){
+    console.error('[Monitoring] Erreur:', err);
+    if(listDiv) listDiv.innerHTML =
+      '<div style="text-align:center;padding:30px;color:#ef4444;">'
+      + '❌ Erreur: ' + (err.message||'Vérifiez Supabase')
+      + '<br><br><button onclick="loadMonitoring()" style="padding:8px 16px;border:none;border-radius:6px;background:#22c55e;color:#fff;cursor:pointer;">🔄 Réessayer</button>'
+      + '</div>';
+  });
+}
+
+function filterMonitoring(){
+  var f = document.getElementById('mon-filter').value;
+  var now = Date.now();
+  var filtered = monitoringData.filter(function(u){
+    if(f === 'online')   return u.is_online && (now - new Date(u.last_seen)) < 90000;
+    if(f === 'premium')  return u.plan === 'premium';
+    if(f === 'trial')    return u.plan !== 'premium';
+    return true;
+  });
+  renderMonitoringList(filtered);
+}
+
+function renderMonitoringList(data){
+  var div = document.getElementById('monitoring-list');
+  if(!data.length){
+    div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Aucun client trouvé</div>';
+    return;
+  }
+
+  var now = Date.now();
+  var SECTOR_ICO = {
+    marche:'🛒', pharmacie:'💊', electronique:'📱', restaurant:'🍽️',
+    store:'👗', quincaillerie:'🔧', depot:'🏭', salon:'✂️', service:'🛠️'
+  };
+
+  var rows = data.map(function(u){
+    var diff     = now - new Date(u.last_seen);
+    var isOn     = u.is_online && diff < 90000;
+    var isRecent = diff < 3600000;
+
+    var statusTxt, statusColor;
+    if(isOn)      { statusTxt = '🟢 En ligne'; statusColor = '#22c55e'; }
+    else if(isRecent){ statusTxt = '🟡 Récent'; statusColor = '#f59e0b'; }
+    else          { statusTxt = '⚫ Hors ligne'; statusColor = '#6b7280'; }
+
+    var planBg  = u.plan === 'premium' ? '#f59e0b' : 'rgba(255,255,255,.1)';
+    var planClr = u.plan === 'premium' ? '#000' : 'var(--text-muted)';
+    var planTxt = u.plan === 'premium' ? '⭐ Premium' : 'Trial';
+
+    var lastSeen = new Date(u.last_seen).toLocaleString('fr-FR',{
+      day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'
+    });
+
+    var rev = (u.revenue_today||0).toLocaleString();
+    var ico = SECTOR_ICO[u.secteur] || '🏪';
+    var safeEmail = (u.email||'').replace(/'/g, '');
+
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><span style="color:' + statusColor + ';font-weight:700;">' + statusTxt + '</span></td>'
+      + '<td><strong>' + (u.bizname||'—') + '</strong><br>'
+      + '<span style="font-size:11px;color:var(--text-muted);">' + (u.email||'') + '</span></td>'
+      + '<td>' + ico + ' ' + (u.secteur||'—') + '</td>'
+      + '<td><span style="background:' + planBg + ';color:' + planClr
+      + ';padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;">'
+      + planTxt + '</span></td>'
+      + '<td style="text-align:center;font-weight:700;">' + (u.ventes_today||0) + '</td>'
+      + '<td style="text-align:right;font-weight:700;color:#22c55e;">' + rev + ' HTG</td>'
+      + '<td style="font-size:12px;color:var(--text-muted);">' + lastSeen + '</td>'
+      + '<td></td>';
+
+    // Bouton DOM pou evite apostròf
+    var actTd = tr.lastElementChild;
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;gap:4px;';
+
+    var btnWa = document.createElement('a');
+    btnWa.href = 'https://wa.me/?text=' + encodeURIComponent('👋 Bonjour ' + (u.bizname||u.email) + ', équipe Konektem ici...');
+    btnWa.target = '_blank';
+    btnWa.className = 'btn btn-ghost btn-sm';
+    btnWa.title = 'WhatsApp';
+    btnWa.textContent = '📲';
+
+    var btnV = document.createElement('button');
+    btnV.className = 'btn btn-ghost btn-sm';
+    btnV.title = 'Voir profil';
+    btnV.textContent = '👁️';
+    (function(em){ btnV.onclick = function(){ viewUserFromMonitoring(em); }; })(u.email||'');
+
+    wrap.appendChild(btnWa);
+    wrap.appendChild(btnV);
+    actTd.appendChild(wrap);
+    return tr;
+  });
+
+  var table = document.createElement('table');
+  table.className = 'data-table';
+  table.innerHTML = '<thead><tr>'
+    + '<th>Statut</th><th>Boutique</th><th>Secteur</th><th>Plan</th>'
+    + '<th>Ventes auj.</th><th>Revenu auj.</th><th>Dernière activité</th><th>Actions</th>'
+    + '</tr></thead>';
+  var tbody = document.createElement('tbody');
+  rows.forEach(function(tr){ tbody.appendChild(tr); });
+  table.appendChild(tbody);
+  div.innerHTML = '';
+  div.appendChild(table);
+}
+
+function viewUserFromMonitoring(email){
+  // Ale nan onglet Utilisateurs filtre sou email sa
+  // Navige nan users tab
+  var usersBtn = null;
+  document.querySelectorAll('.sb-item').forEach(function(el){
+    if(el.getAttribute('onclick') && el.getAttribute('onclick').indexOf("'users'") > -1) usersBtn = el;
+  });
+  nav('users', usersBtn);
+  setTimeout(function(){
+    var search = document.getElementById('user-search');
+    if(search){ search.value = email; filterUsers(); }
+  }, 300);
+}
+
+// ══════════════════════════════════════════════════════════════
+// SUPPORT TICKETS
+// ══════════════════════════════════════════════════════════════
+var supportData = [];
+
+function loadSupport(){
+  var supList = document.getElementById('support-list');
+  if(supList) supList.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">⏳ Chargement...</div>';
+
+  supaFetch('konektem_support?order=created_at.desc&limit=200')
+  .then(function(data){
+    if(!Array.isArray(data)){
+      if(supList) supList.innerHTML = '<div style="text-align:center;padding:30px;color:#ef4444;">❌ Erreur. Vérifiez la table konektem_support dans Supabase.</div>';
+      return;
+    }
+    supportData = data;
+
+    var open     = data.filter(function(t){ return t.status === 'ouvert'; });
+    var inprog   = data.filter(function(t){ return t.status === 'en_cours'; });
+    var resolved = data.filter(function(t){ return t.status === 'resolu'; });
+    var urgent   = data.filter(function(t){ return t.priority === 'urgent' && t.status !== 'resolu'; });
+
+    var supOpen = document.getElementById('sup-open');
+    var supInp  = document.getElementById('sup-inprog');
+    var supRes  = document.getElementById('sup-resolved');
+    var supUrg  = document.getElementById('sup-urgent');
+    if(supOpen) supOpen.textContent = open.length;
+    if(supInp)  supInp.textContent  = inprog.length;
+    if(supRes)  supRes.textContent  = resolved.length;
+    if(supUrg)  supUrg.textContent  = urgent.length;
+
+    var badge = document.getElementById('badge-support');
+    if(badge){ badge.textContent = open.length + inprog.length; badge.style.display = (open.length+inprog.length) ? '' : 'none'; }
+
+    if(!data.length){
+      if(supList) supList.innerHTML =
+        '<div style="text-align:center;padding:40px;">'
+        + '<div style="font-size:40px;margin-bottom:12px;">🆘</div>'
+        + '<div style="font-weight:700;margin-bottom:8px;">Aucun ticket pour l\'instant</div>'
+        + '<div style="font-size:13px;color:var(--text-muted);">Les tickets apparaissent quand un client clique "Signaler un problème".</div>'
+        + '</div>';
+      return;
+    }
+
+    filterSupport();
+  })
+  .catch(function(err){
+    console.error('[Support] Erreur:', err);
+    if(supList) supList.innerHTML =
+      '<div style="text-align:center;padding:30px;color:#ef4444;">'
+      + '❌ Erreur: ' + (err.message||'Vérifiez Supabase')
+      + '<br><br><button onclick="loadSupport()" style="padding:8px 16px;border:none;border-radius:6px;background:#22c55e;color:#fff;cursor:pointer;">🔄 Réessayer</button>'
+      + '</div>';
+  });
+}
+
+function filterSupport(){
+  var f = document.getElementById('sup-filter').value;
+  var filtered = supportData.filter(function(t){
+    if(f === 'all') return true;
+    return t.status === f;
+  });
+  renderSupportList(filtered);
+}
+
+function renderSupportList(data){
+  var div = document.getElementById('support-list');
+  if(!data.length){
+    div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Aucun ticket</div>';
+    return;
+  }
+
+  var TYPE_ICO = { technique:'🔧', paiement:'💳', stock:'📦', sync:'📱', autre:'💬' };
+  var STATUS_COLOR = { ouvert:'#ef4444', en_cours:'#f59e0b', resolu:'#22c55e' };
+  var STATUS_LABEL = { ouvert:'Ouvert', en_cours:'En cours', resolu:'Résolu' };
+
+  div.innerHTML = data.map(function(t){
+    var d = new Date(t.created_at).toLocaleString('fr-FR', {
+      day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'
+    });
+    var statusColor = STATUS_COLOR[t.status] || '#6b7280';
+    var waReply = 'https://wa.me/?text=' + encodeURIComponent(
+      '\u{1F44B} Bonjour ' + (t.bizname||t.email) + '!\n\n'
+      + 'Équipe Konektem — Ticket #' + t.id + ' du ' + d + '\n\n'
+      + 'Problème: ' + t.message.substring(0,100) + '\n\n'
+      + 'Nous vous contacterons rapidement.'
+    );
+
+    return '<div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;'
+      + (t.priority==='urgent' ? 'border-left:4px solid #ef4444;' : '') + '">'
+
+      + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">'
+      + '<div>'
+      + '<span style="font-size:16px;margin-right:6px;">' + (TYPE_ICO[t.type]||'💬') + '</span>'
+      + '<strong>' + (t.bizname||t.email) + '</strong>'
+      + (t.priority==='urgent' ? ' <span style="background:#ef4444;color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;">🚨 URGENT</span>' : '')
+      + '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">'
+      + t.email + ' · ' + d + '</div>'
+      + '</div>'
+      + '<span style="background:' + statusColor + '22;color:' + statusColor + ';padding:3px 10px;'
+      + 'border-radius:10px;font-size:11px;font-weight:700;">'
+      + (STATUS_LABEL[t.status]||t.status) + '</span>'
+      + '</div>'
+
+      + '<div style="background:var(--bg);border-radius:6px;padding:10px;margin-bottom:10px;font-size:13px;">'
+      + t.message
+      + '</div>'
+
+      + (t.admin_note ? '<div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:8px;margin-bottom:10px;font-size:12px;">'
+        + '📝 <strong>Note admin:</strong> ' + t.admin_note + '</div>' : '')
+
+      + (t.admin_reply ? '<div style="background:rgba(74,158,255,.08);border:1px solid rgba(74,158,255,.25);border-radius:6px;padding:8px;margin-bottom:10px;font-size:12px;">'
+        + '📨 <strong>Réponse envoyée:</strong> ' + safeStr(t.admin_reply) + '<div style="font-size:10px;color:var(--text3);margin-top:3px;">'+fmtDate(t.replied_at)+'</div></div>' : '')
+
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+      + (t.status !== 'resolu'
+        ? '<button class="btn btn-ghost btn-sm" data-tid="' + t.id + '" data-st="en_cours" onclick="updateTicket(+this.dataset.tid,this.dataset.st)">🔄 En cours</button>'
+        + '<button class="btn btn-success btn-sm" data-tid="' + t.id + '" data-st="resolu" onclick="updateTicket(+this.dataset.tid,this.dataset.st)">✅ Résoudre</button>'
+        : '')
+      + '<button class="btn btn-ghost btn-sm" data-tid="' + t.id + '" onclick="addAdminNote(+this.dataset.tid)">📝 Note</button>'
+      + '<a href="' + waReply + '" target="_blank" class="btn btn-ghost btn-sm">📲 Répondre WA</a>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function updateTicket(id, newStatus){
+  var reply = '';
+  if(newStatus === 'resolu'){
+    reply = prompt('Mesaj pou kliyan an (li ap wè li nan aplikasyon an):', 'Pwoblèm nan rezoud. Mèsi paske ou te kontakte nou.') || '';
+  }
+  supaFetch('konektem_support?id=eq.' + encodeURIComponent(id), 'PATCH', {
+      status: newStatus,
+      updated_at: new Date().toISOString(),
+      resolved_at: newStatus === 'resolu' ? new Date().toISOString() : null,
+      admin_reply: reply || null,
+      replied_at: reply ? new Date().toISOString() : null
+    }, 'return=minimal')
+  .then(function(){
+    loadSupport();
+    showToast('✅ Ticket mis à jour: ' + newStatus, 'success');
+  })
+  .catch(function(error){ showToast('❌ Erè ticket: ' + error.message, 'error'); });
+}
+
+function addAdminNote(id){
+  var note = prompt('Note admin (visible seulement par vous):');
+  if(!note) return;
+  supaFetch('konektem_support?id=eq.' + encodeURIComponent(id), 'PATCH', {
+    admin_note: note,
+    updated_at: new Date().toISOString()
+  }, 'return=minimal')
+  .then(function(){ loadSupport(); showToast('📝 Note ajoutée', 'success'); })
+  .catch(function(error){ showToast('❌ Erè note: ' + error.message, 'error'); });
+}
+
+// nav() already handles all pages above
+
+// ── Auto-refresh monitoring chak 30s si ouvert ──
+setInterval(function(){
+  var monPage = document.getElementById('view-monitoring');
+  if(monPage && monPage.classList.contains('on')) loadMonitoring();
+  var supPage = document.getElementById('view-support');
+  if(supPage && supPage.classList.contains('on')) loadSupport();
+}, 30000);
+
+
+function showToast(msg, type){
+  var el = document.getElementById('toast');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'toast';
+    el.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;'
+      + 'padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;'
+      + 'color:#fff;box-shadow:0 4px 20px rgba(0,0,0,.3);transition:all .3s;'
+      + 'max-width:320px;';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.background = type === 'success' ? '#22c55e'
+    : type === 'error' ? '#ef4444' : '#3b82f6';
+  el.style.opacity = '1';
+  el.style.transform = 'translateY(0)';
+  clearTimeout(el._t);
+  el._t = setTimeout(function(){
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(10px)';
+  }, 3000);
+}
+
+</script>
+</body>
+</html>

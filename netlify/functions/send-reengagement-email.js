@@ -18,7 +18,12 @@ const siteUrl = process.env.SITE_URL || 'https://konektem.netlify.app';
 function json(statusCode, body) {
   return {
     statusCode,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS'
+    },
     body: JSON.stringify(body)
   };
 }
@@ -112,6 +117,7 @@ async function sendEmail(user) {
 }
 
 exports.handler = async function(event) {
+  if (event.httpMethod === 'OPTIONS') return json(200, { ok: true });
   if (event.httpMethod !== 'POST') return json(405, { error: 'POST selman.' });
   if (!process.env.REENGAGEMENT_ADMIN_SECRET || event.headers.authorization !== `Bearer ${process.env.REENGAGEMENT_ADMIN_SECRET}`) {
     return json(401, { error: 'Pa otorize.' });
