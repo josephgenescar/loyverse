@@ -672,9 +672,10 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
       <div class="pm-feat"><span class="pm-ck">✓</span> Support prioritaire WhatsApp</div>
     </div>
     <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px;font-size:12px;color:rgba(255,255,255,.6);text-align:center;margin-bottom:13px">
-      💳 Paiement : <strong style="color:#fbbf24">MonCash · Carte · Virement</strong>
+      💳 Paiement : <strong style="color:#fbbf24">MonCash</strong> oswa <strong style="color:#60a5fa">PayPal</strong>
     </div>
     <button class="pm-btn" id="pm-btn" onclick="landingDoPremium()">Activer Premium — 10 USD/mois →</button>
+    <button class="pm-btn" id="landing-paypal-btn" onclick="landingDoPayPal()" style="margin-top:8px;background:#0070ba;">🅿️ Peye ak PayPal</button>
   </div>
 </div>
 
@@ -1103,20 +1104,9 @@ var LANDING_PRIX_ANN     = 100;
 var LANDING_MONCASH_NUM  = '509-4886-8964'; // ← Chanje ak nimewo ou
 var LANDING_WHATSAPP_NUM = '50948868964';    // ← Chanje ak WhatsApp ou
 
-// Tire pri depi Supabase pou montre pri admin te mete
+// Pri Premium landing lan rete an USD pou li menm ak checkout PayPal la.
 function loadLandingPrices(){
-  fetch('https://mnpgapvltdrpztnjmeie.supabase.co/rest/v1/konektem_users?select=price_mensuel,price_annuel&limit=1&price_mensuel=gt.0', {
-    headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucGdhcHZsdGRycHp0bmptZWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzg5NDQsImV4cCI6MjA4OTcxNDk0NH0.6R9xGtGSJivvVxwqI2EfWjK3pAArZquIMxeEi-lt6tE' }
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(data){
-    if(Array.isArray(data) && data.length > 0 && data[0].price_mensuel){
-      LANDING_PRIX_MENS = data[0].price_mensuel;
-      LANDING_PRIX_ANN  = data[0].price_annuel || 100;
-      updateLandingPriceDisplay();
-    }
-  })
-  .catch(function(){});
+  updateLandingPriceDisplay();
 }
 
 function updateLandingPriceDisplay(){
@@ -1138,14 +1128,48 @@ function selPlan(el, planKey) {
   landingSelPlan = planKey;
   landingSelPrix = planKey === 'annuel' ? LANDING_PRIX_ANN : LANDING_PRIX_MENS;
   var fmtP = function(n){ return n.toLocaleString('fr-HT'); };
-  var txt = fmtP(landingSelPrix) + ' ' + (planKey==='annuel'?'HTG/an':'HTG/mois');
+  var txt = fmtP(landingSelPrix) + ' ' + (planKey==='annuel'?'USD/an':'USD/mois');
   document.getElementById('pm-btn').textContent = 'Activer Premium — ' + txt + ' →';
+}
+
+function landingDoPayPal(){
+  var plan = landingSelPlan || 'mensuel';
+  var prix = plan === 'annuel' ? LANDING_PRIX_ANN : LANDING_PRIX_MENS;
+  var userEmail = '';
+  try{ userEmail = JSON.parse(localStorage.getItem('konektem_user') || '{}').email || ''; }catch(e){}
+  if(!userEmail) userEmail = window.prompt('Antre email kont Konektem ou pou peman PayPal la:') || '';
+  if(!userEmail || userEmail.indexOf('@') === -1){
+    window.alert('Tanpri antre yon email valid pou kont lan.');
+    return;
+  }
+
+  var btn = document.getElementById('landing-paypal-btn');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Koneksyon PayPal...'; }
+  fetch('/.netlify/functions/paypal-payment', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({email:userEmail, plan:plan, amount:prix})
+  }).then(function(r){
+    return r.text().then(function(text){
+      var data = null;
+      try{ data = text ? JSON.parse(text) : null; }catch(e){}
+      if(!data) throw new Error('PayPal bezwen kouri sou Netlify. Ou pa ka lanse peman an ak Live Server localhost la.');
+      if(!r.ok) throw new Error(data.error || 'PayPal pa disponib kounye a.');
+      return data;
+    });
+  }).then(function(data){
+    if(data.success && data.redirectUrl){ window.location.href = data.redirectUrl; return; }
+    throw new Error(data.error || 'PayPal pa disponib kounye a.');
+  }).catch(function(error){
+    if(btn){ btn.disabled = false; btn.textContent = '🅿️ Peye ak PayPal'; }
+    window.alert(error.message || 'PayPal pa disponib kounye a.');
+  });
 }
 
 function landingDoPremium(){
   var plan  = landingSelPlan;
   var prix  = landingSelPlan === 'annuel' ? LANDING_PRIX_ANN : LANDING_PRIX_MENS;
-  var unite = plan === 'annuel' ? 'HTG/an' : 'HTG/mois';
+  var unite = plan === 'annuel' ? 'USD/an' : 'USD/mois';
 
   // Kreye modal MonCash
   var old = document.getElementById('landing-pay-mov');

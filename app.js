@@ -295,7 +295,15 @@ function doPayPal(){
   fetch('/.netlify/functions/paypal-payment', {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({ email: email, plan: plan, amount: prix })
-  }).then(function(r){ return r.json(); }).then(function(data){
+  }).then(function(r){
+    return r.text().then(function(text){
+      var data = null;
+      try{ data = text ? JSON.parse(text) : null; }catch(e){}
+      if(!data) throw new Error('PayPal bezwen kouri sou Netlify. Ou pa ka lanse peman an ak Live Server localhost la.');
+      if(!r.ok) throw new Error(data.error || 'PayPal pa disponib kounye a.');
+      return data;
+    });
+  }).then(function(data){
     if(data.success && data.redirectUrl){ window.location.href = data.redirectUrl; return; }
     throw new Error(data.error || 'PayPal pa disponib');
   }).catch(function(err){
