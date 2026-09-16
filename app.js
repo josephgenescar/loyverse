@@ -15,6 +15,19 @@ var S = {
   }
 };
 
+// Supabase Auth session passed from the landing page. Kept in memory only.
+var AUTH_ACCESS_TOKEN='', AUTH_REFRESH_TOKEN='', AUTH_USER_EMAIL='';
+(function readAuthSession(){
+  var hash=window.location.hash.replace(/^#/,'');
+  if(!hash)return;
+  var params=new URLSearchParams(hash);
+  AUTH_ACCESS_TOKEN=params.get('access_token')||'';
+  AUTH_REFRESH_TOKEN=params.get('refresh_token')||'';
+  if(AUTH_ACCESS_TOKEN){
+    try{var payload=JSON.parse(atob(AUTH_ACCESS_TOKEN.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));AUTH_USER_EMAIL=payload.email||payload.user_metadata&&payload.user_metadata.email||'';}catch(e){}
+  }
+})();
+
 var TRIAL_LIMIT_ARTICLES = 50;
 var TRIAL_LIMIT_SALES = 30;
 var TRIAL_DAYS = 7;
@@ -24,6 +37,16 @@ var LANGUAGE_PACKS = {
   en:{welcome:'Welcome to Konektem 👋',setup:'Set up your workspace in seconds. No account required.',shop:'Business name',cashier:'Cashier name',currency:'Currency',language:'Language',continue:'Continue →',sector:'Your business sector',sectorSub:'The app automatically adapts to your business.',ready:'Everything is ready! 🎉',launch:'🚀 Launch Konektem',quick:'QUICK SETUP',sales:'Sales',receipts:'Receipts',products:'Products',tickets:'Open tickets',clients:'Customers',team:'Team / Cashiers',suppliers:'Suppliers & Purchases',daily:'Daily report',finance:'Financial health',settings:'Settings',shopPlaceholder:'Example: Saint-Louis Pharmacy',cashierPlaceholder:'Example: Jean-Baptiste',currencies:['HTG – Haitian Gourde','USD – US Dollar','EUR – Euro','DOP – Dominican Peso']},
   es:{welcome:'Bienvenido a Konektem 👋',setup:'Configura tu espacio en segundos. No necesitas una cuenta.',shop:'Nombre del negocio',cashier:'Nombre del cajero',currency:'Moneda',language:'Idioma',continue:'Continuar →',sector:'Tu sector de actividad',sectorSub:'La aplicación se adapta automáticamente a tu negocio.',ready:'¡Todo está listo! 🎉',launch:'🚀 Iniciar Konektem',quick:'CONFIGURACIÓN RÁPIDA',sales:'Ventas',receipts:'Recibos',products:'Productos',tickets:'Tickets abiertos',clients:'Clientes',team:'Equipo / Cajeros',suppliers:'Proveedores y Compras',daily:'Informe diario',finance:'Salud financiera',settings:'Configuración',shopPlaceholder:'Ejemplo: Farmacia Saint-Louis',cashierPlaceholder:'Ejemplo: Jean-Baptiste',currencies:['HTG – Gourda haitiana','USD – Dólar estadounidense','EUR – Euro','DOP – Peso dominicano']}
 };
+
+var FINANCE_LABELS = {
+  fr:{title:'Santé financière',summary:'Résumé financier',today:'Aujourd’hui',month:'Ce mois-ci',all:'Tout',expenses:'Dépenses',addExpense:'+ Dépense',payroll:'Paie',paySalary:'+ Payer un salaire',insights:'Indicateurs de décision',revenue:'CHIFFRE D’AFFAIRES',expensesKpi:'DÉPENSES',paidSalary:'SALAIRES PAYÉS',netProfit:'BÉNÉFICE NET',salesCount:'vente(s)',expenseCount:'entrée(s)',payCount:'paiement(s)',grossCost:'Coût des marchandises vendues',grossProfit:'Bénéfice brut',operatingExpenses:'Dépenses opérationnelles',salary:'Salaires',noData:'Aucune donnée pour cette période.',positive:'✅ L’entreprise est rentable. La marge brute est de {margin} % ; continuez à suivre les dépenses pour protéger le bénéfice net.',negative:'⚠️ Les dépenses dépassent le bénéfice brut. Revoyez les dépenses opérationnelles et les prix.',empty:'Ajoutez votre première vente pour obtenir des indicateurs financiers.',operation:'Opération',date:'Date',newExpense:'Nouvelle dépense',description:'Description',category:'Catégorie',amount:'Montant',cancel:'Annuler',save:'Enregistrer',paySalaryTitle:'Payer un salaire',employee:'Employé',salaryAmount:'Montant du salaire',categories:['Opération','Transport','Loyer','Matériel','Taxe','Autre'],savedExpense:'✅ Dépense enregistrée',missingEmployee:'Ajoutez un employé avant de payer un salaire',requiredExpense:'Description et montant obligatoires',requiredEmployee:'Employé et montant obligatoires',savedSalary:'✅ Salaire enregistré'},
+  en:{title:'Financial health',summary:'Financial summary',today:'Today',month:'This month',all:'All time',expenses:'Expenses',addExpense:'+ Expense',payroll:'Payroll',paySalary:'+ Pay salary',insights:'Decision indicators',revenue:'REVENUE',expensesKpi:'EXPENSES',paidSalary:'SALARIES PAID',netProfit:'NET PROFIT',salesCount:'sale(s)',expenseCount:'entry(ies)',payCount:'payment(s)',grossCost:'Cost of goods sold',grossProfit:'Gross profit',operatingExpenses:'Operating expenses',salary:'Salaries',noData:'No data for this period.',positive:'✅ The business is profitable. Gross margin is {margin}%; keep tracking expenses to protect net profit.',negative:'⚠️ Expenses exceed gross profit. Review operating expenses and pricing.',empty:'Add your first sale to get financial indicators.',operation:'Operations',date:'Date',newExpense:'New expense',description:'Description',category:'Category',amount:'Amount',cancel:'Cancel',save:'Save',paySalaryTitle:'Pay salary',employee:'Employee',salaryAmount:'Salary amount',categories:['Operations','Transport','Rent','Materials','Tax','Other'],savedExpense:'✅ Expense saved',missingEmployee:'Add an employee before paying a salary',requiredExpense:'Description and amount are required',requiredEmployee:'Employee and amount are required',savedSalary:'✅ Salary saved'},
+  es:{title:'Salud financiera',summary:'Resumen financiero',today:'Hoy',month:'Este mes',all:'Todo',expenses:'Gastos',addExpense:'+ Gasto',payroll:'Nómina',paySalary:'+ Pagar salario',insights:'Indicadores para decisiones',revenue:'INGRESOS',expensesKpi:'GASTOS',paidSalary:'SALARIOS PAGADOS',netProfit:'BENEFICIO NETO',salesCount:'venta(s)',expenseCount:'registro(s)',payCount:'pago(s)',grossCost:'Costo de mercancía vendida',grossProfit:'Beneficio bruto',operatingExpenses:'Gastos operativos',salary:'Salarios',noData:'No hay datos para este período.',positive:'✅ El negocio es rentable. El margen bruto es {margin}%; sigue controlando los gastos para proteger el beneficio neto.',negative:'⚠️ Los gastos superan el beneficio bruto. Revisa los gastos operativos y los precios.',empty:'Añade tu primera venta para obtener indicadores financieros.',operation:'Operación',date:'Fecha',newExpense:'Nuevo gasto',description:'Descripción',category:'Categoría',amount:'Importe',cancel:'Cancelar',save:'Guardar',paySalaryTitle:'Pagar salario',employee:'Empleado',salaryAmount:'Importe del salario',categories:['Operación','Transporte','Alquiler','Materiales','Impuesto','Otro'],savedExpense:'✅ Gasto guardado',missingEmployee:'Añade un empleado antes de pagar un salario',requiredExpense:'Descripción e importe obligatorios',requiredEmployee:'Empleado e importe obligatorios',savedSalary:'✅ Salario guardado'}
+};
+function financeText(key){
+  var lang=S.settings.language||'fr', pack=FINANCE_LABELS[lang]||FINANCE_LABELS.fr;
+  return pack[key]||FINANCE_LABELS.fr[key]||key;
+}
 
 function setLanguage(lang){
   S.settings.language=LANGUAGE_PACKS[lang]?lang:'fr';
@@ -37,6 +60,10 @@ function applyLanguage(){
     var key=el.getAttribute('data-i18n');
     if(pack[key]) el.textContent=pack[key];
   });
+  document.querySelectorAll('[data-finance-i18n]').forEach(function(el){el.textContent=financeText(el.getAttribute('data-finance-i18n'));});
+  var period=document.getElementById('finance-period');
+  if(period){period.options[0].textContent=financeText('today');period.options[1].textContent=financeText('month');period.options[2].textContent=financeText('all');}
+  if(document.getElementById('view-finance')&&document.getElementById('view-finance').classList.contains('on')) renderFinance();
   var packCurrencies=pack.currencies||[];
   ['ob-cur','s-cur'].forEach(function(id){
     var select=document.getElementById(id);
@@ -317,9 +344,10 @@ var PRIX_MENSUEL = 10;
 var PRIX_ANNUEL  = 100;
 
 function getCurrentUserEmail(){
-  return S.userEmail || (function(){
-    try{ return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }catch(e){ return ''; }
-  })();
+  return S.userEmail||AUTH_USER_EMAIL;
+}
+function appAuthHeaders(){
+  return {'apikey':SUPA_KEY_APP,'Authorization':'Bearer '+(AUTH_ACCESS_TOKEN||SUPA_KEY_APP),'Content-Type':'application/json'};
 }
 
 function doPayPal(){
@@ -2922,6 +2950,7 @@ function financeSales(period){
 }
 
 function renderFinance(){
+  var l=function(key){return financeText(key);};
   var periodEl=document.getElementById('finance-period');
   var period=periodEl?periodEl.value:'month';
   var sales=financeSales(period);
@@ -2933,34 +2962,34 @@ function renderFinance(){
   var payrollTotal=payroll.reduce(function(t,p){return t+Number(p.amount||0);},0);
   var gross=revenue-cost, net=gross-expenseTotal-payrollTotal;
   var dateEl=document.getElementById('finance-date');
-  if(dateEl) dateEl.textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  if(dateEl) dateEl.textContent=new Date().toLocaleDateString(S.settings.language==='en'?'en-US':S.settings.language==='es'?'es-ES':'fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   var kpi=document.getElementById('finance-kpis');
   if(kpi) kpi.innerHTML=[
-    ['💵','REVNI',revenue,'#22c55e',sales.length+' vant'],
-    ['💸','DEPANS',expenseTotal,'#f97316',expenses.length+' antre'],
-    ['👥','SALÈ PEYE',payrollTotal,'#8b5cf6',payroll.length+' peman'],
-    ['📈','PWOFI NET',net,net>=0?'#16a34a':'#ef4444','Revni − tout depans']
+    ['💵',l('revenue'),revenue,'#22c55e',sales.length+' '+l('salesCount')],
+    ['💸',l('expensesKpi'),expenseTotal,'#f97316',expenses.length+' '+l('expenseCount')],
+    ['👥',l('paidSalary'),payrollTotal,'#8b5cf6',payroll.length+' '+l('payCount')],
+    ['📈',l('netProfit'),net,net>=0?'#16a34a':'#ef4444',l('grossProfit')+' − '+l('expenses')]
   ].map(function(k){return '<div class="kpi" style="border-left-color:'+k[3]+'"><div class="kpi-lbl">'+k[0]+' '+k[1]+'</div><div class="kpi-val" style="color:'+k[3]+'">'+fmt(k[2])+'</div><div class="kpi-sub">'+k[4]+'</div></div>';}).join('');
   var summary=document.getElementById('finance-summary');
   if(summary) summary.innerHTML='<div style="display:grid;gap:7px;font-size:13px;">'
-    +'<div class="trow"><span>Revni total</span><strong style="color:#22c55e">'+fmt(revenue)+'</strong></div>'
-    +'<div class="trow"><span>Coût machandiz ki vann</span><strong style="color:#f59e0b">− '+fmt(cost)+'</strong></div>'
-    +'<div class="trow"><span>Pwofi brit</span><strong>'+fmt(gross)+'</strong></div>'
-    +'<div class="trow"><span>Depans operasyonèl</span><strong style="color:#f97316">− '+fmt(expenseTotal)+'</strong></div>'
-    +'<div class="trow"><span>Salè</span><strong style="color:#8b5cf6">− '+fmt(payrollTotal)+'</strong></div>'
-    +'<div class="trow main"><span>PWOFI NET</span><strong style="color:'+(net>=0?'#16a34a':'#ef4444')+'">'+fmt(net)+'</strong></div></div>';
+    +'<div class="trow"><span>'+l('revenue')+'</span><strong style="color:#22c55e">'+fmt(revenue)+'</strong></div>'
+    +'<div class="trow"><span>'+l('grossCost')+'</span><strong style="color:#f59e0b">− '+fmt(cost)+'</strong></div>'
+    +'<div class="trow"><span>'+l('grossProfit')+'</span><strong>'+fmt(gross)+'</strong></div>'
+    +'<div class="trow"><span>'+l('operatingExpenses')+'</span><strong style="color:#f97316">− '+fmt(expenseTotal)+'</strong></div>'
+    +'<div class="trow"><span>'+l('salary')+'</span><strong style="color:#8b5cf6">− '+fmt(payrollTotal)+'</strong></div>'
+    +'<div class="trow main"><span>'+l('netProfit')+'</span><strong style="color:'+(net>=0?'#16a34a':'#ef4444')+'">'+fmt(net)+'</strong></div></div>';
   renderFinanceList('finance-expenses',expenses,'expense');
   renderFinanceList('finance-payroll',payroll,'payroll');
   var insights=document.getElementById('finance-insights');
-  if(insights) insights.innerHTML=net<0?'⚠️ Depans yo pi wo pase pwofi brit la. Revize depans operasyonèl ak pri pwodwi yo.':(revenue?'✅ Biznis la pozitif. Marj brit la se '+Math.round((gross/revenue)*100)+'%; kontinye swiv depans yo pou pwoteje pwofi net la.':'Ajoute premye lavant ou pou jwenn endikatè finansye.');
+  if(insights){var margin=Math.round((gross/revenue)*100);insights.innerHTML=net<0?l('negative'):(revenue?l('positive').replace('{margin}',margin):l('empty'));}
 }
 
 function renderFinanceList(id,list,type){
   var el=document.getElementById(id); if(!el)return;
-  if(!list.length){el.innerHTML='<div style="color:var(--text3);font-size:12px;padding:14px 0;text-align:center">Pa gen done pou peryòd sa a.</div>';return;}
+  if(!list.length){el.innerHTML='<div style="color:var(--text3);font-size:12px;padding:14px 0;text-align:center">'+financeText('noData')+'</div>';return;}
   el.innerHTML=list.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);}).slice(0,6).map(function(item){
-    var label=type==='expense'?(item.description||item.category||'Depans'):(item.employeeName||'Anplwaye');
-    var sub=type==='expense'?(item.category||'Jeneral'):new Date(item.date).toLocaleDateString('fr-FR');
+    var label=type==='expense'?(item.description||item.category||financeText('expenses')):(item.employeeName||financeText('payroll'));
+    var sub=type==='expense'?(item.category||financeText('operation')):new Date(item.date).toLocaleDateString(S.settings.language==='en'?'en-US':S.settings.language==='es'?'es-ES':'fr-FR');
     return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);"><div style="flex:1"><strong style="font-size:12px">'+label+'</strong><div style="font-size:10px;color:var(--text3)">'+sub+'</div></div><strong style="font-size:12px;color:'+(type==='expense'?'#f97316':'#8b5cf6')+'">− '+fmt(item.amount)+'</strong></div>';
   }).join('');
 }
@@ -2969,7 +2998,7 @@ function openFinanceModal(title,html,onSave){
   var old=document.getElementById('finance-form-mov');if(old)old.remove();
   var mov=document.createElement('div');mov.id='finance-form-mov';mov.className='mov show';
   var inner=document.createElement('div');inner.className='modal';inner.style.maxWidth='430px';
-  inner.innerHTML='<h3>'+title+'</h3>'+html+'<div class="mfooter"><button class="btn-cancel" type="button" id="finance-cancel">Anile</button><button class="btn-g" type="button" id="finance-save">Anrejistre</button></div>';
+  inner.innerHTML='<h3>'+title+'</h3>'+html+'<div class="mfooter"><button class="btn-cancel" type="button" id="finance-cancel">'+financeText('cancel')+'</button><button class="btn-g" type="button" id="finance-save">'+financeText('save')+'</button></div>';
   mov.appendChild(inner);document.body.appendChild(mov);
   mov.addEventListener('click',function(e){if(e.target===mov)mov.remove();});
   document.getElementById('finance-cancel').onclick=function(){mov.remove();};
@@ -2977,20 +3006,21 @@ function openFinanceModal(title,html,onSave){
 }
 
 function openExpenseForm(){
-  openFinanceModal('Nouvo depans','<div class="fg"><label class="flbl">Deskripsyon *</label><input class="finp" id="fx-desc" placeholder="Lwaye, transpò, materyèl..."></div><div class="f2"><div class="fg"><label class="flbl">Kategori</label><select class="fsel" id="fx-cat"><option>Operasyon</option><option>Transpò</option><option>Lwaye</option><option>Materyèl</option><option>Tax</option><option>Lòt</option></select></div><div class="fg"><label class="flbl">Montan *</label><input class="finp" id="fx-amount" type="number" min="0" placeholder="0"></div></div>',function(){
+  var categories=(FINANCE_LABELS[S.settings.language||'fr']||FINANCE_LABELS.fr).categories||[];
+  openFinanceModal(financeText('newExpense'),'<div class="fg"><label class="flbl">'+financeText('description')+' *</label><input class="finp" id="fx-desc" placeholder="..."></div><div class="f2"><div class="fg"><label class="flbl">'+financeText('category')+'</label><select class="fsel" id="fx-cat">'+categories.map(function(category){return '<option>'+category+'</option>';}).join('')+'</select></div><div class="fg"><label class="flbl">'+financeText('amount')+' *</label><input class="finp" id="fx-amount" type="number" min="0" placeholder="0"></div></div>',function(){
     var desc=document.getElementById('fx-desc').value.trim(),amount=Number(document.getElementById('fx-amount').value);
-    if(!desc||!amount){notif('Deskripsyon ak montan obligatwa','err');return false;}
-    S.depenses.unshift({id:uid(),date:new Date().toISOString(),description:desc,category:document.getElementById('fx-cat').value,amount:amount});save();renderFinance();if(isPremium())pushBizDataToSupabase(getCurrentUserEmail());notif('✅ Depans anrejistre','ok');return true;
+    if(!desc||!amount){notif(financeText('requiredExpense'),'err');return false;}
+    S.depenses.unshift({id:uid(),date:new Date().toISOString(),description:desc,category:document.getElementById('fx-cat').value,amount:amount});save();renderFinance();if(isPremium())pushBizDataToSupabase(getCurrentUserEmail());notif(financeText('savedExpense'),'ok');return true;
   });
 }
 
 function openPayrollForm(){
   var options=(S.employees||[]).map(function(e){return '<option value="'+e.id+'">'+e.name+'</option>';}).join('');
-  if(!options){notif('Ajoute yon anplwaye anvan ou peye salè','err');return;}
-  openFinanceModal('Peye salè','<div class="fg"><label class="flbl">Anplwaye *</label><select class="fsel" id="py-emp">'+options+'</select></div><div class="fg"><label class="flbl">Montan salè *</label><input class="finp" id="py-amount" type="number" min="0" placeholder="0"></div>',function(){
+  if(!options){notif(financeText('missingEmployee'),'err');return;}
+  openFinanceModal(financeText('paySalaryTitle'),'<div class="fg"><label class="flbl">'+financeText('employee')+' *</label><select class="fsel" id="py-emp">'+options+'</select></div><div class="fg"><label class="flbl">'+financeText('salaryAmount')+' *</label><input class="finp" id="py-amount" type="number" min="0" placeholder="0"></div>',function(){
     var emp=(S.employees||[]).find(function(e){return e.id===document.getElementById('py-emp').value;}),amount=Number(document.getElementById('py-amount').value);
-    if(!emp||!amount){notif('Anplwaye ak montan obligatwa','err');return false;}
-    S.payroll.unshift({id:uid(),date:new Date().toISOString(),employeeId:emp.id,employeeName:emp.name,amount:amount});save();renderFinance();if(isPremium())pushBizDataToSupabase(getCurrentUserEmail());notif('✅ Salè anrejistre','ok');return true;
+    if(!emp||!amount){notif(financeText('requiredEmployee'),'err');return false;}
+    S.payroll.unshift({id:uid(),date:new Date().toISOString(),employeeId:emp.id,employeeName:emp.name,amount:amount});save();renderFinance();if(isPremium())pushBizDataToSupabase(getCurrentUserEmail());notif(financeText('savedSalary'),'ok');return true;
   });
 }
 

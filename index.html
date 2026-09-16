@@ -187,14 +187,14 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
 .screen.hidden{display:none;}
 
 /* AUTH CARD */
-.auth-card{background:rgba(255,255,255,.03);border:1px solid var(--glass-border);border-radius:20px;padding:34px;width:100%;max-width:420px;box-shadow:0 40px 100px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.05);position:relative;backdrop-filter:blur(30px);}
+.auth-card{background:linear-gradient(145deg,rgba(18,38,54,.92),rgba(8,17,29,.96));border:1px solid rgba(245,199,107,.28);border-radius:24px;padding:34px;width:100%;max-width:440px;box-shadow:0 40px 100px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.12);position:relative;backdrop-filter:blur(30px);}
 .auth-logo{text-align:center;margin-bottom:22px;}
 .auth-title{font-size:21px;font-weight:800;font-family:'Syne',sans-serif;text-align:center;margin-bottom:5px;}
 .auth-sub{font-size:13px;color:var(--white50);text-align:center;margin-bottom:24px;}
 .auth-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
 .auth-label{font-size:11px;font-weight:700;color:var(--white50);text-transform:uppercase;letter-spacing:.3px;}
-.auth-input{background:rgba(255,255,255,.05);border:1.5px solid var(--glass-border);border-radius:var(--rxs);padding:11px 13px;color:var(--white);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;width:100%;}
-.auth-input:focus{border-color:var(--green);background:rgba(255,255,255,.08);}
+.auth-input{background:rgba(3,17,27,.6);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;padding:13px 14px;color:var(--white);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s,width .2s;width:100%;}
+.auth-input:focus{border-color:#f5c76b;background:rgba(3,17,27,.82);box-shadow:0 0 0 4px rgba(245,199,107,.1);}
 .auth-input::placeholder{color:rgba(255,255,255,.22);}
 .auth-btn{width:100%;padding:13px;border:none;border-radius:var(--rsm);background:linear-gradient(135deg,var(--green),var(--green2));color:var(--g1);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:4px;transition:all .2s;}
 .auth-btn:hover{background:linear-gradient(135deg,var(--green3),var(--green));transform:translateY(-1px);box-shadow:0 8px 25px rgba(34,197,94,.3);}
@@ -202,7 +202,7 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
 .auth-switch{text-align:center;font-size:13px;color:var(--white50);margin-top:16px;}
 .auth-switch a{color:var(--green3);cursor:pointer;font-weight:700;}
 .auth-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.05);border:none;color:var(--white);width:27px;height:27px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
-.trial-info-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:9px;padding:11px 13px;display:flex;align-items:center;gap:9px;margin-bottom:16px;backdrop-filter:blur(10px);}
+.trial-info-box{background:linear-gradient(135deg,rgba(245,158,11,.13),rgba(45,212,191,.06));border:1px solid rgba(245,199,107,.3);border-radius:12px;padding:13px 14px;display:flex;align-items:center;gap:9px;margin-bottom:18px;backdrop-filter:blur(10px);}
 .ti-text{flex:1;font-size:12px;color:rgba(255,255,255,.65);}
 .ti-text strong{display:block;font-size:13px;color:var(--gold2);margin-bottom:1px;}
 .ti-prog{height:4px;background:rgba(245,158,11,.2);border-radius:2px;margin-top:7px;overflow:hidden;}
@@ -630,13 +630,12 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
     <button class="auth-close" onclick="hideScreen('signup')">✕</button>
     <div class="auth-logo"><svg width="40" height="40" viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="16" stroke="#22c55e" stroke-width="1.5" opacity=".4"/><path d="M5 17 A12 12 0 0 1 29 17" stroke="#22c55e" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="17" cy="17" r="4" fill="#22c55e"/><circle cx="6" cy="17" r="2.5" fill="#4ade80" opacity=".8"/><circle cx="28" cy="17" r="2.5" fill="#4ade80" opacity=".8"/><line x1="8.5" y1="17" x2="13" y2="17" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/><line x1="21" y1="17" x2="25.5" y2="17" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></svg></div>
     <div class="auth-title">Créer votre compte</div>
-    <div class="auth-sub">5 jours d'essai gratuit · Aucune carte requise</div>
-    <div class="trial-info-box"><span style="font-size:18px">🎁</span><div class="ti-text"><strong>Essai Premium — 5 jours gratuits</strong>Toutes les fonctionnalités incluses<div class="ti-prog"><div class="ti-fill"></div></div></div></div>
+    <div class="auth-sub">7 jours d'essai gratuit · Aucune carte requise</div>
+    <div class="trial-info-box"><span style="font-size:18px">🎁</span><div class="ti-text"><strong>Essai Premium — 7 jours gratuits</strong>Toutes les fonctionnalités incluses<div class="ti-prog"><div class="ti-fill"></div></div></div></div>
     <div class="auth-field"><label class="auth-label">Nom complet</label><input class="auth-input" id="su-name" placeholder="Jean-Baptiste Pierre"></div>
     <div class="auth-field"><label class="auth-label">Email</label><input class="auth-input" id="su-email" type="email" placeholder="jean@exemple.com"></div>
 
     <div class="auth-field"><label class="auth-label">Téléphone <span style="color:#ef4444">*</span></label><input class="auth-input" id="su-phone" type="tel" placeholder="509 4886 8964" required></div>
-    <div class="auth-field"><label class="auth-label">Numéro de téléphone</label><input class="auth-input" id="su-phone" type="tel" placeholder="509 XX XX XX XX"></div>
 
     <div class="auth-field"><label class="auth-label">Mot de passe</label><input class="auth-input" id="su-pass" type="password" placeholder="8 caractères minimum"></div>
     <button class="auth-btn" onclick="doSignup()">Créer mon compte gratuit →</button>
@@ -876,8 +875,8 @@ document.querySelectorAll('.screen').forEach(function(s) {
   });
 });
 
-// AUTH
-function doSignup() {
+// LEGACY AUTH DISABLED: Supabase Auth functions are defined below.
+/* function legacyDoSignup() {
   var name  = document.getElementById('su-name').value.trim();
   var email = document.getElementById('su-email').value.trim().toLowerCase();
   var phone = document.getElementById('su-phone').value.trim();
@@ -916,7 +915,7 @@ function doSignup() {
       name: name, email: email, phone: phone, pass: passHash,
       startDate: new Date().toISOString(), plan: 'trial', trialDays: 5
     };
-    localStorage.setItem('konektem_user', JSON.stringify(userData));
+    legacyStorageDisabled('konektem_user', userData);
 
     // ── Enregistrer dans Supabase ──
     fetch(SUPA_URL + '/rest/v1/konektem_users', {
@@ -949,7 +948,7 @@ function doSignup() {
   });
 }
 
-function doSignin() {
+function legacyDoSignin() {
   var email = document.getElementById('si-email').value.trim().toLowerCase();
   var pass  = document.getElementById('si-pass').value;
   if (!email || !pass) { showAuthErr('signin','Remplissez email et mot de passe.'); return; }
@@ -960,7 +959,7 @@ function doSignin() {
   var passHash = btoa(unescape(encodeURIComponent(pass)));
 
   // ── ETAP 1: Lokal anvan (pi rapid) ──
-  var stored = localStorage.getItem('konektem_user');
+  var stored = legacyStorageDisabled('konektem_user');
   if(stored){
     try{
       var u = JSON.parse(stored);
@@ -975,7 +974,7 @@ function doSignin() {
         // Pa gen modpas lokal — pèmèt konekte (kont ansyen san modpas)
         if(!u.pass){
           u.pass = passHash;
-          localStorage.setItem('konektem_user', JSON.stringify(u));
+          legacyStorageDisabled('konektem_user', u);
           if(btn){ btn.textContent = 'Se connecter →'; btn.disabled = false; }
           hideScreen('signin');
           setTimeout(function(){ window.location.href = 'app.html'; }, 200);
@@ -1022,7 +1021,7 @@ function doSignin() {
       premiumPlan: remote.premium_plan || null,
       status:      remote.status || 'active'
     };
-    localStorage.setItem('konektem_user', JSON.stringify(userData));
+    legacyStorageDisabled('konektem_user', userData);
 
     // Sync settings konektem_app pou app.html
     var appStored = localStorage.getItem('konektem_app');
@@ -1059,7 +1058,7 @@ function doSignin() {
     }
     showAuthErr('signin','Erreur de connexion. Vérifiez votre internet et réessayez.');
   });
-}
+} */
 // Afficher erreur dans le formulaire (pas un alert)
 function showAuthErr(form, msg) {
   var id = 'auth-err-' + form;
@@ -1079,33 +1078,7 @@ function showAuthErr(form, msg) {
 
 // Vérifier si déjà connecté au chargement
 (function(){
-  var u = localStorage.getItem('konektem_user');
-  if(u){
-    try {
-      var user = JSON.parse(u);
-      // Remplacer le bouton "Essai gratuit" par "Accéder à mon compte"
-      var navBtns = document.querySelectorAll('.btn-primary');
-      navBtns.forEach(function(btn){
-        if(btn.textContent.indexOf('Essai') > -1 || btn.textContent.indexOf('gratuit') > -1){
-          btn.textContent = 'Mon compte →';
-          btn.onclick = function(){ window.location.href = 'app.html'; };
-        }
-      });
-      // Remplacer les boutons hero aussi
-      var heroBtns = document.querySelectorAll('.btn-hero.green');
-      heroBtns.forEach(function(btn){
-        if(btn.textContent.indexOf('Démarrer') > -1 || btn.textContent.indexOf('gratuit') > -1){
-          btn.textContent = 'Accéder à mon compte →';
-          btn.onclick = function(){ window.location.href = 'app.html'; };
-        }
-      });
-    } catch(e){}
-  }
-})();
-
-// Vérifier si déjà connecté au chargement
-(function(){
-  var u = localStorage.getItem('konektem_user');
+  var u = '';
   if(!u) return;
   try {
     var user = JSON.parse(u);
@@ -1125,6 +1098,48 @@ function showAuthErr(form, msg) {
     });
   } catch(e){}
 })();
+
+// Secure Supabase Auth flow. Passwords never enter localStorage or the custom REST table.
+function authHeaders(token){
+  return {'apikey':SUPA_KEY,'Authorization':'Bearer '+(token||SUPA_KEY),'Content-Type':'application/json'};
+}
+function redirectToAppWithSession(session){
+  if(!session||!session.access_token){window.location.href='app.html';return;}
+  window.location.href='app.html#access_token='+encodeURIComponent(session.access_token)+'&refresh_token='+encodeURIComponent(session.refresh_token||'');
+}
+function doSignup(){
+  var name=document.getElementById('su-name').value.trim();
+  var email=document.getElementById('su-email').value.trim().toLowerCase();
+  var phone=document.getElementById('su-phone').value.trim();
+  var pass=document.getElementById('su-pass').value;
+  if(!name||!email||!phone||!pass){showAuthErr('signup','Veuillez remplir tous les champs.');return;}
+  if(pass.length<8){showAuthErr('signup','Mot de passe : 8 caractères minimum.');return;}
+  if(!email.includes('@')||!email.includes('.')){showAuthErr('signup','Adresse email invalide.');return;}
+  var btn=document.querySelector('#screen-signup .auth-btn');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Création sécurisée...';}
+  fetch(SUPA_URL+'/auth/v1/signup',{method:'POST',headers:authHeaders(),body:JSON.stringify({email:email,password:pass,data:{full_name:name,phone:phone}})})
+    .then(function(r){return r.json().then(function(data){if(!r.ok)throw new Error(data.msg||data.error_description||'Impossible de créer le compte.');return data;});})
+    .then(function(data){
+      var token=data.access_token;
+      if(token){
+        return fetch(SUPA_URL+'/rest/v1/konektem_users',{method:'POST',headers:Object.assign({},authHeaders(token),{'Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({email:email,bizname:name,phone:phone,plan:'trial',status:'active',trial_start:new Date().toISOString(),created_at:new Date().toISOString()})}).catch(function(){}).then(function(){redirectToAppWithSession(data);});
+      }
+      if(btn){btn.disabled=false;btn.textContent='Créer mon compte gratuit →';}
+      showAuthErr('signup','Compte créé. Vérifiez votre email pour confirmer votre inscription, puis connectez-vous.');
+    })
+    .catch(function(err){if(btn){btn.disabled=false;btn.textContent='Créer mon compte gratuit →';}showAuthErr('signup',err.message||'Erreur de création.');});
+}
+function doSignin(){
+  var email=document.getElementById('si-email').value.trim().toLowerCase();
+  var pass=document.getElementById('si-pass').value;
+  if(!email||!pass){showAuthErr('signin','Remplissez email et mot de passe.');return;}
+  var btn=document.querySelector('#screen-signin .auth-btn');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Connexion sécurisée...';}
+  fetch(SUPA_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:authHeaders(),body:JSON.stringify({email:email,password:pass})})
+    .then(function(r){return r.json().then(function(data){if(!r.ok)throw new Error(data.error_description||data.msg||'Email ou mot de passe incorrect.');return data;});})
+    .then(function(data){redirectToAppWithSession(data);})
+    .catch(function(err){if(btn){btn.disabled=false;btn.textContent='Se connecter →';}showAuthErr('signin',err.message||'Erreur de connexion.');});
+}
 
 // PREMIUM
 var landingSelPlan = 'mensuel';
@@ -1167,8 +1182,11 @@ function landingDoPayPal(){
   var plan = landingSelPlan || 'mensuel';
   var prix = plan === 'annuel' ? LANDING_PRIX_ANN : LANDING_PRIX_MENS;
   var userEmail = '';
-  try{ userEmail = JSON.parse(localStorage.getItem('konektem_user') || '{}').email || ''; }catch(e){}
-  if(!userEmail) userEmail = window.prompt('Antre email kont Konektem ou pou peman PayPal la:') || '';
+  try{
+    var token=new URLSearchParams(window.location.hash.replace(/^#/,'')).get('access_token')||'';
+    var payload=token?JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))):null;
+    userEmail=payload&&(payload.email||payload.user_metadata&&payload.user_metadata.email)||'';
+  }catch(e){}
   if(!userEmail || userEmail.indexOf('@') === -1){
     window.alert('Tanpri antre yon email valid pou kont lan.');
     return;
