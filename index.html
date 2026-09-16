@@ -1143,21 +1143,26 @@ function doSignin(){
     });
 }
 function migrateLegacyAccount(email,pass,btn,loginError){
-  var lookupUrl=SUPA_URL+'/rest/v1/konektem_users?email=eq.'+encodeURIComponent(email)+'&select=email,bizname,phone,secteur,plan,status';
+  var lookupUrl=SUPA_URL+'/rest/v1/konektem_users?email=eq.'+encodeURIComponent(email)+'&select=email,bizname';
   fetch(lookupUrl,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}})
-    .then(function(response){return response.json();})
+    .then(function(response){
+      return response.json().then(function(data){
+        if(!response.ok) throw new Error('Supabase legacy lookup '+response.status);
+        return data;
+      });
+    })
     .then(function(rows){
       if(!rows||!rows.length) throw loginError||new Error('Email ou mot de passe incorrect.');
       var legacy=rows[0];
       var signupBody={
         email:email,
         password:pass,
-        data:{full_name:legacy.bizname||email,phone:legacy.phone||''}
+        data:{full_name:legacy.bizname||email,legacy_account:true}
       };
       return fetch(SUPA_URL+'/auth/v1/signup',{method:'POST',headers:authHeaders(),body:JSON.stringify(signupBody)})
         .then(function(response){
           return response.json().then(function(data){
-            if(!response.ok) throw new Error(data.msg||data.error_description||'Ce compte existe déjà dans Supabase Auth. Utilisez le mot de passe de votre compte.');
+            if(!response.ok) throw new Error(data.msg||data.error_description||'Ce compte existe déjà dans Supabase Auth. Utilisez la récupération de mot de passe.');
             return data;
           });
         })
@@ -1169,7 +1174,10 @@ function migrateLegacyAccount(email,pass,btn,loginError){
     })
     .catch(function(err){
       if(btn){btn.disabled=false;btn.textContent='Se connecter →';}
-      showAuthErr('signin',err.message||'Email ou mot de passe incorrect.');
+      var msg=err.message==='Supabase legacy lookup 400'
+        ? 'Ancien compte trouvé, mais sa migration nécessite une nouvelle activation. Utilisez « Créer un compte » avec ce même email ou contactez le support.'
+        : (err.message||'Email ou mot de passe incorrect.');
+      showAuthErr('signin',msg);
     });
 }
 
