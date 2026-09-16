@@ -3,11 +3,12 @@
 // ════════════ STATE ════════════
 var S = {
   products:[], categories:[], sales:[], clients:[], tickets:[], cart:[],
-  connections:[], csvBuf:[],
+  connections:[], csvBuf:[], depenses:[], payroll:[],
   editProd:null, viewSale:null, editClient:null, editEmp:null, activeCat:'',
   employees:[], curImg:'', selPlanId:'mensuel', selPlanTxt:'2 500 HTG/mois',
   settings:{
     bizname:'', cashier:'', currency:'HTG', sector:'',
+    language:'fr',
     tax:0, receiptmsg:'Merci pour votre confiance !',
     showReceipt:true, onboardingDone:false,
     plan:'trial', trialStart:null
@@ -16,7 +17,37 @@ var S = {
 
 var TRIAL_LIMIT_ARTICLES = 50;
 var TRIAL_LIMIT_SALES = 30;
-var TRIAL_DAYS = 14;
+var TRIAL_DAYS = 7;
+
+var LANGUAGE_PACKS = {
+  fr:{welcome:'Bienvenue sur Konektem 👋',setup:'Configurez votre espace en quelques secondes. Aucun compte requis.',shop:'Nom de votre boutique',cashier:'Nom du caissier',currency:'Devise',language:'Langue',continue:'Continuer →',sector:'Votre secteur d’activité',sectorSub:'L’application s’adapte automatiquement à votre domaine.',ready:'Tout est prêt ! 🎉',launch:'🚀 Lancer Konektem',quick:'CONFIGURATION RAPIDE',sales:'Vente',receipts:'Reçus',products:'Articles',tickets:'Tickets ouverts',clients:'Clients',team:'Équipe / Caissiers',suppliers:'Fournisseurs & Achats',daily:'Rapport journalier',finance:'Santé financière',settings:'Paramètres',shopPlaceholder:'Ex: Pharmacie Saint-Louis',cashierPlaceholder:'Ex: Jean-Baptiste',currencies:['HTG – Gourde Haïtienne','USD – Dollar Américain','EUR – Euro','DOP – Peso Dominicain']},
+  en:{welcome:'Welcome to Konektem 👋',setup:'Set up your workspace in seconds. No account required.',shop:'Business name',cashier:'Cashier name',currency:'Currency',language:'Language',continue:'Continue →',sector:'Your business sector',sectorSub:'The app automatically adapts to your business.',ready:'Everything is ready! 🎉',launch:'🚀 Launch Konektem',quick:'QUICK SETUP',sales:'Sales',receipts:'Receipts',products:'Products',tickets:'Open tickets',clients:'Customers',team:'Team / Cashiers',suppliers:'Suppliers & Purchases',daily:'Daily report',finance:'Financial health',settings:'Settings',shopPlaceholder:'Example: Saint-Louis Pharmacy',cashierPlaceholder:'Example: Jean-Baptiste',currencies:['HTG – Haitian Gourde','USD – US Dollar','EUR – Euro','DOP – Dominican Peso']},
+  es:{welcome:'Bienvenido a Konektem 👋',setup:'Configura tu espacio en segundos. No necesitas una cuenta.',shop:'Nombre del negocio',cashier:'Nombre del cajero',currency:'Moneda',language:'Idioma',continue:'Continuar →',sector:'Tu sector de actividad',sectorSub:'La aplicación se adapta automáticamente a tu negocio.',ready:'¡Todo está listo! 🎉',launch:'🚀 Iniciar Konektem',quick:'CONFIGURACIÓN RÁPIDA',sales:'Ventas',receipts:'Recibos',products:'Productos',tickets:'Tickets abiertos',clients:'Clientes',team:'Equipo / Cajeros',suppliers:'Proveedores y Compras',daily:'Informe diario',finance:'Salud financiera',settings:'Configuración',shopPlaceholder:'Ejemplo: Farmacia Saint-Louis',cashierPlaceholder:'Ejemplo: Jean-Baptiste',currencies:['HTG – Gourda haitiana','USD – Dólar estadounidense','EUR – Euro','DOP – Peso dominicano']}
+};
+
+function setLanguage(lang){
+  S.settings.language=LANGUAGE_PACKS[lang]?lang:'fr';
+  applyLanguage();
+  save();
+}
+function applyLanguage(){
+  var lang=S.settings.language||'fr', pack=LANGUAGE_PACKS[lang]||LANGUAGE_PACKS.fr;
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var key=el.getAttribute('data-i18n');
+    if(pack[key]) el.textContent=pack[key];
+  });
+  var packCurrencies=pack.currencies||[];
+  ['ob-cur','s-cur'].forEach(function(id){
+    var select=document.getElementById(id);
+    if(select) Array.prototype.forEach.call(select.options,function(option,index){if(packCurrencies[index]) option.textContent=packCurrencies[index];});
+  });
+  var shopInput=document.getElementById('ob-biz'), cashInput=document.getElementById('ob-cash');
+  if(shopInput) shopInput.placeholder=pack.shopPlaceholder;
+  if(cashInput) cashInput.placeholder=pack.cashierPlaceholder;
+  var langEls=document.querySelectorAll('#ob-lang,#s-lang');
+  langEls.forEach(function(el){el.value=lang;});
+}
 
 var SECTOR_LABELS = {
   marche:'🛒 Marché / Épicerie',
@@ -138,9 +169,14 @@ function load(){
   if(!S.csvBuf) S.csvBuf=[];
   S.activeCat='';
   if(!S.settings.currency) S.settings.currency='HTG';
+  var globalLanguage='';
+  try{globalLanguage=localStorage.getItem('konektem_language')||'';}catch(e){}
+  if(globalLanguage&&LANGUAGE_PACKS[globalLanguage]) S.settings.language=globalLanguage;
   if(!S.employees)    S.employees=[];
   if(!S.fournisseurs) S.fournisseurs=[];
   if(!S.achats)       S.achats=[];
+  if(!S.depenses)     S.depenses=[];
+  if(!S.payroll)      S.payroll=[];
   if(!S.settings.hasOwnProperty('askLogin')) S.settings.askLogin=false;
   if(!S.settings.hasOwnProperty('askLoginAlways')) S.settings.askLoginAlways=false;
 }
@@ -187,7 +223,7 @@ function showExpiredWall(){
   var h = document.createElement('div');
   h.innerHTML = '<div style="font-size:50px;margin-bottom:14px;">⏰</div>'
     + '<div style="font-family:Syne,sans-serif;font-size:22px;font-weight:800;color:#fff;margin-bottom:10px;">Essai termine</div>'
-    + '<div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px;line-height:1.6;">Votre periode d essai de 5 jours est termine.<br>Passez au Premium pour continuer a utiliser Konektem.</div>';
+    + '<div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px;line-height:1.6;">Votre periode d essai de '+TRIAL_DAYS+' jours est termine.<br>Passez au Premium pour continuer a utiliser Konektem.</div>';
 
   // Bouton peman
   var btn = document.createElement('button');
@@ -779,6 +815,10 @@ function obBack(s){goObStep(s-1);}
 function goObStep(n){
   ['os0','os1','os2'].forEach(function(id,i){document.getElementById(id).classList.toggle('on',i===n);});
   ['d0','d1','d2'].forEach(function(id,i){document.getElementById(id).classList.toggle('on',i===n);});
+  var label=document.getElementById('ob-step-label');
+  if(label) label.textContent=(n+1)+' / 3';
+  var trialEl=document.getElementById('ob-trial-days');
+  if(trialEl) trialEl.textContent=TRIAL_DAYS;
 }
 function selSec(el,sec){
   document.querySelectorAll('.sec-card').forEach(function(c){c.classList.remove('sel');});
@@ -909,11 +949,7 @@ function syncUserToSupabase(){
         updateTrialBar();
       }
 
-      // ── SYNC TRIAL DAYS depi admin ──
-      if(remote.trial_days && remote.trial_days !== TRIAL_DAYS){
-        TRIAL_DAYS = remote.trial_days;
-        updateTrialBar();
-      }
+      // Trial la rete fiks sou 7 jou pou tout nouvo kont.
 
       // ── MESAJ GLOBAL depi admin ──
       if(remote.message_global && remote.message_global !== S.settings.lastGlobalMsg){
@@ -984,6 +1020,10 @@ function pushBizDataToSupabase(email){
     sales:     JSON.stringify((S.sales || []).slice(0, 500)), // dènye 500
     clients:   JSON.stringify(S.clients || []),
     categories: JSON.stringify(S.categories || []),
+    fournisseurs: JSON.stringify(S.fournisseurs || []),
+    achats:     JSON.stringify(S.achats || []),
+    depenses:   JSON.stringify(S.depenses || []),
+    payroll:    JSON.stringify(S.payroll || []),
     employees: JSON.stringify((S.employees || []).map(function(e){
       // Pa voye PIN nan Supabase pou sekirite
       return {id:e.id, name:e.name, role:e.role, tel:e.tel};
@@ -1032,10 +1072,18 @@ function pullBizDataFromSupabase(email, onDone){
         var sales = JSON.parse(biz.sales || '[]');
         var clients = JSON.parse(biz.clients || '[]');
         var cats  = JSON.parse(biz.categories || '[]');
+        var fourns = JSON.parse(biz.fournisseurs || '[]');
+        var achats = JSON.parse(biz.achats || '[]');
+        var depenses = JSON.parse(biz.depenses || '[]');
+        var payroll = JSON.parse(biz.payroll || '[]');
         if(prods.length)   S.products   = prods;
         if(sales.length)   S.sales      = sales;
         if(clients.length) S.clients    = clients;
         if(cats.length)    S.categories = cats;
+        if(fourns.length)  S.fournisseurs = fourns;
+        if(achats.length)  S.achats = achats;
+        if(depenses.length) S.depenses = depenses;
+        if(payroll.length)  S.payroll = payroll;
         S.settings.lastBizSync = biz.updated_at;
         save();
         console.log('[Konektem] BizData pulled:', prods.length, 'prods,', sales.length, 'sales');
@@ -1301,6 +1349,7 @@ function startApp(){
   document.getElementById('screen-ob').classList.add('hidden');
   var app=document.getElementById('screen-app');
   app.style.display='flex'; app.style.flexDirection='column'; app.style.height='100%';
+  applyLanguage();
   // Démare clock sèlman apre DOM prèt
   tick(); setInterval(tick, 1000);
   updateTopbar(); updateTrialBar();
@@ -1458,9 +1507,10 @@ function nav(view,el){
   showView(view);
 }
 function showView(v){
+  if(v==='finance' && !can('finance')){ notif('Aksè finans rezève pou gérant ak propriétaire','err'); return; }
   boOpen=false;
   document.getElementById('bo-btn').classList.remove('on');
-  var views=['articles','recu','tickets','clients','integration','employes','fournisseurs','monplan','backup','settings','fonctionnalites','backoffice'];
+  var views=['articles','recu','tickets','clients','integration','employes','fournisseurs','monplan','backup','settings','fonctionnalites','backoffice','finance'];
   views.forEach(function(x){var el=document.getElementById('view-'+x);if(el){el.style.display='none';el.classList.remove('on');}});
   document.getElementById('view-pos').style.display=(v==='vente')?'flex':'none';
   if(v!=='vente'){var el=document.getElementById('view-'+v);if(el){el.style.display='flex';el.classList.add('on');}}
@@ -1475,6 +1525,7 @@ function showView(v){
   if(v==='backup') renderBackupInfo();
   if(v==='settings') renderSet();
   if(v==='backoffice'){renderBO();boOpen=true;document.getElementById('bo-btn').classList.add('on');}
+  if(v==='finance') renderFinance();
 }
 function toggleBO(){if(boOpen)showView('vente');else showView('backoffice');}
 
@@ -2306,10 +2357,10 @@ function renderFournisseurs(){
 
 // ── PÈMISYON PAR ROLE ──
 var ROLE_PERMS = {
-  caissier:{ vente:true,panier:true,moncash:true,articles:false,backoffice:false,employes:false,fournisseurs:false,settings:false,import:false,remboursement:true,clients:false,export:false,supprime_vente:false },
-  vendeur:{ vente:true,panier:true,moncash:true,articles:false,backoffice:false,employes:false,fournisseurs:false,settings:false,import:false,remboursement:true,clients:true,export:false,supprime_vente:false },
-  gerant:{ vente:true,panier:true,moncash:true,articles:true,backoffice:true,employes:false,fournisseurs:true,settings:false,import:true,remboursement:true,clients:true,export:true,supprime_vente:false },
-  proprio:{ vente:true,panier:true,moncash:true,articles:true,backoffice:true,employes:true,fournisseurs:true,settings:true,import:true,remboursement:true,clients:true,export:true,supprime_vente:true }
+  caissier:{ vente:true,panier:true,moncash:true,articles:false,backoffice:false,finance:false,employes:false,fournisseurs:false,settings:false,import:false,remboursement:true,clients:false,export:false,supprime_vente:false },
+  vendeur:{ vente:true,panier:true,moncash:true,articles:false,backoffice:false,finance:false,employes:false,fournisseurs:false,settings:false,import:false,remboursement:true,clients:true,export:false,supprime_vente:false },
+  gerant:{ vente:true,panier:true,moncash:true,articles:true,backoffice:true,finance:true,employes:false,fournisseurs:true,settings:false,import:true,remboursement:true,clients:true,export:true,supprime_vente:false },
+  proprio:{ vente:true,panier:true,moncash:true,articles:true,backoffice:true,finance:true,employes:true,fournisseurs:true,settings:true,import:true,remboursement:true,clients:true,export:true,supprime_vente:true }
 };
 var CURRENT_PERMS = Object.assign({}, ROLE_PERMS.proprio);
 var CURRENT_ROLE  = 'proprio';
@@ -2326,7 +2377,7 @@ function applyRoleRestrictions(role){
   var sbMap = {
     'vente':true,'recu':true,'tickets':true,
     'clients':can('clients'),'articles':can('articles'),
-    'backoffice':can('backoffice'),'employes':can('employes'),
+    'backoffice':can('backoffice'),'finance':can('finance'),'employes':can('employes'),
     'fournisseurs':can('fournisseurs'),'settings':can('settings'),
     'monplan':can('settings'),'backup':can('settings'),
     'integration':can('articles'),'fonctionnalites':can('settings')
@@ -2748,6 +2799,7 @@ function manualCloudSync(){ syncProductsToCloud(); notif('☁️ Sync cloud lanc
 // Démare app si onboarding deja fini
 (function initCheck(){
   load();
+  applyLanguage();
   if(S.settings.onboardingDone){ startApp(); }
 })();
 
@@ -2857,6 +2909,90 @@ function exportInventoryCSV(){var rows=[['Nom','Categorie','Prix','Cout','Stock'
 function exportSalesPDF(){var biz=S.settings.bizname||'Konektem';var total=S.sales.reduce(function(a,s){return a+s.total;},0);var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;font-size:12px;margin:20px;}table{width:100%;border-collapse:collapse;}th{background:#16a34a;color:#fff;padding:7px;text-align:left;font-size:11px;}td{padding:6px;border-bottom:1px solid #eee;}</style></head><body><h2>'+biz+' — Rapport Ventes</h2><table><thead><tr><th>#</th><th>Date</th><th>Articles</th><th>Méthode</th><th>Total</th><th>Caissier</th></tr></thead><tbody>'+S.sales.map(function(s){return '<tr><td>'+s.num+'</td><td>'+new Date(s.date).toLocaleDateString('fr-FR')+'</td><td>'+s.items.map(function(i){return i.name+' ×'+i.qty;}).join(', ')+'</td><td>'+s.method+'</td><td>'+s.total.toLocaleString('fr-HT')+' HTG</td><td>'+(s.cashier||'')+'</td></tr>';}).join('')+'</tbody><tfoot><tr><td colspan="4"><strong>TOTAL</strong></td><td><strong>'+total.toLocaleString('fr-HT')+' HTG</strong></td><td></td></tr></tfoot></table></body></html>';var win=window.open('','_blank');if(win){win.document.write(html);win.document.close();win.print();}else notif('Autorisez les popups','err');}
 function exportBackup(){var backup={version:'3.0',date:new Date().toISOString(),bizname:S.settings.bizname||'Konektem',data:JSON.parse(JSON.stringify(S))};var json=JSON.stringify(backup,null,2);dlFile(json,'konektem-backup-'+dateStr()+'.json','application/json');notif('✅ Backup téléchargé','ok');}
 function importBackup(inp){var file=inp.files[0];if(!file)return;var r=new FileReader();r.onload=function(e){try{var backup=JSON.parse(e.target.result);if(!backup.data)throw new Error('Fichier invalide');if(!confirm('Restaurer? DONNÉES ACTUELLES REMPLACÉES!'))return;S=Object.assign({},S,backup.data);if(!S.employees)S.employees=[];if(!S.connections)S.connections=[];if(!S.clients)S.clients=[];save();location.reload();}catch(err){notif('❌ Erreur backup: '+err.message,'err');}inp.value='';};r.readAsText(file);}
+
+function financeDateInPeriod(date, period){
+  var d=new Date(date), now=new Date();
+  if(period==='today') return d.toDateString()===now.toDateString();
+  if(period==='month') return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+  return true;
+}
+
+function financeSales(period){
+  return (S.sales||[]).filter(function(s){return !s.rembourse&&!s.isRetour&&financeDateInPeriod(s.date,period);});
+}
+
+function renderFinance(){
+  var periodEl=document.getElementById('finance-period');
+  var period=periodEl?periodEl.value:'month';
+  var sales=financeSales(period);
+  var expenses=(S.depenses||[]).filter(function(e){return financeDateInPeriod(e.date,period);});
+  var payroll=(S.payroll||[]).filter(function(p){return financeDateInPeriod(p.date,period);});
+  var revenue=sales.reduce(function(t,s){return t+s.total;},0);
+  var cost=sales.reduce(function(t,s){return t+s.items.reduce(function(n,i){return n+i.qty*(i.cost||0);},0);},0);
+  var expenseTotal=expenses.reduce(function(t,e){return t+Number(e.amount||0);},0);
+  var payrollTotal=payroll.reduce(function(t,p){return t+Number(p.amount||0);},0);
+  var gross=revenue-cost, net=gross-expenseTotal-payrollTotal;
+  var dateEl=document.getElementById('finance-date');
+  if(dateEl) dateEl.textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var kpi=document.getElementById('finance-kpis');
+  if(kpi) kpi.innerHTML=[
+    ['💵','REVNI',revenue,'#22c55e',sales.length+' vant'],
+    ['💸','DEPANS',expenseTotal,'#f97316',expenses.length+' antre'],
+    ['👥','SALÈ PEYE',payrollTotal,'#8b5cf6',payroll.length+' peman'],
+    ['📈','PWOFI NET',net,net>=0?'#16a34a':'#ef4444','Revni − tout depans']
+  ].map(function(k){return '<div class="kpi" style="border-left-color:'+k[3]+'"><div class="kpi-lbl">'+k[0]+' '+k[1]+'</div><div class="kpi-val" style="color:'+k[3]+'">'+fmt(k[2])+'</div><div class="kpi-sub">'+k[4]+'</div></div>';}).join('');
+  var summary=document.getElementById('finance-summary');
+  if(summary) summary.innerHTML='<div style="display:grid;gap:7px;font-size:13px;">'
+    +'<div class="trow"><span>Revni total</span><strong style="color:#22c55e">'+fmt(revenue)+'</strong></div>'
+    +'<div class="trow"><span>Coût machandiz ki vann</span><strong style="color:#f59e0b">− '+fmt(cost)+'</strong></div>'
+    +'<div class="trow"><span>Pwofi brit</span><strong>'+fmt(gross)+'</strong></div>'
+    +'<div class="trow"><span>Depans operasyonèl</span><strong style="color:#f97316">− '+fmt(expenseTotal)+'</strong></div>'
+    +'<div class="trow"><span>Salè</span><strong style="color:#8b5cf6">− '+fmt(payrollTotal)+'</strong></div>'
+    +'<div class="trow main"><span>PWOFI NET</span><strong style="color:'+(net>=0?'#16a34a':'#ef4444')+'">'+fmt(net)+'</strong></div></div>';
+  renderFinanceList('finance-expenses',expenses,'expense');
+  renderFinanceList('finance-payroll',payroll,'payroll');
+  var insights=document.getElementById('finance-insights');
+  if(insights) insights.innerHTML=net<0?'⚠️ Depans yo pi wo pase pwofi brit la. Revize depans operasyonèl ak pri pwodwi yo.':(revenue?'✅ Biznis la pozitif. Marj brit la se '+Math.round((gross/revenue)*100)+'%; kontinye swiv depans yo pou pwoteje pwofi net la.':'Ajoute premye lavant ou pou jwenn endikatè finansye.');
+}
+
+function renderFinanceList(id,list,type){
+  var el=document.getElementById(id); if(!el)return;
+  if(!list.length){el.innerHTML='<div style="color:var(--text3);font-size:12px;padding:14px 0;text-align:center">Pa gen done pou peryòd sa a.</div>';return;}
+  el.innerHTML=list.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);}).slice(0,6).map(function(item){
+    var label=type==='expense'?(item.description||item.category||'Depans'):(item.employeeName||'Anplwaye');
+    var sub=type==='expense'?(item.category||'Jeneral'):new Date(item.date).toLocaleDateString('fr-FR');
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);"><div style="flex:1"><strong style="font-size:12px">'+label+'</strong><div style="font-size:10px;color:var(--text3)">'+sub+'</div></div><strong style="font-size:12px;color:'+(type==='expense'?'#f97316':'#8b5cf6')+'">− '+fmt(item.amount)+'</strong></div>';
+  }).join('');
+}
+
+function openFinanceModal(title,html,onSave){
+  var old=document.getElementById('finance-form-mov');if(old)old.remove();
+  var mov=document.createElement('div');mov.id='finance-form-mov';mov.className='mov show';
+  var inner=document.createElement('div');inner.className='modal';inner.style.maxWidth='430px';
+  inner.innerHTML='<h3>'+title+'</h3>'+html+'<div class="mfooter"><button class="btn-cancel" type="button" id="finance-cancel">Anile</button><button class="btn-g" type="button" id="finance-save">Anrejistre</button></div>';
+  mov.appendChild(inner);document.body.appendChild(mov);
+  mov.addEventListener('click',function(e){if(e.target===mov)mov.remove();});
+  document.getElementById('finance-cancel').onclick=function(){mov.remove();};
+  document.getElementById('finance-save').onclick=function(){if(onSave(mov))mov.remove();};
+}
+
+function openExpenseForm(){
+  openFinanceModal('Nouvo depans','<div class="fg"><label class="flbl">Deskripsyon *</label><input class="finp" id="fx-desc" placeholder="Lwaye, transpò, materyèl..."></div><div class="f2"><div class="fg"><label class="flbl">Kategori</label><select class="fsel" id="fx-cat"><option>Operasyon</option><option>Transpò</option><option>Lwaye</option><option>Materyèl</option><option>Tax</option><option>Lòt</option></select></div><div class="fg"><label class="flbl">Montan *</label><input class="finp" id="fx-amount" type="number" min="0" placeholder="0"></div></div>',function(){
+    var desc=document.getElementById('fx-desc').value.trim(),amount=Number(document.getElementById('fx-amount').value);
+    if(!desc||!amount){notif('Deskripsyon ak montan obligatwa','err');return false;}
+    S.depenses.unshift({id:uid(),date:new Date().toISOString(),description:desc,category:document.getElementById('fx-cat').value,amount:amount});save();renderFinance();if(isPremium())pushBizDataToSupabase(getCurrentUserEmail());notif('✅ Depans anrejistre','ok');return true;
+  });
+}
+
+function openPayrollForm(){
+  var options=(S.employees||[]).map(function(e){return '<option value="'+e.id+'">'+e.name+'</option>';}).join('');
+  if(!options){notif('Ajoute yon anplwaye anvan ou peye salè','err');return;}
+  openFinanceModal('Peye salè','<div class="fg"><label class="flbl">Anplwaye *</label><select class="fsel" id="py-emp">'+options+'</select></div><div class="fg"><label class="flbl">Montan salè *</label><input class="finp" id="py-amount" type="number" min="0" placeholder="0"></div>',function(){
+    var emp=(S.employees||[]).find(function(e){return e.id===document.getElementById('py-emp').value;}),amount=Number(document.getElementById('py-amount').value);
+    if(!emp||!amount){notif('Anplwaye ak montan obligatwa','err');return false;}
+    S.payroll.unshift({id:uid(),date:new Date().toISOString(),employeeId:emp.id,employeeName:emp.name,amount:amount});save();renderFinance();if(isPremium())pushBizDataToSupabase(getCurrentUserEmail());notif('✅ Salè anrejistre','ok');return true;
+  });
+}
 
 // ── RAPPORT JOURNALIER ──
 function genRapportJournalier(){
@@ -3298,7 +3434,7 @@ function renderMonPlan(){
   var el = document.getElementById('monplanBody'); if(!el) return;
   var plan = S.settings.plan||'trial';
   var trialStart = new Date(S.settings.trialStart||Date.now());
-  var trialDays = S.settings.trialDays||5;
+  var trialDays = TRIAL_DAYS;
   var elapsed = Math.floor((Date.now()-trialStart)/86400000);
   var remaining = Math.max(0, trialDays - elapsed);
   var isPrem = plan==='premium';
@@ -3350,6 +3486,7 @@ function renderSet(){
   function setV(id, val){ var e=document.getElementById(id); if(e) e.value=val; }
   function setC(id, val){ var e=document.getElementById(id); if(e) e.checked=val; }
   setV('set-biz', s.bizname||'');
+  setV('s-lang', s.language||'fr');
   setV('set-cash', s.cashier||'');
   setV('set-cur', s.currency||'HTG');
   setV('set-tax', s.taxRate||0);

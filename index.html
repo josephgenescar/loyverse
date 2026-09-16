@@ -50,6 +50,8 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:18px 5
 .nav-links a{color:var(--white80);font-size:14px;font-weight:500;text-decoration:none;transition:color .2s;}
 .nav-links a:hover{color:var(--white);}
 .nav-cta{display:flex;gap:8px;}
+.lang-select{padding:8px 10px;border:1px solid var(--glass-border);border-radius:var(--rxs);color:var(--white80);background:rgba(255,255,255,.06);font-size:12px;font-weight:700;cursor:pointer;outline:none;}
+.lang-select option{background:#0d1f2d;color:#fff;}
 .btn-ghost{padding:8px 18px;border:1px solid var(--glass-border);border-radius:var(--rxs);color:var(--white80);font-size:13px;font-weight:600;cursor:pointer;background:rgba(255,255,255,.05);backdrop-filter:blur(10px);font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s;}
 .btn-ghost:hover{border-color:var(--green);color:var(--white);background:rgba(255,255,255,.1);}
 .btn-primary{padding:9px 20px;border:none;border-radius:var(--rxs);background:linear-gradient(135deg,var(--purple),var(--blue));color:var(--white);font-size:13px;font-weight:800;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s;box-shadow:0 4px 20px rgba(139,92,246,.3);}
@@ -309,28 +311,29 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
     <div class="logo-text">Konekte<span class="em">m</span></div>
   </div>
   <div class="nav-links">
-    <a href="#fonctionnalites">Fonctionnalités</a>
-    <a href="#secteurs">Secteurs</a>
-    <a href="#tarifs">Tarifs</a>
+    <a href="#fonctionnalites" data-i18n="features">Fonctionnalités</a>
+    <a href="#secteurs" data-i18n="sectors">Secteurs</a>
+    <a href="#tarifs" data-i18n="pricing">Tarifs</a>
   </div>
   <div class="nav-cta">
-    <button class="btn-ghost" onclick="showScreen('signin')">Se connecter</button>
-    <button class="btn-primary" onclick="showScreen('signup')">Essai gratuit</button>
+    <select class="lang-select" id="landing-lang" aria-label="Language" onchange="setLandingLanguage(this.value)"><option value="fr">FR</option><option value="en">EN</option><option value="es">ES</option></select>
+    <button class="btn-ghost" data-i18n="signin" onclick="showScreen('signin')">Se connecter</button>
+    <button class="btn-primary" data-i18n="freeTrial" onclick="showScreen('signup')">Essai gratuit</button>
   </div>
 </nav>
 
 <!-- HERO -->
 <section class="hero" style="padding:60px 5% 40px;max-width:1000px;margin:0 auto;">
-  <div class="hero-badge"><span class="dot"></span>Logiciel de caisse gratuit pour Haïti</div>
+  <div class="hero-badge"><span class="dot"></span><span data-i18n="badge">Logiciel de caisse gratuit pour Haïti</span></div>
   <h1 style="font-size:clamp(30px,5.5vw,58px);line-height:1.1;margin-bottom:20px;">
-    Logiciel de caisse<br><span class="hl">gratuit</span> et Gestion de Stock
+    <span data-i18n="heroTitleStart">Logiciel de caisse</span><br><span class="hl" data-i18n="heroTitleFree">gratuit</span> <span data-i18n="heroTitleEnd">et Gestion de Stock</span>
   </h1>
-  <p class="hero-sub">Transformez votre smartphone ou tablette en logiciel de caisse puissant. Gérez facilement les ventes, la gestion des stocks et des employés ; fidélisez vos clients et augmentez vos revenus.</p>
+  <p class="hero-sub" data-i18n="heroSub">Transformez votre smartphone ou tablette en logiciel de caisse puissant. Gérez facilement les ventes, la gestion des stocks et des employés ; fidélisez vos clients et augmentez vos revenus.</p>
   <div class="hero-actions">
-    <button class="btn-hero green" onclick="showScreen('signup')">Démarrer gratuitement →</button>
-    <button class="btn-hero outline" onclick="showScreen('signin')">Se connecter</button>
+    <button class="btn-hero green" data-i18n="startFree" onclick="showScreen('signup')">Démarrer gratuitement →</button>
+    <button class="btn-hero outline" data-i18n="signin" onclick="showScreen('signin')">Se connecter</button>
   </div>
-  <p class="hero-note"><span>5 jours d'essai complet gratuit</span> · Aucune carte bancaire requise</p>
+  <p class="hero-note"><span data-i18n="trialNote">7 jours d'essai complet gratuit</span> · <span data-i18n="noCard">Aucune carte bancaire requise</span></p>
 </section>
 
 <!-- DEVICE ILLUSTRATION — POS Setup style Loyverse -->
@@ -738,6 +741,31 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
 </div>
 
 <script>
+var LANDING_LANGS = {
+  fr:{features:'Fonctionnalités',sectors:'Secteurs',pricing:'Tarifs',signin:'Se connecter',freeTrial:'Essai gratuit',badge:'Logiciel de caisse gratuit pour Haïti',heroTitleStart:'Logiciel de caisse',heroTitleFree:'gratuit',heroTitleEnd:'et Gestion de Stock',heroSub:'Transformez votre smartphone ou tablette en logiciel de caisse puissant. Gérez facilement les ventes, les stocks et les employés ; fidélisez vos clients et augmentez vos revenus.',startFree:'Démarrer gratuitement →',trialNote:'7 jours d’essai complet gratuit',noCard:'Aucune carte bancaire requise'},
+  en:{features:'Features',sectors:'Industries',pricing:'Pricing',signin:'Sign in',freeTrial:'Free trial',badge:'Free point-of-sale software for Haiti',heroTitleStart:'Point-of-sale software',heroTitleFree:'free',heroTitleEnd:'with Inventory Management',heroSub:'Turn your smartphone or tablet into a powerful point-of-sale system. Manage sales, inventory and employees while growing your revenue.',startFree:'Start for free →',trialNote:'7-day full free trial',noCard:'No credit card required'},
+  es:{features:'Funciones',sectors:'Sectores',pricing:'Precios',signin:'Iniciar sesión',freeTrial:'Prueba gratuita',badge:'Software de caja gratuito para Haití',heroTitleStart:'Software de caja',heroTitleFree:'gratuito',heroTitleEnd:'y gestión de inventario',heroSub:'Convierte tu teléfono o tableta en un potente sistema de punto de venta. Gestiona ventas, inventario y empleados mientras aumentas tus ingresos.',startFree:'Comenzar gratis →',trialNote:'7 días de prueba gratuita',noCard:'No requiere tarjeta bancaria'}
+};
+function detectLandingLanguage(){
+  var saved=localStorage.getItem('konektem_language');
+  if(saved&&LANDING_LANGS[saved]) return saved;
+  var browser=(navigator.languages&&navigator.languages[0]||navigator.language||'fr').toLowerCase();
+  return browser.indexOf('es')===0?'es':browser.indexOf('en')===0?'en':'fr';
+}
+function setLandingLanguage(lang){
+  var selected=LANDING_LANGS[lang]?lang:'fr';
+  localStorage.setItem('konektem_language',selected);
+  document.documentElement.lang=selected;
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var key=el.getAttribute('data-i18n');
+    if(LANDING_LANGS[selected][key]) el.textContent=LANDING_LANGS[selected][key];
+  });
+  var selector=document.getElementById('landing-lang');
+  if(selector) selector.value=selected;
+  var appData;
+  try{appData=JSON.parse(localStorage.getItem('konektem_app')||'null');if(appData){appData.settings=appData.settings||{};appData.settings.language=selected;localStorage.setItem('konektem_app',JSON.stringify(appData));}}catch(e){}
+}
+setLandingLanguage(detectLandingLanguage());
 // ════════════════════════════════════════
 // SUPABASE — Configuration
 // ════════════════════════════════════════

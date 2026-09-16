@@ -13,6 +13,8 @@ Application POS (Point of Sale) complète pour commerçants haïtiens.
 - 📦 Gestion des stocks
 - 🔗 Intégration API boutique (Piyay & autres)
 - 📊 Back Office avec rapports
+- 💼 Sant Finans : revni, depans, pwofi ak pewòl
+- 🔐 Dwa aksè pou caissier, vendeur, gérant ak propriétaire
 - 💊 Mode Pharmacie avec DCI/Dosage
 - 📱 Responsive mobile & tablette
 - 🗄️ Contact Entreprise → Supabase
@@ -34,3 +36,9 @@ Nan Netlify, mete environment variables sa yo:
 - `SUPABASE_SERVICE_KEY` — service role key Supabase la
 
 Pou tès, kreye aplikasyon an sou PayPal Developer nan mòd Sandbox epi sèvi ak kont test yo. Anvan pwodiksyon, mete `PAYPAL_MODE=live` epi ranplase kle yo ak Live credentials. PayPal flow sa a se yon peman pou peryòd plan an; si ou bezwen renouvèlman otomatik chak mwa, fòk ou ajoute PayPal Subscriptions ak yon Product/Plan ID apa.
+
+## Finance cloud sync
+
+Anvan ou itilize sync cloud pou depans, achats, fournisseurs ak pewòl, kouri migration ki nan `supabase-finance-migration.sql` nan Supabase SQL Editor.
+
+Konektem kounye a bay kontwòl revni, depans operasyonèl, coût machandiz, pwofi ak peman salè. Li pa ranplase yon sistèm kontablite legal doub-antre: balans, journal debit/kredi, taks legal, fich salè ak audit trail dwe ajoute anvan itilizasyon kòm kontablite ofisyèl.
