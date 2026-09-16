@@ -515,8 +515,8 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
 <div style="padding:0 5%;max-width:1100px;margin:0 auto">
   <div class="trial-banner">
     <div class="tb-left">
-      <h3>🎁 5 jours d'essai gratuit — Sans carte bancaire</h3>
-      <p>Accédez à toutes les fonctionnalités Premium pendant 5 jours.</p>
+      <h3>🎁 7 jours d'essai gratuit — Sans carte bancaire</h3>
+      <p>Accédez à toutes les fonctionnalités Premium pendant 7 jours.</p>
     </div>
     <div class="tb-stats">
       <div class="tb-stat"><div class="num">5</div><div class="lab">Jours gratuits</div></div>
@@ -566,8 +566,8 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
   <div class="pricing-grid">
     <div class="plan-card">
       <div class="plan-name">Essai Gratuit</div>
-      <div class="plan-price"><span class="curr">USD</span> 0 <span class="per">/ 5 jours</span></div>
-      <div class="plan-desc">Toutes les fonctionnalités pendant 5 jours sans carte.</div>
+      <div class="plan-price"><span class="curr">USD</span> 0 <span class="per">/ 7 jours</span></div>
+      <div class="plan-desc">Toutes les fonctionnalités pendant 7 jours sans carte.</div>
       <div class="plan-feats">
         <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Tous les secteurs</div>
         <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Jusqu'à 50 articles</div>
@@ -913,7 +913,7 @@ document.querySelectorAll('.screen').forEach(function(s) {
     var passHash = btoa(unescape(encodeURIComponent(pass)));
     var userData = {
       name: name, email: email, phone: phone, pass: passHash,
-      startDate: new Date().toISOString(), plan: 'trial', trialDays: 5
+      startDate: new Date().toISOString(), plan: 'trial', trialDays: 7
     };
     legacyStorageDisabled('konektem_user', userData);
 
@@ -1014,7 +1014,7 @@ function legacyDoSignin() {
       pass:        passHash,
       startDate:   trialStart,
       plan:        remote.plan || 'trial',
-      trialDays:   remote.trial_days || 5,
+      trialDays:   remote.trial_days || 7,
       bizname:     remote.bizname || '',
       sector:      remote.secteur || '',
       premiumDate: remote.premium_date || null,
@@ -1138,7 +1138,39 @@ function doSignin(){
   fetch(SUPA_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:authHeaders(),body:JSON.stringify({email:email,password:pass})})
     .then(function(r){return r.json().then(function(data){if(!r.ok)throw new Error(data.error_description||data.msg||'Email ou mot de passe incorrect.');return data;});})
     .then(function(data){redirectToAppWithSession(data);})
-    .catch(function(err){if(btn){btn.disabled=false;btn.textContent='Se connecter →';}showAuthErr('signin',err.message||'Erreur de connexion.');});
+    .catch(function(err){
+      migrateLegacyAccount(email,pass,btn,err);
+    });
+}
+function migrateLegacyAccount(email,pass,btn,loginError){
+  var lookupUrl=SUPA_URL+'/rest/v1/konektem_users?email=eq.'+encodeURIComponent(email)+'&select=email,bizname,phone,secteur,plan,status';
+  fetch(lookupUrl,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}})
+    .then(function(response){return response.json();})
+    .then(function(rows){
+      if(!rows||!rows.length) throw loginError||new Error('Email ou mot de passe incorrect.');
+      var legacy=rows[0];
+      var signupBody={
+        email:email,
+        password:pass,
+        data:{full_name:legacy.bizname||email,phone:legacy.phone||''}
+      };
+      return fetch(SUPA_URL+'/auth/v1/signup',{method:'POST',headers:authHeaders(),body:JSON.stringify(signupBody)})
+        .then(function(response){
+          return response.json().then(function(data){
+            if(!response.ok) throw new Error(data.msg||data.error_description||'Ce compte existe déjà dans Supabase Auth. Utilisez le mot de passe de votre compte.');
+            return data;
+          });
+        })
+        .then(function(data){
+          if(data.access_token){redirectToAppWithSession(data);return;}
+          if(btn){btn.disabled=false;btn.textContent='Se connecter →';}
+          showAuthErr('signin','Votre ancien compte a été reconnu. Vérifiez votre email pour activer votre nouvel accès sécurisé, puis reconnectez-vous.');
+        });
+    })
+    .catch(function(err){
+      if(btn){btn.disabled=false;btn.textContent='Se connecter →';}
+      showAuthErr('signin',err.message||'Email ou mot de passe incorrect.');
+    });
 }
 
 // PREMIUM
