@@ -1,5 +1,5 @@
-// Konektem Service Worker v1777421194
-var CACHE_NAME = 'konektem-v1778101558';
+// Konektem Service Worker v1778104000
+var CACHE_NAME = 'konektem-v1778104000';
 var STATIC_FILES = ['/', '/index.html', '/app.html', '/app.js', '/manifest.json', '/app.js',
   '/status.html'];
 
@@ -39,8 +39,14 @@ self.addEventListener('notificationclick', function(event) {
 
 self.addEventListener('fetch', function(event) {
   if(event.request.method !== 'GET') return;
+  var requestUrl = new URL(event.request.url);
+  if(requestUrl.origin !== self.location.origin) return;
   event.respondWith(fetch(event.request).then(function(r){
     if(r && r.status===200){ var c=r.clone(); caches.open(CACHE_NAME).then(function(cache){cache.put(event.request,c);}); }
     return r;
-  }).catch(function(){ return caches.match(event.request); }));
+  }).catch(function(){
+    return caches.match(event.request).then(function(cached){
+      return cached || Response.error();
+    });
+  }));
 });

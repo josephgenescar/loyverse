@@ -1228,12 +1228,18 @@ function doSignin(){
   var email=document.getElementById('si-email').value.trim().toLowerCase();
   var pass=document.getElementById('si-pass').value;
   if(!email||!pass){showAuthErr('signin','Remplissez email et mot de passe.');return;}
+  if(pass.length<6){showAuthErr('signin','Mot de passe : 6 caractères minimum.');return;}
   var btn=document.querySelector('#screen-signin .auth-btn');
   if(btn){btn.disabled=true;btn.textContent='⏳ Connexion sécurisée...';}
   fetch(SUPA_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:authHeaders(),body:JSON.stringify({email:email,password:pass})})
     .then(function(r){return r.json().then(function(data){if(!r.ok)throw new Error(data.error_description||data.msg||'Email ou mot de passe incorrect.');return data;});})
     .then(function(data){redirectToAppWithSession(data);})
     .catch(function(err){
+      if(err && (err.name==='TypeError' || err.message==='Failed to fetch')){
+        if(btn){btn.disabled=false;btn.textContent='Se connecter →';}
+        showAuthErr('signin','Supabase pa disponib kounye a. Verifye koneksyon entènèt la epi re-eseye.');
+        return;
+      }
       migrateLegacyAccount(email,pass,btn,err);
     });
 }
