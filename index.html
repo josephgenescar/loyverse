@@ -519,7 +519,7 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
       <p>Accédez à toutes les fonctionnalités Premium pendant 7 jours.</p>
     </div>
     <div class="tb-stats">
-      <div class="tb-stat"><div class="num">5</div><div class="lab">Jours gratuits</div></div>
+      <div class="tb-stat"><div class="num">7</div><div class="lab">Jours gratuits</div></div>
       <div class="tb-stat"><div class="num">∞</div><div class="lab">Articles</div></div>
       <div class="tb-stat"><div class="num">9</div><div class="lab">Secteurs</div></div>
     </div>
@@ -637,7 +637,7 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
 
     <div class="auth-field"><label class="auth-label">Téléphone <span style="color:#ef4444">*</span></label><input class="auth-input" id="su-phone" type="tel" placeholder="509 4886 8964" required></div>
 
-    <div class="auth-field"><label class="auth-label">Mot de passe</label><input class="auth-input" id="su-pass" type="password" placeholder="8 caractères minimum"></div>
+    <div class="auth-field"><label class="auth-label">Mot de passe</label><input class="auth-input" id="su-pass" type="password" placeholder="6 caractères minimum" minlength="6"></div>
     <button class="auth-btn" onclick="doSignup()">Créer mon compte gratuit →</button>
     <div class="auth-switch">Déjà un compte ? <a onclick="switchAuth('signin')">Se connecter</a></div>
   </div>
@@ -745,6 +745,93 @@ var LANDING_LANGS = {
   en:{features:'Features',sectors:'Industries',pricing:'Pricing',signin:'Sign in',freeTrial:'Free trial',badge:'Free point-of-sale software for Haiti',heroTitleStart:'Point-of-sale software',heroTitleFree:'free',heroTitleEnd:'with Inventory Management',heroSub:'Turn your smartphone or tablet into a powerful point-of-sale system. Manage sales, inventory and employees while growing your revenue.',startFree:'Start for free →',trialNote:'7-day full free trial',noCard:'No credit card required'},
   es:{features:'Funciones',sectors:'Sectores',pricing:'Precios',signin:'Iniciar sesión',freeTrial:'Prueba gratuita',badge:'Software de caja gratuito para Haití',heroTitleStart:'Software de caja',heroTitleFree:'gratuito',heroTitleEnd:'y gestión de inventario',heroSub:'Convierte tu teléfono o tableta en un potente sistema de punto de venta. Gestiona ventas, inventario y empleados mientras aumentas tus ingresos.',startFree:'Comenzar gratis →',trialNote:'7 días de prueba gratuita',noCard:'No requiere tarjeta bancaria'}
 };
+var LANDING_EXTENDED = {
+  fr:{trialTitle:'🎁 7 jours d’essai gratuit — Sans carte bancaire',trialSub:'Accédez à toutes les fonctionnalités Premium pendant 7 jours.',freeDays:'Jours gratuits',articles:'Articles',sectorsCount:'Secteurs',sectorTitle:'Une application, tous les métiers',sectorSub:'Konektem s’adapte automatiquement à votre secteur d’activité.',featureTitle:'Tout ce qu’il vous faut pour vendre mieux',featureSub:'Caisse, stock, clients et back-office dans une seule application.',pricingTitle:'Simple et transparent',pricingSub:'Commencez gratuitement. Passez au Premium quand vous grandissez.',freePlan:'Essai gratuit',freePlanSub:'Toutes les fonctionnalités pendant 7 jours sans carte.',premiumPlanSub:'Articles illimités, tout inclus.',enterpriseSub:'Pour chaînes et franchises avec plusieurs points de vente.',ctaTitle:'Prêt à connecter votre boutique ?',ctaSub:'Rejoignez les commerçants haïtiens qui modernisent leur gestion de vente.',signupTitle:'Créer votre compte',signupSub:'7 jours d’essai gratuit · Aucune carte requise',signinTitle:'Bon retour !',signinSub:'Connectez-vous à votre espace Konektem',signinPrompt:'Pas encore de compte ?',signinLink:'Créer un compte',signupPrompt:'Déjà un compte ?',signupLink:'Se connecter',signinCta:'Se connecter →',signupCta:'Créer mon compte gratuit →',previewTitle:'Aperçu de Konektem',previewSub:'Ce que vous obtenez dès l’inscription',previewStart:'Démarrer l’essai gratuit →',quickSale:'Vente rapide',scanBarcode:'Scan barcode',contactless:'Paiement MonCash & Carte',passwordMin:'6 caractères minimum'},
+  en:{trialTitle:'🎁 7-day free trial — No credit card',trialSub:'Access all Premium features for 7 days.',freeDays:'Free days',articles:'Products',sectorsCount:'Industries',sectorTitle:'One app for every business',sectorSub:'Konektem automatically adapts to your industry.',featureTitle:'Everything you need to sell better',featureSub:'POS, inventory, customers and back office in one app.',pricingTitle:'Simple and transparent',pricingSub:'Start free. Upgrade to Premium as you grow.',freePlan:'Free trial',freePlanSub:'All features for 7 days with no card.',premiumPlanSub:'Unlimited products, everything included.',enterpriseSub:'For chains and franchises with multiple locations.',ctaTitle:'Ready to connect your store?',ctaSub:'Join merchants modernizing the way they manage sales.',signupTitle:'Create your account',signupSub:'7-day free trial · No card required',signinTitle:'Welcome back!',signinSub:'Sign in to your Konektem workspace',signinPrompt:'No account yet?',signinLink:'Create an account',signupPrompt:'Already have an account?',signupLink:'Sign in',signinCta:'Sign in →',signupCta:'Create my free account →',previewTitle:'Konektem overview',previewSub:'What you get as soon as you sign up',previewStart:'Start free trial →',quickSale:'Quick sale',scanBarcode:'Barcode scan',contactless:'MonCash & card payment',passwordMin:'6 characters minimum'},
+  es:{trialTitle:'🎁 7 días de prueba gratis — Sin tarjeta',trialSub:'Accede a todas las funciones Premium durante 7 días.',freeDays:'Días gratis',articles:'Productos',sectorsCount:'Sectores',sectorTitle:'Una aplicación para todos los negocios',sectorSub:'Konektem se adapta automáticamente a tu sector.',featureTitle:'Todo lo que necesitas para vender mejor',featureSub:'Caja, inventario, clientes y back office en una sola aplicación.',pricingTitle:'Simple y transparente',pricingSub:'Comienza gratis. Pásate a Premium cuando crezcas.',freePlan:'Prueba gratuita',freePlanSub:'Todas las funciones durante 7 días sin tarjeta.',premiumPlanSub:'Productos ilimitados, todo incluido.',enterpriseSub:'Para cadenas y franquicias con varios puntos de venta.',ctaTitle:'¿Listo para conectar tu negocio?',ctaSub:'Únete a los comercios que modernizan su gestión de ventas.',signupTitle:'Crear tu cuenta',signupSub:'7 días de prueba gratis · Sin tarjeta',signinTitle:'¡Bienvenido de nuevo!',signinSub:'Inicia sesión en tu espacio Konektem',signinPrompt:'¿Aún no tienes cuenta?',signinLink:'Crear cuenta',signupPrompt:'¿Ya tienes una cuenta?',signupLink:'Iniciar sesión',signinCta:'Iniciar sesión →',signupCta:'Crear mi cuenta gratis →',previewTitle:'Vista general de Konektem',previewSub:'Lo que obtienes al registrarte',previewStart:'Comenzar prueba gratis →',quickSale:'Venta rápida',scanBarcode:'Escaneo de código',contactless:'Pago MonCash y tarjeta',passwordMin:'6 caracteres mínimo'}
+};
+function setLandingText(selector,text,index){var nodes=document.querySelectorAll(selector);if(index===undefined){nodes.forEach(function(n){n.textContent=text;});}else if(nodes[index])nodes[index].textContent=text;}
+function applyLandingExtendedLanguage(lang){
+  var p=LANDING_EXTENDED[lang]||LANDING_EXTENDED.fr;
+  setLandingText('.tb-left h3',p.trialTitle);setLandingText('.tb-left p',p.trialSub);
+  setLandingText('.tb-stat .lab',p.freeDays,0);setLandingText('.tb-stat .lab',p.articles,1);setLandingText('.tb-stat .lab',p.sectorsCount,2);
+  setLandingText('#secteurs h2',p.sectorTitle);setLandingText('#secteurs .section-sub',p.sectorSub);
+  setLandingText('#fonctionnalites h2',p.featureTitle);setLandingText('#fonctionnalites .section-sub',p.featureSub);
+  setLandingText('#tarifs h2',p.pricingTitle);setLandingText('#tarifs .section-sub',p.pricingSub);
+  setLandingText('#tarifs .plan-card .plan-desc',p.freePlanSub,0);setLandingText('#tarifs .plan-card .plan-desc',p.premiumPlanSub,1);setLandingText('#tarifs .plan-card .plan-desc',p.enterpriseSub,2);
+  setLandingText('.cta-section h2',p.ctaTitle);setLandingText('.cta-section p',p.ctaSub);
+  setLandingText('#screen-signup .auth-title',p.signupTitle);setLandingText('#screen-signup .auth-sub',p.signupSub);
+  setLandingText('#screen-signin .auth-title',p.signinTitle);setLandingText('#screen-signin .auth-sub',p.signinSub);
+  setLandingText('#screen-preview .auth-title',p.previewTitle);setLandingText('#screen-preview .auth-sub',p.previewSub);
+  var signupBtn=document.querySelector('#screen-signup .auth-btn');if(signupBtn)signupBtn.textContent=p.signupCta;
+  var signinBtn=document.querySelector('#screen-signin .auth-btn');if(signinBtn)signinBtn.textContent=p.signinCta;
+  var previewBtn=document.querySelector('#screen-preview .auth-btn');if(previewBtn)previewBtn.textContent=p.previewStart;
+  var signupSwitch=document.querySelector('#screen-signup .auth-switch');if(signupSwitch) signupSwitch.innerHTML = p.signupPrompt + ' <a onclick="switchAuth(\'signin\')">' + p.signupLink + '</a>';
+  var signinSwitch=document.querySelector('#screen-signin .auth-switch');if(signinSwitch) signinSwitch.innerHTML = p.signinPrompt + ' <a onclick="switchAuth(\'signup\')">' + p.signinLink + '</a>';
+  var deviceLegend=document.querySelectorAll('.hero-device-legend div');
+  if(deviceLegend.length >= 3){deviceLegend[0].childNodes[deviceLegend[0].childNodes.length-1].nodeValue = ' ' + p.quickSale; deviceLegend[1].childNodes[deviceLegend[1].childNodes.length-1].nodeValue = ' ' + p.scanBarcode; deviceLegend[2].childNodes[deviceLegend[2].childNodes.length-1].nodeValue = ' ' + p.contactless;}
+  var pass=document.getElementById('su-pass');if(pass)pass.placeholder=p.passwordMin;
+
+  var sectionBadges=document.querySelectorAll('.section-badge');
+  if(sectionBadges[0]) sectionBadges[0].textContent = lang === 'en' ? 'INDUSTRIES' : (lang === 'es' ? 'SECTORES' : 'SECTEURS');
+  if(sectionBadges[1]) sectionBadges[1].textContent = lang === 'en' ? 'FEATURES' : (lang === 'es' ? 'FUNCIONES' : 'FONCTIONNALITÉS');
+  if(sectionBadges[2]) sectionBadges[2].textContent = lang === 'en' ? 'PRICING' : (lang === 'es' ? 'PRECIOS' : 'TARIFS');
+
+  var sectorNames = document.querySelectorAll('.sc-name');
+  var sectorDesc = document.querySelectorAll('.sc-desc');
+  var sectorTags = document.querySelectorAll('.sc-tag');
+  var sectorNamesMap = {
+    fr:['Marché & Épicerie','Pharmacie & Médecine','Électronique & Tech','Restaurant & Alimentation'],
+    en:['Grocery & Market','Pharmacy & Medicine','Electronics & Tech','Restaurant & Food'],
+    es:['Mercado & Supermercado','Farmacia & Medicina','Electrónica & Tech','Restaurante & Alimentación']
+  };
+  var sectorDescMap = {
+    fr:['Alimentation, boissons, produits du quotidien.','DCI, dosage, péremption, ordonnance requise.','SKU, numéros de série, garanties, réparations.','Tables, menus, sur place / à emporter / livraison.'],
+    en:['Food, beverages, daily essentials.','DCI, dosage, expiry dates, prescriptions required.','SKU, serial numbers, warranties, repairs.','Tables, menus, dine-in / takeout / delivery.'],
+    es:['Alimentos, bebidas, productos de uso diario.','DCI, dosificación, vencimiento, receta requerida.','SKU, números de serie, garantías, reparaciones.','Mesas, menús, consumo en local / para llevar / entrega.']
+  };
+  var sectorTagsMap = {
+    fr:['Stock temps réel','DCI / Dosage','SKU / Référence','Tables','Photos produits','Péremption','Garanties','Menus'],
+    en:['Real-time stock','DCI / Dosage','SKU / Reference','Tables','Product photos','Expiry','Warranties','Menus'],
+    es:['Stock en tiempo real','DCI / Dosificación','SKU / Referencia','Mesas','Fotos de productos','Vencimiento','Garantías','Menús']
+  };
+  sectorNames.forEach(function(el, idx){ if(sectorNamesMap[lang] && sectorNamesMap[lang][idx]) el.textContent = sectorNamesMap[lang][idx]; });
+  sectorDesc.forEach(function(el, idx){ if(sectorDescMap[lang] && sectorDescMap[lang][idx]) el.textContent = sectorDescMap[lang][idx]; });
+  sectorTags.forEach(function(el, idx){ if(sectorTagsMap[lang] && sectorTagsMap[lang][idx]) el.textContent = sectorTagsMap[lang][idx]; });
+
+  var featTitles = document.querySelectorAll('.feat-title');
+  var featDesc = document.querySelectorAll('.feat-desc');
+  var featTitleMap = {
+    fr:['Intégration Boutique API','Photos Réelles','Back Office Complet','4 Modes de Paiement','Reçus Imprimables','Clients & Équipe'],
+    en:['Boutique API Integration','Real Photos','Complete Back Office','4 Payment Modes','Printable Receipts','Customers & Team'],
+    es:['Integración de API de tienda','Fotos reales','Back Office completo','4 métodos de pago','Recibos imprimibles','Clientes y equipo']
+  };
+  var featDescMap = {
+    fr:['Connectez votre site — produits importés automatiquement avec photos et prix.','Téléchargez des vraies photos depuis votre téléphone ou ordinateur.','Rapports, graphiques, top produits, analyse par caissier.','Espèces, carte, MonCash et crédit — tous les modes haïtiens.','Reçus professionnels avec logo et message personnalisé.','Carnet de clients, historique d’achats, suivi par caissier.'],
+    en:['Connect your website — products imported automatically with photos and prices.','Upload real photos directly from your phone or computer.','Reports, charts, top products, cashier analysis.','Cash, card, MonCash and credit — all Haitian payment methods.','Professional receipts with logo and custom message.','Customer list, purchase history, cashier tracking.'],
+    es:['Conecta tu sitio web: productos importados automáticamente con fotos y precios.','Sube fotos reales desde tu teléfono o computadora.','Informes, gráficos, productos top, análisis por cajero.','Efectivo, tarjeta, MonCash y crédito — todos los métodos haitianos.','Recibos profesionales con logo y mensaje personalizado.','Agenda de clientes, historial de compras, seguimiento por cajero.']
+  };
+  featTitles.forEach(function(el, idx){ if(featTitleMap[lang] && featTitleMap[lang][idx]) el.textContent = featTitleMap[lang][idx]; });
+  featDesc.forEach(function(el, idx){ if(featDescMap[lang] && featDescMap[lang][idx]) el.textContent = featDescMap[lang][idx]; });
+
+  var planTitleMap = {
+    fr:['Essai Gratuit','Premium','Entreprise'],
+    en:['Free Trial','Premium','Enterprise'],
+    es:['Prueba gratuita','Premium','Empresa']
+  };
+  document.querySelectorAll('.plan-card .plan-name').forEach(function(el, idx){ if(planTitleMap[lang] && planTitleMap[lang][idx]) el.textContent = planTitleMap[lang][idx]; });
+
+  var planButtonMap = {
+    fr:['Commencer gratuitement','Passer au Premium →','Nous contacter'],
+    en:['Start for free','Upgrade to Premium →','Contact us'],
+    es:['Comenzar gratis','Actualizar a Premium →','Contáctanos']
+  };
+  document.querySelectorAll('.plan-btn').forEach(function(el, idx){ if(planButtonMap[lang] && planButtonMap[lang][idx]) el.textContent = planButtonMap[lang][idx]; });
+
+  var ctaButtons = document.querySelectorAll('.btn-hero.green, .btn-hero.outline, .btn-primary, .btn-ghost');
+  if(lang === 'en'){ ctaButtons.forEach(function(el){ if(el.textContent.indexOf('Essai') > -1 || el.textContent.indexOf('gratuit') > -1 || el.textContent.indexOf('Se connecter') > -1 || el.textContent.indexOf('Démarrer') > -1 || el.textContent.indexOf('Créer') > -1 || el.textContent.indexOf('Compte') > -1) { el.textContent = el.classList.contains('outline') ? 'Sign in' : 'Free trial'; } }); }
+  if(lang === 'es'){ ctaButtons.forEach(function(el){ if(el.textContent.indexOf('Essai') > -1 || el.textContent.indexOf('gratuit') > -1 || el.textContent.indexOf('Se connecter') > -1 || el.textContent.indexOf('Démarrer') > -1 || el.textContent.indexOf('Create') > -1 || el.textContent.indexOf('Sign') > -1) { el.textContent = el.classList.contains('outline') ? 'Iniciar sesión' : 'Prueba gratuita'; } }); }
+}
 function detectLandingLanguage(){
   var saved=localStorage.getItem('konektem_language');
   if(saved&&LANDING_LANGS[saved]) return saved;
@@ -759,6 +846,7 @@ function setLandingLanguage(lang){
     var key=el.getAttribute('data-i18n');
     if(LANDING_LANGS[selected][key]) el.textContent=LANDING_LANGS[selected][key];
   });
+  applyLandingExtendedLanguage(selected);
   var selector=document.getElementById('landing-lang');
   if(selector) selector.value=selected;
   var appData;
@@ -883,7 +971,7 @@ document.querySelectorAll('.screen').forEach(function(s) {
   var pass  = document.getElementById('su-pass').value;
 
   if (!name || !email || !phone || !pass) { showAuthErr('signup','Veuillez remplir tous les champs.'); return; }
-  if (pass.length < 8) { showAuthErr('signup','Mot de passe : 8 caractères minimum.'); return; }
+  if (pass.length < 6) { showAuthErr('signup','Mot de passe : 6 caractères minimum.'); return; }
   if (!email.includes('@') || !email.includes('.')) { showAuthErr('signup','Adresse email invalide.'); return; }
   if (phone.length < 8) { showAuthErr('signup','Numéro de téléphone invalide (minimum 8 chiffres).'); return; }
 
@@ -1113,7 +1201,7 @@ function doSignup(){
   var phone=document.getElementById('su-phone').value.trim();
   var pass=document.getElementById('su-pass').value;
   if(!name||!email||!phone||!pass){showAuthErr('signup','Veuillez remplir tous les champs.');return;}
-  if(pass.length<8){showAuthErr('signup','Mot de passe : 8 caractères minimum.');return;}
+  if(pass.length<6){showAuthErr('signup','Mot de passe : 6 caractères minimum.');return;}
   if(!email.includes('@')||!email.includes('.')){showAuthErr('signup','Adresse email invalide.');return;}
   var btn=document.querySelector('#screen-signup .auth-btn');
   if(btn){btn.disabled=true;btn.textContent='⏳ Création sécurisée...';}
