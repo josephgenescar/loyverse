@@ -1192,8 +1192,15 @@ function authHeaders(token){
   return {'apikey':SUPA_KEY,'Authorization':'Bearer '+(token||SUPA_KEY),'Content-Type':'application/json'};
 }
 function redirectToAppWithSession(session){
-  if(!session||!session.access_token){window.location.href='app.html';return;}
-  window.location.href='app.html#access_token='+encodeURIComponent(session.access_token)+'&refresh_token='+encodeURIComponent(session.refresh_token||'');
+  if(!session||!session.access_token){window.location.replace('app.html');return;}
+  try{
+    window.sessionStorage.setItem('konektem_auth', JSON.stringify({
+      access_token: session.access_token,
+      refresh_token: session.refresh_token || '',
+      email: (session.user && (session.user.email || (session.user.user_metadata && session.user.user_metadata.email))) || ''
+    }));
+  }catch(e){}
+  window.location.replace('app.html');
 }
 function doSignup(){
   var name=document.getElementById('su-name').value.trim();

@@ -17,14 +17,101 @@ var S = {
 
 // Supabase Auth session passed from the landing page. Kept in memory only.
 var AUTH_ACCESS_TOKEN='', AUTH_REFRESH_TOKEN='', AUTH_USER_EMAIL='';
+function decodeJwtPayload(token){
+  if(!token || typeof token !== 'string') return null;
+  var parts = token.split('.');
+  if(parts.length < 2) return null;
+  try{
+    var payload = parts[1].replace(/-/g,'+').replace(/_/g,'/');
+    while(payload.length % 4 !== 0) payload += '=';
+    return JSON.parse(atob(payload));
+  }catch(e){
+    return null;
+  }
+}
+function isAuthSessionValid(token){
+  if(!token) return false;
+  var payload = decodeJwtPayload(token);
+  if(!payload) return false;
+  var exp = Number(payload.exp || payload.expiry || 0);
+  if(exp && exp * 1000 <= Date.now()) return false;
+  return true;
+}
+function saveAuthSessionToStorage(){
+  try{
+    if(window.sessionStorage){
+      window.sessionStorage.setItem('konektem_auth', JSON.stringify({
+        access_token: AUTH_ACCESS_TOKEN || '',
+        refresh_token: AUTH_REFRESH_TOKEN || '',
+        email: AUTH_USER_EMAIL || ''
+      }));
+    }
+  }catch(e){}
+}
+function clearAuthSession(){
+  AUTH_ACCESS_TOKEN='';
+  AUTH_REFRESH_TOKEN='';
+  AUTH_USER_EMAIL='';
+  try{ if(window.sessionStorage) window.sessionStorage.removeItem('konektem_auth'); }catch(e){}
+  if(window.history && window.history.replaceState){
+    var cleanUrl = window.location.pathname + window.location.search;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+}
+function readAuthSessionFromStorage(){
+  try{
+    if(!window.sessionStorage) return false;
+    var raw = window.sessionStorage.getItem('konektem_auth');
+    if(!raw) return false;
+    var data = JSON.parse(raw);
+    if(!data || !data.access_token) return false;
+    if(!isAuthSessionValid(data.access_token)){
+      clearAuthSession();
+      return false;
+    }
+    AUTH_ACCESS_TOKEN = data.access_token || '';
+    AUTH_REFRESH_TOKEN = data.refresh_token || '';
+    AUTH_USER_EMAIL = data.email || '';
+    if(!AUTH_USER_EMAIL){
+      var payload = decodeJwtPayload(AUTH_ACCESS_TOKEN);
+      AUTH_USER_EMAIL = (payload && (payload.email || (payload.user_metadata && payload.user_metadata.email) || '')) || '';
+    }
+    return true;
+  }catch(e){
+    clearAuthSession();
+    return false;
+  }
+}
 (function readAuthSession(){
   var hash=window.location.hash.replace(/^#/,'');
-  if(!hash)return;
+  if(!hash){
+    if(readAuthSessionFromStorage()){
+      saveAuthSessionToStorage();
+    }
+    return;
+  }
   var params=new URLSearchParams(hash);
   AUTH_ACCESS_TOKEN=params.get('access_token')||'';
   AUTH_REFRESH_TOKEN=params.get('refresh_token')||'';
+  if(AUTH_ACCESS_TOKEN && !isAuthSessionValid(AUTH_ACCESS_TOKEN)){
+    clearAuthSession();
+    return;
+  }
   if(AUTH_ACCESS_TOKEN){
-    try{var payload=JSON.parse(atob(AUTH_ACCESS_TOKEN.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));AUTH_USER_EMAIL=payload.email||payload.user_metadata&&payload.user_metadata.email||'';}catch(e){}
+    try{
+      var payload = decodeJwtPayload(AUTH_ACCESS_TOKEN);
+      AUTH_USER_EMAIL = (payload && (payload.email || (payload.user_metadata && payload.user_metadata.email) || '')) || '';
+      saveAuthSessionToStorage();
+      if(window.history && window.history.replaceState){
+        var cleanUrl = window.location.pathname + window.location.search;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    }catch(e){
+      AUTH_USER_EMAIL='';
+      clearAuthSession();
+    }
+  } else if(readAuthSessionFromStorage()){
+    saveAuthSessionToStorage();
   }
 })();
 
@@ -344,7 +431,18 @@ var PRIX_MENSUEL = 10;
 var PRIX_ANNUEL  = 100;
 
 function getCurrentUserEmail(){
-  return S.userEmail||AUTH_USER_EMAIL;
+  return (S.userEmail || AUTH_USER_EMAIL || '').trim();
+}
+function getSessionUserEmail(){
+  return getCurrentUserEmail();
+}
+function requireAuthSession(){
+  if(!AUTH_ACCESS_TOKEN || !AUTH_USER_EMAIL || !isAuthSessionValid(AUTH_ACCESS_TOKEN)){
+    clearAuthSession();
+    window.location.replace('index.html');
+    return false;
+  }
+  return true;
 }
 function appAuthHeaders(){
   return {'apikey':SUPA_KEY_APP,'Authorization':'Bearer '+(AUTH_ACCESS_TOKEN||SUPA_KEY_APP),'Content-Type':'application/json'};
@@ -383,9 +481,7 @@ function doPremium(){
   var unite= plan === 'annuel' ? 'USD/an' : 'USD/mois';
 
   // ── Jwenn email kliyan ──
-  var userEmail = S.userEmail || (function(){
-    try{ return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }catch(e){return '';}
-  })();
+  var userEmail = getCurrentUserEmail();
 
   // Mete bouton nan loading state (san fèmen modal)
   var pmBtn = document.getElementById('pm-btn');
@@ -470,7 +566,7 @@ function showManualPayModal(plan, prix, unite){
     mov.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;';
 
     // Enrejistre peman an atant nan Supabase
-    var userEmail = S.userEmail||(function(){try{return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||'';}catch(e){return '';}})();
+    var userEmail = getCurrentUserEmail();
     if(userEmail){ recordPaymentIntent(plan, prix); }
 
     var inner = document.createElement('div');
@@ -516,7 +612,7 @@ function showManualPayModal(plan, prix, unite){
     waBtn.onclick = function(){
     recordPaymentIntent(plan, prix);
     var bizname = S.settings.bizname || '';
-    var email = (function(){ try{ return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }catch(e){ return ''; } })();
+    var email = getCurrentUserEmail();
     var msg = '💳 *PEMAN KONEKTEM — ' + (plan==='mensuel'?'MENSUEL':'ANNUEL') + '*\n\n'
       + '👤 Boutique: ' + bizname + '\n'
       + '📧 Email: ' + email + '\n'
@@ -568,7 +664,7 @@ function showManualPayModal(plan, prix, unite){
 // ── Enrejistre entansyon peman nan Supabase ──
 function recordPaymentIntent(plan, montant){
   var userEmail = S.userEmail || (function(){
-    try{ return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }catch(e){ return ''; }
+    return getCurrentUserEmail();
   })();
   fetch('https://mnpgapvltdrpztnjmeie.supabase.co/rest/v1/konektem_payments', {
     method: 'POST',
@@ -617,7 +713,7 @@ function verifyCode(){
   if(btn){ btn.disabled=true; btn.textContent='...'; }
 
   var userEmail = '';
-  try{ userEmail = JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }catch(e){}
+  userEmail = getCurrentUserEmail();
 
   // Query dirèk nan tab konektem_codes
   var queryUrl = SUPA_URL_APP + '/rest/v1/konektem_codes?code=eq.'
@@ -736,9 +832,7 @@ function activatePremium(code, planRecu){
   save();
 
   // ── Sync Premium → Supabase ──
-  var userEmail = S.userEmail || (function(){
-    try{ return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }catch(e){ return ''; }
-  })();
+  var userEmail = getCurrentUserEmail();
   if(userEmail){
     fetch('https://mnpgapvltdrpztnjmeie.supabase.co/rest/v1/konektem_users?email=eq.'+encodeURIComponent(userEmail), {
       method: 'PATCH',
@@ -865,9 +959,7 @@ function launchApp(){
   save();
 
   // Enrejistre sektè + biznis nan Supabase pou admin wè
-  var lu = {};
-  try{ lu = JSON.parse(localStorage.getItem('konektem_user')||'{}'); }catch(e){}
-  var email = lu.email || '';
+  var email = getCurrentUserEmail();
   if(email){
     fetch(SUPA_URL_APP+'/rest/v1/konektem_users', {
       method:'POST',
@@ -902,8 +994,7 @@ var SUPA_KEY_APP = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 
 function syncUserToSupabase(){
   try {
-    var lu = JSON.parse(localStorage.getItem('konektem_user')||'{}');
-    var email = lu.email||'';
+    var email = getCurrentUserEmail();
     if(!email) return;
     S.userEmail = email;
 
@@ -997,12 +1088,6 @@ function syncUserToSupabase(){
 }
 
 function pushUserToSupabase(email){
-  // Jwenn modpas hash pou sove nan Supabase (pou multi-aparèy)
-  var passHash = '';
-  try{
-    var lu = JSON.parse(localStorage.getItem('konektem_user')||'{}');
-    passHash = lu.pass || '';
-  }catch(e){}
   var body = JSON.stringify({
     email:       email,
     bizname:     S.settings.bizname||'',
@@ -1137,7 +1222,7 @@ function getSyncId(){
 }
 
 function getSyncEmail(){
-  try{ return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }catch(e){ return ''; }
+  return getSessionUserEmail();
 }
 
 // Sove yon vant nan Supabase pou sync
@@ -1374,6 +1459,7 @@ function showBannedWall(){
 }
 
 function startApp(){
+  if(!requireAuthSession()) return;
   document.getElementById('screen-ob').classList.add('hidden');
   var app=document.getElementById('screen-app');
   app.style.display='flex'; app.style.flexDirection='column'; app.style.height='100%';
@@ -1385,7 +1471,7 @@ function startApp(){
   initDarkMode();
   // Pull done biznis si Premium (nouvo aparèy oswa apre lon tan)
   setTimeout(function(){
-    var ueml = (function(){try{return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||'';}catch(e){return '';}}());
+    var ueml = getCurrentUserEmail();
     if(ueml && S.settings.plan === 'premium'){
       pullBizDataFromSupabase(ueml, function(pulled){
         if(pulled){
@@ -1909,9 +1995,7 @@ function checkout(method, montantRecu, rendu, clientInfo){
   setTimeout(checkStockAfterSale, 800);
   // Sync vant nan Supabase si Premium (pou multi-aparèy)
   if(S.settings.plan === 'premium'){
-    var userEmail2 = S.userEmail || (function(){
-      try{return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||'';}catch(e){return '';}
-    })();
+    var userEmail2 = getSessionUserEmail();
     if(userEmail2) setTimeout(function(){ pushBizDataToSupabase(userEmail2); }, 1500);
   }
   if(S.settings.showReceipt) showRecu(sale);
@@ -2031,7 +2115,7 @@ function saveProd(){
   setTimeout(syncProductsToCloud, 1000);
   // Sync atik si Premium
   if(S.settings.plan === 'premium'){
-    var ueml = S.userEmail||(function(){try{return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||'';}catch(e){return '';}}());
+    var ueml = getSessionUserEmail();
     if(ueml) setTimeout(function(){ pushBizDataToSupabase(ueml); }, 2000);
   }
 }
@@ -2828,6 +2912,10 @@ function manualCloudSync(){ syncProductsToCloud(); notif('☁️ Sync cloud lanc
 (function initCheck(){
   load();
   applyLanguage();
+  if(AUTH_ACCESS_TOKEN && AUTH_USER_EMAIL && isAuthSessionValid(AUTH_ACCESS_TOKEN)){
+    startApp();
+    return;
+  }
   if(S.settings.onboardingDone){ startApp(); }
 })();
 
@@ -3725,8 +3813,7 @@ var CURRENT_BIZ_ID = null;  // ID biznis aktif la
 
 // ── Jwenn email kont ──
 function getOwnerEmail(){
-  try{ return JSON.parse(localStorage.getItem('konektem_user')||'{}').email||''; }
-  catch(e){ return ''; }
+  return getCurrentUserEmail();
 }
 
 // ── Chaje lis biznis propriétaire a depi Supabase ──
