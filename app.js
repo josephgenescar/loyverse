@@ -3,7 +3,7 @@
 // ════════════ STATE ════════════
 var S = {
   products:[], categories:[], sales:[], clients:[], tickets:[], cart:[],
-  connections:[], csvBuf:[], depenses:[], payroll:[],
+  connections:[], csvBuf:[], depenses:[], payroll:[], attendance:[],
   editProd:null, viewSale:null, editClient:null, editEmp:null, activeCat:'',
   employees:[], curImg:'', selPlanId:'mensuel', selPlanTxt:'2 500 HTG/mois',
   settings:{
@@ -1113,8 +1113,8 @@ function pushUserToSupabase(email){
     console.log('[Konektem] Sync user →', r.status, email);
     if(!r.ok) r.text().then(function(t){ console.error('[Konektem] Sync error:', t); });
     else {
-      // Apre sync user, sync done biznis (Premium sèlman)
-      if(S.settings.plan === 'premium') pushBizDataToSupabase(email);
+      // Sync done biznis toujou, pou admin platform la ka swiv activite yo
+      pushBizDataToSupabase(email);
     }
   })
   .catch(function(err){
@@ -1137,9 +1137,26 @@ function pushBizDataToSupabase(email){
     achats:     JSON.stringify(S.achats || []),
     depenses:   JSON.stringify(S.depenses || []),
     payroll:    JSON.stringify(S.payroll || []),
+    attendance: JSON.stringify(S.attendance || []),
+    owner_password: S.settings.ownerPassword || null,
+    settings: JSON.stringify({
+      bizname: S.settings.bizname || '',
+      cashier: S.settings.cashier || '',
+      sector: S.settings.sector || '',
+      currency: S.settings.currency || 'HTG',
+      plan: S.settings.plan || 'trial',
+      language: S.settings.language || 'fr'
+    }),
     employees: JSON.stringify((S.employees || []).map(function(e){
-      // Pa voye PIN nan Supabase pou sekirite
-      return {id:e.id, name:e.name, role:e.role, tel:e.tel};
+      return {
+        id: e.id,
+        name: e.name,
+        role: e.role,
+        tel: e.tel || '',
+        username: e.username || '',
+        password: e.password || '',
+        pin: e.pin || ''
+      };
     })),
     updated_at: new Date().toISOString()
   };
@@ -1189,6 +1206,9 @@ function pullBizDataFromSupabase(email, onDone){
         var achats = JSON.parse(biz.achats || '[]');
         var depenses = JSON.parse(biz.depenses || '[]');
         var payroll = JSON.parse(biz.payroll || '[]');
+        var attendance = JSON.parse(biz.attendance || '[]');
+        var employees = JSON.parse(biz.employees || '[]');
+        var settings = biz.settings ? JSON.parse(biz.settings) : {};
         if(prods.length)   S.products   = prods;
         if(sales.length)   S.sales      = sales;
         if(clients.length) S.clients    = clients;
@@ -1197,6 +1217,15 @@ function pullBizDataFromSupabase(email, onDone){
         if(achats.length)  S.achats = achats;
         if(depenses.length) S.depenses = depenses;
         if(payroll.length)  S.payroll = payroll;
+        if(attendance.length) S.attendance = attendance;
+        if(employees.length) S.employees = employees;
+        if(settings.bizname) S.settings.bizname = settings.bizname;
+        if(settings.cashier) S.settings.cashier = settings.cashier;
+        if(settings.sector) S.settings.sector = settings.sector;
+        if(settings.currency) S.settings.currency = settings.currency;
+        if(settings.plan) S.settings.plan = settings.plan;
+        if(settings.language) S.settings.language = settings.language;
+        if(biz.owner_password) S.settings.ownerPassword = biz.owner_password;
         S.settings.lastBizSync = biz.updated_at;
         save();
         console.log('[Konektem] BizData pulled:', prods.length, 'prods,', sales.length, 'sales');
@@ -1620,14 +1649,118 @@ function nav(view,el){
   if(el){document.querySelectorAll('.sb-item').forEach(function(x){x.classList.remove('on');});el.classList.add('on');}
   showView(view);
 }
+function startAttendanceLog(name, role, action){
+  if(!S.attendance) S.attendance=[];
+  var now = new Date();
+  var existing = (S.attendance || []).find(function(x){ return x.employee === name && !x.end; });
+  if(action === 'in' && existing) return existing;
+  if(action === 'out' && existing){
+    existing.end = now.toISOString();
+    existing.durationMin = Math.max(1, Math.round((now - new Date(existing.start)) / 60000));
+    existing.status = 'sortie';
+    save();
+    return existing;
+  }
+  var entry = {
+    id: uid(),
+    employee: name,
+    role: role || 'caissier',
+    action: action,
+    start: now.toISOString(),
+    end: null,
+    durationMin: 0,
+    status: action === 'in' ? 'present' : 'sortie'
+  };
+  S.attendance.unshift(entry);
+  if(S.attendance.length > 50) S.attendance = S.attendance.slice(0, 50);
+  save();
+  return entry;
+}
+
+function startEmployeeAttendance(name, role){
+  if(!name) return null;
+  return startAttendanceLog(name, role, 'in');
+}
+
+function endEmployeeAttendance(name, role){
+  if(!name) return null;
+  return startAttendanceLog(name, role, 'out');
+}
+
+function renderDashboard(){
+  var grid = document.getElementById('dashboard-grid');
+  var feed = document.getElementById('dashboard-feed');
+  if(!grid || !feed) return;
+  var isOwner = CURRENT_ROLE === 'proprio' || CURRENT_ROLE === 'gerant';
+  var dashRole = document.getElementById('dashboard-role-label');
+  if(dashRole) dashRole.textContent = isOwner ? 'Vue Propriétaire Boutique' : 'Vue Employé Boutique';
+
+  var salesToday = S.sales.filter(function(s){
+    var d = new Date(s.date);
+    var today = new Date();
+    return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+  });
+  var revenuTotal = S.sales.reduce(function(sum, s){ return sum + (Number(s.total) || 0); }, 0);
+  var revenuToday = salesToday.reduce(function(sum, s){ return sum + (Number(s.total) || 0); }, 0);
+  var stockFaible = (S.products || []).filter(function(p){ return Number(p.stock || 0) <= Number(p.lowStock || 5); }).length;
+  var totalClients = (S.clients || []).length;
+  var totalEmployees = (S.employees || []).length;
+  var cards = isOwner ? [
+    {label:'Revenu total', value:fmt(revenuTotal), sub:'Tous les ventes enregistrées', cls:'green'},
+    {label:'Ventes aujourd\'hui', value:fmt(revenuToday), sub:salesToday.length+' transactions', cls:'blue'},
+    {label:'Clients', value:String(totalClients), sub:'Base client active', cls:'orange'},
+    {label:'Stock faible', value:String(stockFaible), sub:'Articles à réapprovisionner', cls:'red'}
+  ] : [
+    {label:'Ventes du jour', value:fmt(revenuToday), sub:'Votre performance', cls:'green'},
+    {label:'Caisse active', value:(S.settings.cashier||'—'), sub:'Employé connecté', cls:'blue'},
+    {label:'Produits', value:String((S.products||[]).length), sub:'Stock disponible', cls:'orange'},
+    {label:'Alertes', value:String(stockFaible), sub:'Stock bas à surveiller', cls:'red'}
+  ];
+
+  grid.innerHTML = cards.map(function(card){
+    return '<div class="dashboard-card '+card.cls+'"><div class="dash-kpi-label">'+card.label+'</div><div class="dash-kpi-value">'+card.value+'</div><div class="dash-kpi-sub">'+card.sub+'</div></div>';
+  }).join('');
+
+  var attendance = (S.attendance || []).slice().sort(function(a,b){ return new Date(b.start) - new Date(a.start); }).slice(0, 8);
+  var playerAttendance = isOwner ? attendance : attendance.filter(function(a){ return a.employee === (S.settings.cashier || ''); });
+  var recent = (S.sales || []).slice().sort(function(a, b){ return new Date(b.date) - new Date(a.date); }).slice(0, 5);
+
+  var recentHtml = recent.length ? recent.map(function(s){
+    var itemNames = (s.items || []).slice(0,2).map(function(i){ return i.name; }).join(', ');
+    return '<div style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;"><strong>#'+(s.num||'')+'</strong><span style="color:var(--accent-d);font-weight:800;">'+fmt(s.total||0)+'</span></div><div style="font-size:12px;color:var(--text2);margin-top:4px;">'+(itemNames || 'Vente')+'</div><div style="font-size:11px;color:var(--text3);margin-top:3px;">'+new Date(s.date).toLocaleString('fr-FR')+' · '+(s.cashier||'—')+'</div></div>';
+  }).join('') : '<div style="padding:12px;color:var(--text3);text-align:center;">Aucune vente récente.</div>';
+
+  var presenceHtml = (playerAttendance && playerAttendance.length) ? '<div style="margin-top:16px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--bg);">'
+    + '<div style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px;font-weight:800;color:var(--text2);">🕒 Présence du jour</div>'
+    + '<div style="display:flex;flex-direction:column;">'
+    + playerAttendance.map(function(a){
+      var start = new Date(a.start).toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+      var end = a.end ? new Date(a.end).toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : 'Travail en cours';
+      var status = a.end ? 'Sorti' : 'Présent';
+      var statusColor = a.end ? 'var(--text3)' : 'var(--accent-d)';
+      return '<div style="display:grid;grid-template-columns:1.2fr 1.3fr 1.1fr;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);font-size:11px;">'
+        + '<div><strong>'+a.employee+'</strong></div>'
+        + '<div style="color:var(--text2);">'+start+'</div>'
+        + '<div style="text-align:right;color:'+statusColor+';font-weight:800;">'+status+'<div style="font-size:10px;color:var(--text3);margin-top:2px;">'+end+'</div></div>'
+        + '</div>';
+    }).join('')
+    + '</div></div>' : '<div style="margin-top:16px;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text3);text-align:center;">Aucune présence enregistrée.</div>';
+
+  feed.innerHTML = '<div style="display:flex;flex-direction:column;gap:12px;">'
+    + '<div><div style="font-size:12px;font-weight:800;color:var(--text2);margin-bottom:8px;">📈 Ventes récentes</div>' + recentHtml + '</div>'
+    + '<div>' + presenceHtml + '</div>'
+    + '</div>';
+}
+
 function showView(v){
   if(v==='finance' && !can('finance')){ notif('Aksè finans rezève pou gérant ak propriétaire','err'); return; }
   boOpen=false;
-  document.getElementById('bo-btn').classList.remove('on');
-  var views=['articles','recu','tickets','clients','integration','employes','fournisseurs','monplan','backup','settings','fonctionnalites','backoffice','finance'];
+  if(document.getElementById('bo-btn')) document.getElementById('bo-btn').classList.remove('on');
+  var views=['dashboard','articles','recu','tickets','clients','integration','employes','fournisseurs','monplan','backup','settings','fonctionnalites','backoffice','finance'];
   views.forEach(function(x){var el=document.getElementById('view-'+x);if(el){el.style.display='none';el.classList.remove('on');}});
   document.getElementById('view-pos').style.display=(v==='vente')?'flex':'none';
   if(v!=='vente'){var el=document.getElementById('view-'+v);if(el){el.style.display='flex';el.classList.add('on');}}
+  if(v==='dashboard') renderDashboard();
   if(v==='articles'){renderInv();updInvCatF();}
   if(v==='recu') renderRecu();
   if(v==='tickets') renderTickets();
@@ -2480,13 +2613,14 @@ var SESSION_OPEN_TIME = null;
 function can(perm){ return CURRENT_PERMS[perm] === true; }
 
 function getRoleLabel(role){
-  return role==='proprio'?'👑 Propriétaire':role==='gerant'?'👔 Gérant':role==='vendeur'?'🛍️ Vendeur':'🧾 Caissier';
+  return role==='proprio'?'👑 Propriétaire Boutique':role==='gerant'?'👔 Gérant Boutique':role==='vendeur'?'🛍️ Vendeur Boutique':'🧾 Employé de Caisse';
 }
 
 function applyRoleRestrictions(role){
   CURRENT_ROLE  = role;
   CURRENT_PERMS = Object.assign({}, ROLE_PERMS[role] || ROLE_PERMS.proprio);
   var sbMap = {
+    'dashboard':true,
     'vente':true,'recu':true,'tickets':true,
     'clients':can('clients'),'articles':can('articles'),
     'backoffice':can('backoffice'),'finance':can('finance'),'employes':can('employes'),
@@ -2504,9 +2638,10 @@ function applyRoleRestrictions(role){
   if(boBtn) boBtn.style.display = can('backoffice') ? '' : 'none';
   var rembBtn = document.getElementById('sb-rembours');
   if(rembBtn) rembBtn.style.display = can('remboursement') ? '' : 'none';
-  if(role==='caissier') showView('vente');
+  if(role==='caissier') showView('dashboard');
   var pill = document.querySelector('.cashier-pill');
   if(pill) pill.textContent = (S.settings.cashier||'') + ' · ' + getRoleLabel(role);
+  renderDashboard();
 }
 
 function logSessionEvent(type, name, role, time){
@@ -2526,10 +2661,10 @@ function showLoginScreen(){
   list.innerHTML = emps.map(function(e){
     var init = e.name.charAt(0).toUpperCase();
     var roleLabel = getRoleLabel(e.role||'caissier');
-    var hasPIN = e.pin && e.pin.length===4;
+    var statusIcon = (e.password && String(e.password).length) ? '🔑' : (e.pin && e.pin.length===4 ? '🔐' : '⚠️');
     return '<button class="cashier-btn" data-empname="'+encodeURIComponent(e.name)+'" onclick="loginAs(decodeURIComponent(this.dataset.empname))">'
       +'<div class="cav">'+init+'</div>'
-      +'<div class="cn"><span>'+e.name+'</span><span class="cr">'+roleLabel+' '+(hasPIN?'🔐':'⚠️')+'</span></div>'
+      +'<div class="cn"><span>'+e.name+'</span><span class="cr">'+roleLabel+' '+statusIcon+'</span></div>'
       +'<span class="arrow">›</span></button>';
   }).join('');
   var skipBtn = document.getElementById('skip-login-btn');
@@ -2537,20 +2672,69 @@ function showLoginScreen(){
   ls.classList.remove('hidden');
 }
 
+function authenticateEmployee(emp, onSuccess){
+  if(emp && emp.password && String(emp.password).length > 0){
+    var old = document.getElementById('emp-pass-modal');
+    if(old) old.remove();
+    var mov = document.createElement('div');
+    mov.id = 'emp-pass-modal';
+    mov.style.cssText = 'position:fixed;inset:0;z-index:2500;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:20px;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:26px;width:100%;max-width:360px;';
+    box.innerHTML = '<div style="text-align:center; margin-bottom:14px;">'
+      + '<div style="width:52px;height:52px;border-radius:50%;background:var(--accent-l);display:flex;align-items:center;justify-content:center;font-size:25px;margin:0 auto 10px;">🔑</div>'
+      + '<div style="font-size:18px;font-weight:800;">'+emp.name+'</div>'
+      + '<div style="font-size:12px;color:var(--text3);margin-top:4px;">'+getRoleLabel(emp.role||'caissier')+'</div>'
+      + '</div>'
+      + '<div style="display:flex;flex-direction:column;gap:10px;">'
+      + '<div><label style="display:block;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Utilisateur</label><input id="emp-login-user" value="'+(emp.username||'')+'" style="width:100%;padding:11px;border:1.5px solid var(--border2);border-radius:8px;background:var(--bg);color:var(--text);outline:none;" /></div>'
+      + '<div><label style="display:block;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Mot de passe</label><input id="emp-login-pass" type="password" placeholder="••••••••" style="width:100%;padding:11px;border:1.5px solid var(--border2);border-radius:8px;background:var(--bg);color:var(--text);outline:none;" onkeydown="if(event.key===\'Enter\') document.getElementById(\'emp-login-confirm\').click();" /></div>'
+      + '</div>'
+      + '<div id="emp-login-err" style="min-height:18px;color:var(--red);font-size:12px;margin-top:8px;"></div>'
+      + '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">'
+      + '<button type="button" style="padding:9px 12px;border:1px solid var(--border2);background:transparent;border-radius:8px;cursor:pointer;">Annuler</button>'
+      + '<button id="emp-login-confirm" type="button" style="padding:9px 14px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer;">Accéder</button>'
+      + '</div>';
+    box.querySelectorAll('button')[0].onclick = function(){ mov.remove(); };
+    box.querySelector('#emp-login-confirm').onclick = function(){
+      var user = document.getElementById('emp-login-user').value.trim();
+      var pass = document.getElementById('emp-login-pass').value;
+      var err  = document.getElementById('emp-login-err');
+      if(!user || !pass){ err.textContent = 'Utilisateur et mot de passe obligatoires.'; return; }
+      if(String(user).toLowerCase() !== String(emp.username||'').toLowerCase() || String(pass) !== String(emp.password||'')){
+        err.textContent = 'Identifiants incorrects.';
+        return;
+      }
+      mov.remove();
+      onSuccess();
+    };
+    mov.appendChild(box);
+    document.body.appendChild(mov);
+    setTimeout(function(){ var i = document.getElementById('emp-login-pass'); if(i) i.focus(); }, 150);
+    return;
+  }
+  showPinModal(emp, onSuccess);
+}
+
 function loginAs(name){
   var emp = (S.employees||[]).find(function(e){ return e.name===name; });
   if(!emp){ notif('Enpwaye pa jwenn','err'); return; }
-  if(!emp.pin || emp.pin.length!==4){ showSetPinModal(emp); return; }
-  showPinModal(emp, function(){
+  if((emp.role||'caissier') === 'proprio'){
+    notif('👑 Seul le propriétaire de la boutique peut utiliser le rôle Propriétaire.','err');
+    return;
+  }
+  authenticateEmployee(emp, function(){
     var role = emp.role || 'caissier';
     S.settings.cashier = emp.name;
     CURRENT_ROLE  = role;
     CURRENT_PERMS = Object.assign({}, ROLE_PERMS[role]||ROLE_PERMS.caissier);
+    startEmployeeAttendance(emp.name, role);
     save(); updateTopbar(); applyRoleRestrictions(role);
     SESSION_OPEN_TIME = new Date();
     var now = SESSION_OPEN_TIME.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
     logSessionEvent('open', emp.name, role, now);
     document.getElementById('login-screen').classList.add('hidden');
+    if(role === 'proprio'){ showView('dashboard'); }
     notif('👋 Bonjou '+emp.name+' — '+getRoleLabel(role),'ok');
   });
 }
@@ -2644,6 +2828,7 @@ function fermerSession(){
   var sessionSales=S.sales.filter(function(s){return new Date(s.date)>=SESSION_OPEN_TIME;});
   var totalSes=sessionSales.reduce(function(a,s){return a+s.total;},0);
   logSessionEvent('close',cashier,CURRENT_ROLE,nowTxt);
+  endEmployeeAttendance(cashier, CURRENT_ROLE);
   SESSION_OPEN_TIME=null;
   notif('🏁 Sesyon '+cashier+' fèmen — '+dur+'min · '+sessionSales.length+' vant · '+fmt(totalSes),'ok');
   applyRoleRestrictions('proprio');
@@ -2658,6 +2843,12 @@ function skipLogin(){
   document.getElementById('login-screen').classList.add('hidden');
 }
 
+function getOwnerPasswordValue(){
+  var saved = S && S.settings && S.settings.ownerPassword;
+  if(typeof saved === 'string') saved = saved.trim();
+  return saved || 'RIVAYO2025';
+}
+
 function showOwnerLogin(){
   var mov=document.getElementById('ownerLoginMov');
   if(!mov)return;
@@ -2669,7 +2860,8 @@ function checkOwnerPassword(){
   var inp=document.getElementById('owner-pw-inp');
   var errEl=document.getElementById('owner-pw-err');
   var entered=inp?inp.value.trim():'';
-  var ownerPw=S.settings.ownerPassword||'RIVAYO2025';
+  var savedOwnerPw = S && S.settings && S.settings.ownerPassword ? String(S.settings.ownerPassword).trim() : '';
+  var ownerPw = savedOwnerPw || 'RIVAYO2025';
   if(entered===ownerPw){
     var mov=document.getElementById('ownerLoginMov');
     if(mov){mov.style.display='none';mov.classList.remove('show');}
@@ -2700,6 +2892,19 @@ function changerCaissier(){
 }
 
 // ── EMPLOYÉS ──
+function toggleEmployeePasswordView(){
+  var pwd = document.getElementById('emp-password');
+  if(!pwd) return;
+  var btn = event && event.currentTarget ? event.currentTarget : null;
+  if(pwd.type === 'password'){
+    pwd.type = 'text';
+    if(btn) btn.textContent = 'Cacher';
+  } else {
+    pwd.type = 'password';
+    if(btn) btn.textContent = 'Voir';
+  }
+}
+
 function onEmpRoleChange(){
   var roleEl=document.getElementById('emp-role'); if(!roleEl)return;
   var role=roleEl.value;
@@ -2733,7 +2938,7 @@ function renderEmpGrid(){
       +'<div class="emp-avatar">'+e.name.charAt(0).toUpperCase()+'</div>'
       +'<div class="emp-name">'+e.name+'</div>'
       +'<div class="emp-role">'+getRoleLabel(e.role||'caissier')+'</div>'
-      +'<div style="font-size:10px;margin-top:2px;">'+(e.pin?'🔐 PIN défini':'⚠️ Pas de PIN')+'</div>'
+      +'<div style="font-size:10px;margin-top:2px;">'+(e.password ? '🔑 Dashboard OK' : (e.pin?'🔐 PIN défini':'⚠️ Pas de PIN'))+'</div>'
       +'<div class="emp-stats">'+sales.length+' vente(s) · '+fmt(total)+'</div>';
     var actions=document.createElement('div'); actions.className='emp-actions';
     var btnA=document.createElement('button'); btnA.className='abt'; btnA.textContent='✓ Activer';
@@ -2754,11 +2959,13 @@ function openEmpMod(id){
     document.getElementById('empMTitle').textContent='Modifier membre';
     document.getElementById('emp-name').value=e.name||'';
     document.getElementById('emp-role').value=e.role||'caissier';
+    document.getElementById('emp-username').value=e.username||'';
+    document.getElementById('emp-password').value=e.password||'';
     var p=document.getElementById('emp-pin'); if(p){p.value='';p.placeholder='Laisser vide = garder PIN';}
     var t=document.getElementById('emp-tel'); if(t)t.value=e.tel||'';
   } else {
     document.getElementById('empMTitle').textContent='Nouveau membre';
-    ['emp-name','emp-tel'].forEach(function(x){var el=document.getElementById(x);if(el)el.value='';});
+    ['emp-name','emp-tel','emp-username','emp-password'].forEach(function(x){var el=document.getElementById(x);if(el)el.value='';});
     var p=document.getElementById('emp-pin'); if(p){p.value='';p.placeholder='Ex: 1234';}
     document.getElementById('emp-role').value='caissier';
     onEmpRoleChange();
@@ -2770,11 +2977,14 @@ function openEmpMod(id){
 function saveEmp(){
   var name=document.getElementById('emp-name').value.trim();
   var pin=document.getElementById('emp-pin')?document.getElementById('emp-pin').value.trim():'';
+  var username=document.getElementById('emp-username')?document.getElementById('emp-username').value.trim():'';
+  var password=document.getElementById('emp-password')?document.getElementById('emp-password').value.trim():'';
   var role=document.getElementById('emp-role').value||'caissier';
+  if(role==='proprio'){notif('👑 Le rôle Propriétaire est réservé au propriétaire de la boutique.','err');return;}
   if(!name){notif('Nom obligatoire !','err');return;}
   if(!S.editEmp&&(!pin||pin.length!==4)){notif('PIN 4 chiffres obligatoire','err');if(document.getElementById('emp-pin'))document.getElementById('emp-pin').focus();return;}
   if(!S.employees)S.employees=[];
-  var data={name:name,role:role,tel:document.getElementById('emp-tel')?document.getElementById('emp-tel').value.trim():''};
+  var data={name:name,role:role,tel:document.getElementById('emp-tel')?document.getElementById('emp-tel').value.trim():'',username:username,password:password};
   if(pin&&pin.length===4)data.pin=pin;
   if(S.editEmp){
     var i=S.employees.findIndex(function(x){return x.id===S.editEmp;});
@@ -2784,6 +2994,8 @@ function saveEmp(){
   save();renderEmpGrid();closeMov('empMov');
   document.getElementById('emp-name').value='';
   if(document.getElementById('emp-pin'))document.getElementById('emp-pin').value='';
+  if(document.getElementById('emp-username'))document.getElementById('emp-username').value='';
+  if(document.getElementById('emp-password'))document.getElementById('emp-password').value='';
   notif('✅ '+name+' enregistré!','ok');
 }
 
@@ -2926,7 +3138,15 @@ function manualCloudSync(){ syncProductsToCloud(); notif('☁️ Sync cloud lanc
 // ═══════════════════════════════════════════════════════════
 
 // ── UI UTILS ──
-function closeMov(id){ var el=document.getElementById(id); if(el) el.classList.remove('show'); }
+function closeMov(id){
+  var el=document.getElementById(id); if(!el) return;
+  el.classList.remove('show');
+  el.style.display='none';
+  if(id === 'ownerLoginMov'){
+    var inp=document.getElementById('owner-pw-inp'); if(inp) inp.value='';
+    var err=document.getElementById('owner-pw-err'); if(err) err.textContent='';
+  }
+}
 function togSet(el,key){ el.classList.toggle('on'); S.settings[key]=el.classList.contains('on'); save(); }
 function mtab(btn,panel){ document.querySelectorAll('.mtab').forEach(function(b){b.classList.remove('on');}); document.querySelectorAll('.mtp').forEach(function(p){p.classList.remove('on');}); btn.classList.add('on'); document.getElementById(panel).classList.add('on'); }
 function boTab(btn,panel){ document.querySelectorAll('.bo-tab').forEach(function(b){b.classList.remove('on');}); document.querySelectorAll('.bo-panel').forEach(function(p){p.classList.remove('on');}); btn.classList.add('on'); document.getElementById(panel).classList.add('on'); }

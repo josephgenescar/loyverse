@@ -319,6 +319,7 @@ tr:hover td{background:var(--surface2);}
       <nav class="sb-nav">
         <div class="sb-section">Aperçu</div>
         <div class="sb-item on" onclick="nav('dashboard',this)"><span class="si">📊</span>Dashboard</div>
+        <div class="sb-item" onclick="nav('business',this)"><span class="si">🏪</span>Business Overview</div>
 
         <div class="sb-section">Gestion</div>
         <div class="sb-item" onclick="nav('users',this)"><span class="si">👥</span>Utilisateurs<span class="sb-badge" id="badge-users">—</span></div>
@@ -404,6 +405,54 @@ tr:hover td{background:var(--surface2);}
             <div class="card">
               <div class="card-hdr"><div class="card-title">💰 Paiements récents</div><button class="btn btn-ghost btn-sm" onclick="removeDuplicatePayments()">🧹 Nettoyer doublons</button></div>
               <div style="padding:12px 16px;" id="dash-payments-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── BUSINESS OVERVIEW ── -->
+        <div class="view" id="view-business">
+          <div class="stats-grid" style="margin-bottom:16px;">
+            <div class="stat-card green">
+              <div class="stat-ico">🏪</div>
+              <div class="stat-val" id="biz-total">0</div>
+              <div class="stat-lbl">Boutiques total</div>
+              <div class="stat-trend up" id="biz-total-trend">Live</div>
+            </div>
+            <div class="stat-card blue">
+              <div class="stat-ico">🟢</div>
+              <div class="stat-val" id="biz-online">0</div>
+              <div class="stat-lbl">Boutiques en ligne</div>
+              <div class="stat-trend up" id="biz-online-trend">Actives</div>
+            </div>
+            <div class="stat-card amber">
+              <div class="stat-ico">👥</div>
+              <div class="stat-val" id="biz-employees">0</div>
+              <div class="stat-lbl">Employés</div>
+              <div class="stat-trend up" id="biz-employees-trend">Total</div>
+            </div>
+            <div class="stat-card red">
+              <div class="stat-ico">💰</div>
+              <div class="stat-val" id="biz-revenue">0</div>
+              <div class="stat-lbl">Revenu global</div>
+              <div class="stat-trend up" id="biz-revenue-trend">HTG</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hdr">
+              <div class="card-title">🏪 Business Overview</div>
+              <div class="tab-toolbar">
+                <input class="search-inp" type="text" id="biz-search" placeholder="Recherche boutique..." oninput="filterBusinessOverview()">
+                <select class="filter-sel" id="biz-filter" onchange="filterBusinessOverview()">
+                  <option value="all">Tous</option>
+                  <option value="online">En ligne</option>
+                  <option value="premium">Premium</option>
+                  <option value="trial">Trial</option>
+                </select>
+              </div>
+            </div>
+            <div id="business-overview-list" style="overflow-x:auto;">
+              <div class="loading"><div class="spinner"></div>Chargement des boutiques...</div>
             </div>
           </div>
         </div>
@@ -1019,6 +1068,7 @@ function startClock(){
 // ══════════════════════════════════════════════
 var PAGE_META = {
   dashboard: ['Dashboard', 'Vue d ensemble — Konektem'],
+  business:  ['Business Overview', 'Vue globale des boutiques et activites'],
   users:     ['Utilisateurs', 'Gestion des comptes et abonnements'],
   payments:  ['Paiements', 'Suivi des transactions et revenus'],
   codes:     ['Codes Activation', 'Generateur et gestion des codes Premium'],
@@ -1042,6 +1092,7 @@ function nav(view, el){
   document.getElementById('page-sub').textContent = meta[1];
   // Load data pou chak paj
   if(view === 'dashboard')  loadDashboard();
+  if(view === 'business')   loadBusinessOverview();
   if(view === 'users')      loadUsers();
   if(view === 'payments')   loadPayments();
   if(view === 'codes')      loadCodes();
@@ -2273,22 +2324,136 @@ checkAuth();
 // ══════════════════════════════════════════════════════════════
 var monitoringData = [];
 
+function loadBusinessOverview(){
+  var listDiv = document.getElementById('business-overview-list');
+  if(listDiv) listDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Chargement des boutiques...</div>';
+
+  Promise.all([
+    supa('konektem_users?select=*&order=created_at.desc'),
+    supa('konektem_data?select=*&order=updated_at.desc'),
+    supa('konektem_presence?select=*&order=last_seen.desc')
+  ]).then(function(results){
+    var users = Array.isArray(results[0]) ? results[0] : [];
+    var businesses = Array.isArray(results[1]) ? results[1] : [];
+    var presence = Array.isArray(results[2]) ? results[2] : [];
+
+    var rows = users.map(function(user){
+      var bizData = businesses.find(function(item){ return (item.email || '').toLowerCase() === (user.email || '').toLowerCase(); }) || {};
+      var settings = {};
+      try { settings = bizData.settings ? JSON.parse(bizData.settings) : {}; } catch(e) {}
+      var employees = [];
+      try { employees = bizData.employees ? JSON.parse(bizData.employees) : []; } catch(e) {}
+      var sales = [];
+      try { sales = bizData.sales ? JSON.parse(bizData.sales) : []; } catch(e) {}
+      var prodCount = 0;
+      try { prodCount = Array.isArray(JSON.parse(bizData.products || '[]')) ? JSON.parse(bizData.products || '[]').length : 0; } catch(e) {}
+      var presenceItem = presence.find(function(item){ return (item.email || '').toLowerCase() === (user.email || '').toLowerCase(); }) || {};
+      var now = Date.now();
+      var isOnline = !!presenceItem.is_online && (now - new Date(presenceItem.last_seen || 0)) < 120000;
+      var revenue = sales.reduce(function(sum, sale){ return sum + (Number(sale.total) || 0); }, 0);
+      return {
+        email: user.email || '',
+        bizname: settings.bizname || user.bizname || 'Boutique',
+        sector: settings.sector || user.secteur || '—',
+        plan: user.plan || 'trial',
+        status: user.status || 'active',
+        employees: Array.isArray(employees) ? employees.length : 0,
+        products: prodCount,
+        sales: sales.length,
+        revenue: revenue,
+        online: isOnline,
+        last_seen: presenceItem.last_seen || user.last_seen || user.created_at || null,
+        created_at: user.created_at || null,
+        phone: user.phone || ''
+      };
+    });
+
+    window.businessOverviewData = rows;
+    renderBusinessOverview(rows);
+
+    var totalRevenue = rows.reduce(function(sum, row){ return sum + (Number(row.revenue) || 0); }, 0);
+    var onlineCount = rows.filter(function(row){ return row.online; }).length;
+    var employeeTotal = rows.reduce(function(sum, row){ return sum + (Number(row.employees) || 0); }, 0);
+    document.getElementById('biz-total').textContent = rows.length;
+    document.getElementById('biz-online').textContent = onlineCount;
+    document.getElementById('biz-employees').textContent = employeeTotal;
+    document.getElementById('biz-revenue').textContent = totalRevenue.toLocaleString('fr-HT') + ' HTG';
+    document.getElementById('biz-total-trend').textContent = rows.length ? 'Boutiques' : 'Aucun';
+    document.getElementById('biz-online-trend').textContent = onlineCount ? 'Actives' : 'Hors ligne';
+    document.getElementById('biz-employees-trend').textContent = employeeTotal ? 'Total' : '0';
+    document.getElementById('biz-revenue-trend').textContent = totalRevenue ? 'HTG' : '0';
+  }).catch(function(err){
+    console.error('[BusinessOverview] Erreur:', err);
+    if(listDiv) listDiv.innerHTML = '<div class="empty"><div class="empty-ico">⚠️</div><div class="empty-txt">Impossible de charger le Business Overview. Vérifiez la table Supabase.</div></div>';
+  });
+}
+
+function filterBusinessOverview(){
+  var q = document.getElementById('biz-search').value.toLowerCase();
+  var filter = document.getElementById('biz-filter').value;
+  var rows = (window.businessOverviewData || []).filter(function(row){
+    var text = (row.bizname + ' ' + row.email + ' ' + row.sector).toLowerCase();
+    var matchText = !q || text.indexOf(q) !== -1;
+    var matchFilter = !filter || filter === 'all'
+      || (filter === 'online' && row.online)
+      || (filter === 'premium' && row.plan === 'premium')
+      || (filter === 'trial' && row.plan !== 'premium');
+    return matchText && matchFilter;
+  });
+  renderBusinessOverview(rows);
+}
+
+function renderBusinessOverview(rows){
+  var listDiv = document.getElementById('business-overview-list');
+  if(!listDiv) return;
+
+  if(!rows.length){
+    listDiv.innerHTML = '<div class="empty"><div class="empty-ico">🏪</div><div class="empty-txt">Aucune boutique trouvée.</div></div>';
+    return;
+  }
+
+  var table = document.createElement('table');
+  table.className = 'data-table';
+  table.innerHTML = '<thead><tr><th>Boutique</th><th>Propriétaire</th><th>Secteur</th><th>Plan</th><th>Employés</th><th>Ventes</th><th>Revenu</th><th>Statut</th><th>Dernière activité</th></tr></thead>';
+  var tbody = document.createElement('tbody');
+
+  rows.forEach(function(row){
+    var tr = document.createElement('tr');
+    var status = row.online ? '<span class="badge green">🟢 En ligne</span>' : '<span class="badge gray">⚫ Hors ligne</span>';
+    var plan = row.plan === 'premium' ? '<span class="badge amber">⭐ Premium</span>' : '<span class="badge blue">Trial</span>';
+    var lastSeen = row.last_seen ? new Date(row.last_seen).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+    tr.innerHTML =
+      '<td><strong>' + safeStr(row.bizname || 'Boutique') + '</strong><br><span style="font-size:11px;color:var(--text3);">' + safeStr(row.email || '—') + '</span></td>'
+      + '<td>' + safeStr(row.phone || '—') + '</td>'
+      + '<td>' + safeStr(row.sector || '—') + '</td>'
+      + '<td>' + plan + '</td>'
+      + '<td>' + (row.employees || 0) + '</td>'
+      + '<td>' + (row.sales || 0) + '</td>'
+      + '<td style="font-weight:800;color:var(--accent);">' + Number(row.revenue || 0).toLocaleString('fr-HT') + ' HTG</td>'
+      + '<td>' + status + '</td>'
+      + '<td style="font-size:12px;color:var(--text3);">' + lastSeen + '</td>';
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  listDiv.innerHTML = '';
+  listDiv.appendChild(table);
+}
+
 function loadMonitoring(){
   var upd = document.getElementById('monitoring-last-update');
   if(upd) upd.textContent = '🔄 Mise à jour: ' + new Date().toLocaleTimeString('fr-FR');
 
-  // Montre loading
   var listDiv = document.getElementById('monitoring-list');
   if(listDiv) listDiv.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">⏳ Chargement des données...</div>';
 
-  supaFetch('konektem_presence?order=last_seen.desc&limit=200')
-  .then(function(data){
-    if(!Array.isArray(data)){
-      console.error('[Monitoring] Repons invalide:', data);
-      if(listDiv) listDiv.innerHTML = '<div style="text-align:center;padding:30px;color:#ef4444;">❌ Erreur chargement. Vérifiez la table konektem_presence dans Supabase.</div>';
-      return;
-    }
-
+  Promise.all([
+    supaFetch('konektem_presence?order=last_seen.desc&limit=200'),
+    supaFetch('konektem_data?order=updated_at.desc&limit=200')
+  ])
+  .then(function(results){
+    var data = Array.isArray(results[0]) ? results[0] : [];
+    var businesses = Array.isArray(results[1]) ? results[1] : [];
     monitoringData = data;
 
     var now = Date.now();
@@ -2306,11 +2471,10 @@ function loadMonitoring(){
     if(monRev)    monRev.textContent    = totRev.toLocaleString() + ' HTG';
     if(monSales)  monSales.textContent  = totSales;
 
-    // Badge nav
     var badge = document.getElementById('badge-online');
     if(badge){ badge.textContent = online.length; badge.style.display = online.length ? '' : 'none'; }
 
-    if(!data.length){
+    if(!data.length && !businesses.length){
       if(listDiv) listDiv.innerHTML =
         '<div style="text-align:center;padding:40px;">'
         + '<div style="font-size:40px;margin-bottom:12px;">📡</div>'
@@ -2321,7 +2485,7 @@ function loadMonitoring(){
       return;
     }
 
-    renderMonitoringList(data);
+    renderMonitoringList(data, businesses);
   })
   .catch(function(err){
     console.error('[Monitoring] Erreur:', err);
@@ -2342,13 +2506,48 @@ function filterMonitoring(){
     if(f === 'trial')    return u.plan !== 'premium';
     return true;
   });
-  renderMonitoringList(filtered);
+  renderMonitoringList(filtered, window.businessOverviewData || []);
 }
 
-function renderMonitoringList(data){
+function renderMonitoringList(data, businesses){
   var div = document.getElementById('monitoring-list');
+  if(!div) return;
+  window.businessOverviewData = Array.isArray(businesses) ? businesses : [];
+  div.innerHTML = '';
+
+  if(Array.isArray(businesses) && businesses.length){
+    var bizRows = businesses.slice(0, 5).map(function(biz){
+      var settings = {};
+      try { settings = biz.settings ? JSON.parse(biz.settings) : {}; } catch(e) {}
+      var employees = [];
+      try { employees = biz.employees ? JSON.parse(biz.employees) : []; } catch(e) {}
+      var bizName = settings.bizname || biz.biz_id || biz.email || 'Boutique';
+      var lastUpdated = biz.updated_at ? new Date(biz.updated_at).toLocaleString('fr-FR', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : '—';
+      var employeeCount = Array.isArray(employees) ? employees.length : 0;
+      return '<tr>'
+        + '<td><strong>' + (bizName || 'Boutique') + '</strong><br><span style="font-size:11px;color:var(--text-muted);">' + (biz.email || '—') + '</span></td>'
+        + '<td>' + (settings.sector || '—') + '</td>'
+        + '<td>' + employeeCount + '</td>'
+        + '<td>' + (lastUpdated || '—') + '</td>'
+        + '</tr>';
+    }).join('');
+
+    var bizCard = document.createElement('div');
+    bizCard.className = 'card';
+    bizCard.style.marginBottom = '16px';
+    bizCard.innerHTML =
+      '<div class="card-hdr"><div class="card-title">🏪 Boutiques enregistrées</div><div style="font-size:12px;color:var(--text-muted);">' + businesses.length + ' comptes</div></div>'
+      + '<div style="overflow-x:auto;">'
+      + '<table>'
+      + '<thead><tr><th>Boutique</th><th>Secteur</th><th>Employés</th><th>Dernière sync</th></tr></thead>'
+      + '<tbody>' + bizRows + '</tbody>'
+      + '</table>'
+      + '</div>';
+    div.appendChild(bizCard);
+  }
+
   if(!data.length){
-    div.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Aucun client trouvé</div>';
+    div.innerHTML += '<div style="text-align:center;padding:40px;color:var(--text-muted);">Aucun client trouvé</div>';
     return;
   }
 
@@ -2378,7 +2577,6 @@ function renderMonitoringList(data){
 
     var rev = (u.revenue_today||0).toLocaleString();
     var ico = SECTOR_ICO[u.secteur] || '🏪';
-    var safeEmail = (u.email||'').replace(/'/g, '');
 
     var tr = document.createElement('tr');
     tr.innerHTML =
@@ -2394,7 +2592,6 @@ function renderMonitoringList(data){
       + '<td style="font-size:12px;color:var(--text-muted);">' + lastSeen + '</td>'
       + '<td></td>';
 
-    // Bouton DOM pou evite apostròf
     var actTd = tr.lastElementChild;
     var wrap = document.createElement('div');
     wrap.style.cssText = 'display:flex;gap:4px;';
@@ -2427,7 +2624,6 @@ function renderMonitoringList(data){
   var tbody = document.createElement('tbody');
   rows.forEach(function(tr){ tbody.appendChild(tr); });
   table.appendChild(tbody);
-  div.innerHTML = '';
   div.appendChild(table);
 }
 

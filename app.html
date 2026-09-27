@@ -583,6 +583,17 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
 .emp-stats{font-size:11px;color:var(--text2);margin-top:6px;}
 .emp-active-badge{position:absolute;top:8px;right:8px;background:var(--accent);color:#fff;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;}
 .emp-actions{display:flex;gap:5px;justify-content:center;margin-top:10px;}
+
+.dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px;}
+.dashboard-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh);}
+.dashboard-card .dash-kpi-label{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.dashboard-card .dash-kpi-value{font-size:28px;font-weight:800;font-family:Syne,sans-serif;color:var(--text);}
+.dashboard-card .dash-kpi-sub{font-size:11px;color:var(--text3);margin-top:5px;}
+.dashboard-card.green{border-left:4px solid var(--accent);}
+.dashboard-card.blue{border-left:4px solid var(--blue);}
+.dashboard-card.orange{border-left:4px solid var(--orange);}
+.dashboard-card.red{border-left:4px solid var(--red);} 
+
 .login-screen{position:fixed;inset:0;z-index:1001;background:linear-gradient(135deg,#0D1F2D,#0a2e1a);display:flex;align-items:center;justify-content:center;padding:20px;}
 .login-screen.hidden{display:none;}
 .login-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:30px;width:100%;max-width:340px;text-align:center;}
@@ -767,7 +778,8 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
         <div class="sb-sector" id="sb-sector">—</div>
       </div>
       <div class="sb-nav">
-        <div class="sb-item on" onclick="nav('vente',this)"><span class="ico">🛒</span><span data-i18n="sales">Vente</span></div>
+        <div class="sb-item on" onclick="nav('dashboard',this)"><span class="ico">📊</span>Dashboard</div>
+        <div class="sb-item" onclick="nav('vente',this)"><span class="ico">🛒</span><span data-i18n="sales">Vente</span></div>
         <div class="sb-item" onclick="nav('recu',this)"><span class="ico">🧾</span><span data-i18n="receipts">Reçus</span></div>
         <div class="sb-item" onclick="nav('articles',this)"><span class="ico">📦</span><span data-i18n="products">Articles</span></div>
         <div class="sb-item" onclick="nav('tickets',this)"><span class="ico">📋</span><span data-i18n="tickets">Tickets ouverts</span></div>
@@ -850,6 +862,21 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
               <button class="pbtn credit" onclick="checkoutCredit()">📝 Crédit</button>
             </div>
             <button class="clear-btn" onclick="clearOrd()">🗑️ Vider la commande</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DASHBOARD ── -->
+      <div id="view-dashboard" class="view">
+        <div class="vhdr">
+          <h2>📊 Dashboard</h2>
+          <div style="font-size:12px;color:var(--text2);font-weight:700;" id="dashboard-role-label">Vue Propriétaire Boutique</div>
+        </div>
+        <div class="vbody">
+          <div class="dashboard-grid" id="dashboard-grid"></div>
+          <div class="chart-card">
+            <div class="sec-t">📈 Activité récente</div>
+            <div id="dashboard-feed" style="display:flex;flex-direction:column;gap:8px;"></div>
           </div>
         </div>
       </div>
@@ -1172,18 +1199,28 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
 
 <!-- MODAL EMPLOYÉ -->
 <div class="mov" id="empMov">
-  <div class="modal" style="max-width:480px;">
+  <div class="modal" style="max-width:520px;">
     <h3 id="empMTitle">Nouveau membre</h3>
     <div class="f2">
       <div class="fg"><label class="flbl">Nom complet *</label><input class="finp" id="emp-name" placeholder="Ex: Marie Joseph"></div>
       <div class="fg"><label class="flbl">PIN (4 chiffres) *</label><input class="finp" id="emp-pin" type="password" maxlength="4" placeholder="Ex: 1234" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
     </div>
     <div class="f2">
+      <div class="fg"><label class="flbl">Nom d'utilisateur</label><input class="finp" id="emp-username" placeholder="Ex: marie"></div>
+      <div class="fg">
+        <label class="flbl">Mot de passe dashboard</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input class="finp" id="emp-password" type="password" placeholder="Ex: Marie2025" style="flex:1;">
+          <button type="button" class="btn-o" onclick="toggleEmployeePasswordView()" style="padding:8px 10px;font-size:12px;min-width:80px;">Voir</button>
+        </div>
+      </div>
+    </div>
+    <div class="f2">
       <div class="fg"><label class="flbl">Niveau d'accès</label>
         <select class="fsel" id="emp-role" onchange="onEmpRoleChange()">
           <option value="caissier">🧾 Caissier — accès limité</option>
+          <option value="vendeur">🛍️ Vendeur — accès vente</option>
           <option value="gerant">👔 Gérant — accès étendu</option>
-          <option value="proprio">👑 Propriétaire — accès total</option>
         </select>
       </div>
       <div class="fg"><label class="flbl">Téléphone</label><input class="finp" id="emp-tel" placeholder="509..."></div>
@@ -1272,7 +1309,7 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
     <!-- Bouton propriétaire toujours visible -->
     <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,.1);padding-top:14px;">
       <button onclick="showOwnerLogin()" style="width:100%;padding:10px;border:1px solid rgba(255,255,255,.15);border-radius:var(--rsm);background:transparent;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:sans-serif;">
-        👑 Accès Propriétaire
+        👑 Accès Propriétaire Boutique
       </button>
     </div>
   </div>
@@ -1281,9 +1318,9 @@ body{font-family:sans-serif;background:var(--bg);color:var(--text);display:flex;
 <!-- Modal accès propriétaire -->
 <div class="mov" id="ownerLoginMov" style="z-index:1100;">
   <div class="modal" style="max-width:360px;text-align:center;">
-    <h3>👑 Accès Propriétaire</h3>
+    <h3>👑 Accès Propriétaire Boutique</h3>
     <p style="font-size:13px;color:var(--text3);margin:10px 0 18px;line-height:1.6;">
-      Entrez le mot de passe propriétaire pour accéder à toutes les fonctionnalités.
+      Entrez le mot de passe du propriétaire pour accéder à la gestion complète de cette boutique.
     </p>
     <div class="fg">
       <input class="finp" id="owner-pw-inp" type="password" placeholder="Mot de passe propriétaire"
