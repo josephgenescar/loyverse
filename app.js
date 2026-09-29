@@ -17,6 +17,10 @@ var S = {
 
 // Supabase Auth session passed from the landing page. Kept in memory only.
 var AUTH_ACCESS_TOKEN='', AUTH_REFRESH_TOKEN='', AUTH_USER_EMAIL='';
+var MERCHANT_PAYMENT_METHODS=[];
+var PAYMENT_METHODS_LOADED=false;
+var PAYMENT_METHODS_ERROR=false;
+var PENDING_PAYMENT_IMAGES={};
 function decodeJwtPayload(token){
   if(!token || typeof token !== 'string') return null;
   var parts = token.split('.');
@@ -125,6 +129,13 @@ var LANGUAGE_PACKS = {
   es:{welcome:'Bienvenido a Konektem 👋',setup:'Configura tu espacio en segundos. No necesitas una cuenta.',shop:'Nombre del negocio',cashier:'Nombre del cajero',currency:'Moneda',language:'Idioma',continue:'Continuar →',sector:'Tu sector de actividad',sectorSub:'La aplicación se adapta automáticamente a tu negocio.',ready:'¡Todo está listo! 🎉',launch:'🚀 Iniciar Konektem',quick:'CONFIGURACIÓN RÁPIDA',sales:'Ventas',receipts:'Recibos',products:'Productos',tickets:'Tickets abiertos',clients:'Clientes',team:'Equipo / Cajeros',suppliers:'Proveedores y Compras',daily:'Informe diario',finance:'Salud financiera',settings:'Configuración',shopPlaceholder:'Ejemplo: Farmacia Saint-Louis',cashierPlaceholder:'Ejemplo: Jean-Baptiste',currencies:['HTG – Gourda haitiana','USD – Dólar estadounidense','EUR – Euro','DOP – Peso dominicano']}
 };
 
+var PAYMENT_LABELS={
+  fr:{pageTitle:'Moyens de paiement',accountName:'Nom du compte (optionnel)',phoneNumber:'Téléphone (optionnel)',qrImage:'Image QR (PNG, JPG, WebP, 2 MB max)',active:'Actif',save:'Enregistrer',deleteQr:'Supprimer le QR',allMethods:'Tous les paiements',cash:'Espèces',loading:'Chargement des moyens de paiement…',noAuth:'Reconnectez-vous pour gérer les moyens de paiement.',loadError:'Impossible de charger les moyens de paiement. Vérifiez le déploiement Netlify.',saved:'Moyen de paiement enregistré.',deleted:'QR supprimé.',fileUnsupported:'Choisissez une vraie image PNG, JPG ou WebP.',imageLoadError:'Impossible de lire cette image.',fileTooLarge:'L’image compressée dépasse 2 MB.',noQr:'Aucun QR actif pour ce moyen de paiement.',settingsLink:'Moyens de paiement',askOwner:'Demandez au propriétaire de configurer un QR.',account:'Compte',phone:'Téléphone',amount:'Montant total à payer',reference:'Référence de paiement (optionnel)',referencePlaceholder:'ID transaction ou 4 derniers chiffres du téléphone',warning:'Verifye peman an sou telefòn ou (SMS/notifikasyon), pa sou ekran kliyan an.',cancel:'Annuler',received:'Paiement reçu',confirmTitle:'Confirmer le paiement reçu',setupHint:'Aucun QR actif. Configurez un QR dans Moyens de paiement.',activeRequired:'Ajoutez un QR avant d’activer ce moyen de paiement.'},
+  en:{pageTitle:'Payment methods',accountName:'Account name (optional)',phoneNumber:'Phone number (optional)',qrImage:'QR image (PNG, JPG, WebP, 2 MB max)',active:'Active',save:'Save',deleteQr:'Delete QR',allMethods:'All payment methods',cash:'Cash',loading:'Loading payment methods…',noAuth:'Sign in again to manage payment methods.',loadError:'Unable to load payment methods. Check the Netlify deployment.',saved:'Payment method saved.',deleted:'QR deleted.',fileUnsupported:'Choose a valid PNG, JPG, or WebP image.',imageLoadError:'Unable to read this image.',fileTooLarge:'The compressed image exceeds 2 MB.',noQr:'No active QR is configured for this payment method.',settingsLink:'Payment methods',askOwner:'Ask the shop owner to configure a QR code.',account:'Account',phone:'Phone',amount:'Total amount due',reference:'Payment reference (optional)',referencePlaceholder:'Transaction ID or customer phone last 4 digits',warning:'Verify the payment on your phone (SMS/notification), not on the customer screen.',cancel:'Cancel',received:'Payment received',confirmTitle:'Confirm payment received',setupHint:'No active QR. Configure one in Payment methods.',activeRequired:'Add a QR before activating this payment method.'},
+  es:{pageTitle:'Métodos de pago',accountName:'Nombre de la cuenta (opcional)',phoneNumber:'Teléfono (opcional)',qrImage:'Imagen QR (PNG, JPG, WebP, máximo 2 MB)',active:'Activo',save:'Guardar',deleteQr:'Eliminar QR',allMethods:'Todos los pagos',cash:'Efectivo',loading:'Cargando métodos de pago…',noAuth:'Inicia sesión de nuevo para gestionar los métodos de pago.',loadError:'No se pudieron cargar. Comprueba el despliegue de Netlify.',saved:'Método de pago guardado.',deleted:'QR eliminado.',fileUnsupported:'Elige una imagen PNG, JPG o WebP válida.',imageLoadError:'No se pudo leer esta imagen.',fileTooLarge:'La imagen comprimida supera los 2 MB.',noQr:'No hay un QR activo para este método de pago.',settingsLink:'Métodos de pago',askOwner:'Pide al propietario que configure un código QR.',account:'Cuenta',phone:'Teléfono',amount:'Importe total a pagar',reference:'Referencia de pago (opcional)',referencePlaceholder:'ID de transacción o últimos 4 dígitos del teléfono',warning:'Verifica el pago en tu teléfono (SMS/notificación), no en la pantalla del cliente.',cancel:'Cancelar',received:'Pago recibido',confirmTitle:'Confirmar pago recibido',setupHint:'No hay un QR activo. Configura uno en Métodos de pago.',activeRequired:'Añade un QR antes de activar este método de pago.'}
+};
+function paymentText(key){var lang=S.settings.language||'fr',pack=PAYMENT_LABELS[lang]||PAYMENT_LABELS.fr;return pack[key]||PAYMENT_LABELS.fr[key]||key;}
+
 var FINANCE_LABELS = {
   fr:{title:'Santé financière',summary:'Résumé financier',today:'Aujourd’hui',month:'Ce mois-ci',all:'Tout',expenses:'Dépenses',addExpense:'+ Dépense',payroll:'Paie',paySalary:'+ Payer un salaire',insights:'Indicateurs de décision',revenue:'CHIFFRE D’AFFAIRES',expensesKpi:'DÉPENSES',paidSalary:'SALAIRES PAYÉS',netProfit:'BÉNÉFICE NET',salesCount:'vente(s)',expenseCount:'entrée(s)',payCount:'paiement(s)',grossCost:'Coût des marchandises vendues',grossProfit:'Bénéfice brut',operatingExpenses:'Dépenses opérationnelles',salary:'Salaires',noData:'Aucune donnée pour cette période.',positive:'✅ L’entreprise est rentable. La marge brute est de {margin} % ; continuez à suivre les dépenses pour protéger le bénéfice net.',negative:'⚠️ Les dépenses dépassent le bénéfice brut. Revoyez les dépenses opérationnelles et les prix.',empty:'Ajoutez votre première vente pour obtenir des indicateurs financiers.',operation:'Opération',date:'Date',newExpense:'Nouvelle dépense',description:'Description',category:'Catégorie',amount:'Montant',cancel:'Annuler',save:'Enregistrer',paySalaryTitle:'Payer un salaire',employee:'Employé',salaryAmount:'Montant du salaire',categories:['Opération','Transport','Loyer','Matériel','Taxe','Autre'],savedExpense:'✅ Dépense enregistrée',missingEmployee:'Ajoutez un employé avant de payer un salaire',requiredExpense:'Description et montant obligatoires',requiredEmployee:'Employé et montant obligatoires',savedSalary:'✅ Salaire enregistré'},
   en:{title:'Financial health',summary:'Financial summary',today:'Today',month:'This month',all:'All time',expenses:'Expenses',addExpense:'+ Expense',payroll:'Payroll',paySalary:'+ Pay salary',insights:'Decision indicators',revenue:'REVENUE',expensesKpi:'EXPENSES',paidSalary:'SALARIES PAID',netProfit:'NET PROFIT',salesCount:'sale(s)',expenseCount:'entry(ies)',payCount:'payment(s)',grossCost:'Cost of goods sold',grossProfit:'Gross profit',operatingExpenses:'Operating expenses',salary:'Salaries',noData:'No data for this period.',positive:'✅ The business is profitable. Gross margin is {margin}%; keep tracking expenses to protect net profit.',negative:'⚠️ Expenses exceed gross profit. Review operating expenses and pricing.',empty:'Add your first sale to get financial indicators.',operation:'Operations',date:'Date',newExpense:'New expense',description:'Description',category:'Category',amount:'Amount',cancel:'Cancel',save:'Save',paySalaryTitle:'Pay salary',employee:'Employee',salaryAmount:'Salary amount',categories:['Operations','Transport','Rent','Materials','Tax','Other'],savedExpense:'✅ Expense saved',missingEmployee:'Add an employee before paying a salary',requiredExpense:'Description and amount are required',requiredEmployee:'Employee and amount are required',savedSalary:'✅ Salary saved'},
@@ -148,6 +159,7 @@ function applyLanguage(){
     if(pack[key]) el.textContent=pack[key];
   });
   document.querySelectorAll('[data-finance-i18n]').forEach(function(el){el.textContent=financeText(el.getAttribute('data-finance-i18n'));});
+  document.querySelectorAll('[data-payment-i18n]').forEach(function(el){el.textContent=paymentText(el.getAttribute('data-payment-i18n'));});
   var period=document.getElementById('finance-period');
   if(period){period.options[0].textContent=financeText('today');period.options[1].textContent=financeText('month');period.options[2].textContent=financeText('all');}
   if(document.getElementById('view-finance')&&document.getElementById('view-finance').classList.contains('on')) renderFinance();
@@ -1278,6 +1290,10 @@ function syncSaleToCloud(sale){
       tax:         sale.tax||0,
       total:       sale.total,
       method:      sale.method,
+      payment_method: sale.payment_method || null,
+      payment_reference: sale.payment_reference || null,
+      confirmed_by: sale.confirmed_by || null,
+      confirmed_at: sale.confirmed_at || null,
       cashier:     sale.cashier,
       cashier_role:sale.cashierRole||'caissier',
       client_nom:  sale.clientNom||null,
@@ -1354,6 +1370,10 @@ function pullFromCloud(){
         items:cs.items||[], subtotal:cs.subtotal||0,
         discount:cs.discount||0, tax:cs.tax||0,
         total:cs.total, method:cs.method,
+        payment_method:cs.payment_method||null,
+        payment_reference:cs.payment_reference||null,
+        confirmed_by:cs.confirmed_by||null,
+        confirmed_at:cs.confirmed_at||null,
         cashier:cs.cashier, cashierRole:cs.cashier_role,
         clientNom:cs.client_nom, clientTel:cs.client_tel,
         rendu:cs.rendu||0, isRetour:cs.is_retour||false,
@@ -1497,6 +1517,7 @@ function startApp(){
   tick(); setInterval(tick, 1000);
   updateTopbar(); updateTrialBar();
   checkTrialOnStart();
+  refreshMerchantPaymentMethods(false).catch(function(){});
   initDarkMode();
   // Pull done biznis si Premium (nouvo aparèy oswa apre lon tan)
   setTimeout(function(){
@@ -1754,9 +1775,10 @@ function renderDashboard(){
 
 function showView(v){
   if(v==='finance' && !can('finance')){ notif('Aksè finans rezève pou gérant ak propriétaire','err'); return; }
+  if(v==='payment-methods' && !can('settings')){ notif('Aksè sa a rezève pou propriétaire boutique','err'); return; }
   boOpen=false;
   if(document.getElementById('bo-btn')) document.getElementById('bo-btn').classList.remove('on');
-  var views=['dashboard','articles','recu','tickets','clients','integration','employes','fournisseurs','monplan','backup','settings','fonctionnalites','backoffice','finance'];
+  var views=['dashboard','articles','recu','tickets','clients','integration','employes','fournisseurs','monplan','backup','settings','payment-methods','fonctionnalites','backoffice','finance'];
   views.forEach(function(x){var el=document.getElementById('view-'+x);if(el){el.style.display='none';el.classList.remove('on');}});
   document.getElementById('view-pos').style.display=(v==='vente')?'flex':'none';
   if(v!=='vente'){var el=document.getElementById('view-'+v);if(el){el.style.display='flex';el.classList.add('on');}}
@@ -1771,6 +1793,7 @@ function showView(v){
   if(v==='monplan') renderMonPlan();
   if(v==='backup') renderBackupInfo();
   if(v==='settings') renderSet();
+  if(v==='payment-methods') loadPaymentMethodSettings();
   if(v==='backoffice'){renderBO();boOpen=true;document.getElementById('bo-btn').classList.add('on');}
   if(v==='finance') renderFinance();
 }
@@ -2102,18 +2125,226 @@ function clearOrd(){
   renderCart();renderProds();
 }
 
+function paymentApiRequest(method,body){
+  if(!AUTH_ACCESS_TOKEN||!isAuthSessionValid(AUTH_ACCESS_TOKEN)) return Promise.reject(new Error(paymentText('noAuth')));
+  var headers={'Authorization':'Bearer '+AUTH_ACCESS_TOKEN};
+  if(body) headers['Content-Type']='application/json';
+  return fetch('/.netlify/functions/merchant-payment-methods',{method:method,headers:headers,body:body?JSON.stringify(body):undefined})
+    .then(function(response){return response.json().catch(function(){return {};}).then(function(data){if(!response.ok)throw new Error(data.error||paymentText('loadError'));return data;});});
+}
+
+function updatePaymentMethodButtons(){
+  var activeMethod=false;
+  ['moncash','natcash'].forEach(function(provider){
+    var method=MERCHANT_PAYMENT_METHODS.find(function(item){return item.provider===provider&&item.active&&item.qr_image_url;});
+    if(method)activeMethod=true;
+    ['pay-'+provider,'pay-'+provider+'-mobile'].forEach(function(id){var button=document.getElementById(id);if(button)button.style.display=method?'':'none';});
+  });
+  document.querySelectorAll('.payment-setup-hint').forEach(function(hint){
+    hint.hidden=(!PAYMENT_METHODS_LOADED&&!PAYMENT_METHODS_ERROR)||activeMethod;
+    var owner=can('settings'),settingsButton=hint.querySelector('button'),ownerMessage=hint.querySelector('[data-payment-i18n="askOwner"]'),setupMessage=hint.querySelector('[data-payment-i18n="setupHint"]');
+    var errorMessage=hint.querySelector('[data-payment-i18n="loadError"]');
+    if(settingsButton)settingsButton.style.display=owner?'':'none';
+    if(errorMessage)errorMessage.hidden=!PAYMENT_METHODS_ERROR;
+    if(ownerMessage)ownerMessage.hidden=owner||PAYMENT_METHODS_ERROR;
+    if(setupMessage)setupMessage.hidden=!owner||PAYMENT_METHODS_ERROR;
+  });
+}
+
+function refreshMerchantPaymentMethods(showStatus){
+  if(showStatus){var status=document.getElementById('payment-methods-status');if(status)status.textContent=paymentText('loading');}
+  return paymentApiRequest('GET').then(function(data){
+    MERCHANT_PAYMENT_METHODS=Array.isArray(data.methods)?data.methods:[];
+    PAYMENT_METHODS_LOADED=true;
+    PAYMENT_METHODS_ERROR=false;
+    updatePaymentMethodButtons();
+    return MERCHANT_PAYMENT_METHODS;
+  }).catch(function(error){
+    MERCHANT_PAYMENT_METHODS=[];PAYMENT_METHODS_LOADED=false;PAYMENT_METHODS_ERROR=true;updatePaymentMethodButtons();
+    if(showStatus){var status=document.getElementById('payment-methods-status');if(status)status.textContent=error.message||paymentText('loadError');}
+    throw error;
+  });
+}
+
+function loadPaymentMethodSettings(){
+  var status=document.getElementById('payment-methods-status');
+  if(status)status.textContent=paymentText('loading');
+  refreshMerchantPaymentMethods(false).then(function(methods){
+    ['moncash','natcash'].forEach(function(provider){
+      var method=methods.find(function(item){return item.provider===provider;});
+      var account=document.getElementById('pm-'+provider+'-account');
+      var phone=document.getElementById('pm-'+provider+'-phone');
+      var active=document.getElementById('pm-'+provider+'-active');
+      var preview=document.getElementById('pm-'+provider+'-preview');
+      var remove=document.getElementById('pm-'+provider+'-delete');
+      if(account)account.value=method&&method.account_name||'';
+      if(phone)phone.value=method&&method.phone_number||'';
+      if(active){active.classList.toggle('on',!!(method&&method.active));active.setAttribute('aria-checked',String(!!(method&&method.active)));}
+      if(preview){preview.src=method&&method.qr_preview_url||'';preview.hidden=!(method&&method.qr_preview_url);}
+      if(remove)remove.disabled=!(method&&method.qr_image_url);
+    });
+    if(status)status.textContent='';
+  }).catch(function(error){if(status)status.textContent=error.message||paymentText('loadError');});
+}
+
+function togglePaymentActive(toggle){
+  toggle.classList.toggle('on');
+  toggle.setAttribute('aria-checked',String(toggle.classList.contains('on')));
+}
+
+function sniffPaymentImage(bytes){
+  if(bytes.length>=8&&bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71&&bytes[4]===13&&bytes[5]===10&&bytes[6]===26&&bytes[7]===10)return 'image/png';
+  if(bytes.length>=3&&bytes[0]===255&&bytes[1]===216&&bytes[2]===255)return 'image/jpeg';
+  if(bytes.length>=12&&String.fromCharCode(bytes[0],bytes[1],bytes[2],bytes[3])==='RIFF'&&String.fromCharCode(bytes[8],bytes[9],bytes[10],bytes[11])==='WEBP')return 'image/webp';
+  return '';
+}
+
+function encodePaymentImage(file){
+  return file.arrayBuffer().then(function(buffer){
+    var bytes=new Uint8Array(buffer);
+    if(!sniffPaymentImage(bytes))throw new Error(paymentText('fileUnsupported'));
+    if(file.size>10*1024*1024)throw new Error(paymentText('fileTooLarge'));
+    return createImageBitmap(file);
+  }).then(function(bitmap){
+    var canvas=document.createElement('canvas'),context=canvas.getContext('2d');
+    var attempts=[{size:1400,quality:.92},{size:1100,quality:.86},{size:850,quality:.78},{size:650,quality:.7}],index=0;
+    function attempt(){
+      var scale=Math.min(1,attempts[index].size/Math.max(bitmap.width,bitmap.height));
+      canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+      context.clearRect(0,0,canvas.width,canvas.height);context.drawImage(bitmap,0,0,canvas.width,canvas.height);
+      return new Promise(function(resolve){canvas.toBlob(resolve,'image/webp',attempts[index].quality);}).then(function(blob){
+        if(!blob)throw new Error(paymentText('imageLoadError'));
+        if(blob.size<=2*1024*1024)return blob;
+        index++;if(index>=attempts.length)throw new Error(paymentText('fileTooLarge'));
+        return attempt();
+      });
+    }
+    return attempt().then(function(blob){bitmap.close();return blob;},function(error){bitmap.close();throw error;});
+  });
+}
+
+function previewPaymentQr(provider,input){
+  var file=input.files&&input.files[0];if(!file)return;
+  var preview=document.getElementById('pm-'+provider+'-preview');
+  if(preview)preview.hidden=true;
+  encodePaymentImage(file).then(function(blob){
+    var reader=new FileReader();
+    reader.onload=function(){
+      if(PENDING_PAYMENT_IMAGES[provider]&&PENDING_PAYMENT_IMAGES[provider].previewUrl)URL.revokeObjectURL(PENDING_PAYMENT_IMAGES[provider].previewUrl);
+      var previewUrl=URL.createObjectURL(blob);
+      PENDING_PAYMENT_IMAGES[provider]={fileBase64:String(reader.result).split(',')[1],previewUrl:previewUrl};
+      if(preview){preview.src=previewUrl;preview.hidden=false;}
+    };
+    reader.onerror=function(){notif(paymentText('imageLoadError'),'err');};
+    reader.readAsDataURL(blob);
+  }).catch(function(error){input.value='';notif(error.message||paymentText('imageLoadError'),'err');});
+}
+
+function savePaymentMethod(provider){
+  var active=document.getElementById('pm-'+provider+'-active').classList.contains('on');
+  var old=MERCHANT_PAYMENT_METHODS.find(function(item){return item.provider===provider;});
+  if(active&&!PENDING_PAYMENT_IMAGES[provider]&&!(old&&old.qr_image_url)){notif(paymentText('activeRequired'),'err');return;}
+  var payload={provider:provider,accountName:document.getElementById('pm-'+provider+'-account').value,phoneNumber:document.getElementById('pm-'+provider+'-phone').value,active:active};
+  if(PENDING_PAYMENT_IMAGES[provider])payload.fileBase64=PENDING_PAYMENT_IMAGES[provider].fileBase64;
+  var button=document.querySelector('[onclick="savePaymentMethod(\''+provider+'\')"]');
+  if(button)button.disabled=true;
+  paymentApiRequest('POST',payload).then(function(data){
+    MERCHANT_PAYMENT_METHODS=MERCHANT_PAYMENT_METHODS.filter(function(item){return item.provider!==provider;});
+    if(data.method)MERCHANT_PAYMENT_METHODS.push(data.method);
+    var pending=PENDING_PAYMENT_IMAGES[provider];if(pending&&pending.previewUrl)URL.revokeObjectURL(pending.previewUrl);
+    delete PENDING_PAYMENT_IMAGES[provider];
+    var fileInput=document.getElementById('pm-'+provider+'-file');if(fileInput)fileInput.value='';
+    updatePaymentMethodButtons();loadPaymentMethodSettings();notif(paymentText('saved'),'ok');
+  }).catch(function(error){notif(error.message||paymentText('loadError'),'err');}).finally(function(){if(button)button.disabled=false;});
+}
+
+function deletePaymentMethod(provider){
+  if(!confirm(paymentText('deleteQr')+' ?'))return;
+  paymentApiRequest('DELETE',{provider:provider}).then(function(){
+    MERCHANT_PAYMENT_METHODS=MERCHANT_PAYMENT_METHODS.filter(function(item){return item.provider!==provider;});
+    var pending=PENDING_PAYMENT_IMAGES[provider];if(pending&&pending.previewUrl)URL.revokeObjectURL(pending.previewUrl);
+    delete PENDING_PAYMENT_IMAGES[provider];updatePaymentMethodButtons();loadPaymentMethodSettings();notif(paymentText('deleted'),'ok');
+  }).catch(function(error){notif(error.message||paymentText('loadError'),'err');});
+}
+
+function showPaymentSetupPrompt(){
+  var overlay=document.createElement('div');overlay.className='payment-confirm-screen';
+  var panel=document.createElement('div');panel.className='payment-confirm-info';panel.style.cssText='max-width:440px;background:var(--surface);border-radius:10px;';
+  var message=document.createElement('p');message.textContent=paymentText('setupHint');panel.appendChild(message);
+  var actions=document.createElement('div');actions.className='payment-confirm-actions';
+  var close=document.createElement('button');close.className='btn-cancel';close.textContent=paymentText('cancel');close.onclick=function(){overlay.remove();};actions.appendChild(close);
+  if(can('settings')){var settings=document.createElement('button');settings.className='btn-g';settings.textContent=paymentText('settingsLink');settings.onclick=function(){overlay.remove();nav('payment-methods');};actions.appendChild(settings);}
+  overlay.appendChild(panel);panel.appendChild(actions);document.body.appendChild(overlay);
+}
+
+function beginDigitalPayment(provider){
+  if(document.getElementById('cartSheet').classList.contains('open'))closeCartSheet();
+  refreshMerchantPaymentMethods(false).then(function(methods){
+    var method=methods.find(function(item){return item.provider===provider&&item.active&&item.qr_image_url&&item.qr_preview_url;});
+    if(!method){showPaymentSetupPrompt();return;}
+    if(!S.cart.length){notif('Le panier est vide !','err');return;}
+    showDigitalPaymentConfirmation(method);
+  }).catch(function(error){notif(error.message||paymentText('loadError'),'err');});
+}
+
+function showDigitalPaymentConfirmation(method){
+  var provider=method.provider,overlay=document.createElement('div');overlay.className='payment-confirm-screen';
+  var card=document.createElement('div');card.className='payment-confirm-card';
+  var qrWrap=document.createElement('div');qrWrap.className='payment-confirm-qr';
+  var image=document.createElement('img');image.src=method.qr_preview_url;image.alt=provider==='moncash'?'MonCash QR':'NatCash QR';qrWrap.appendChild(image);
+  var info=document.createElement('div');info.className='payment-confirm-info';
+  var title=document.createElement('h2');title.textContent=provider==='moncash'?'MonCash':'NatCash';info.appendChild(title);
+  if(method.account_name){var account=document.createElement('div');account.textContent=paymentText('account')+': '+method.account_name;info.appendChild(account);}
+  if(method.phone_number){var phone=document.createElement('div');phone.textContent=paymentText('phone')+': '+method.phone_number;info.appendChild(phone);}
+  var amountLabel=document.createElement('div');amountLabel.textContent=paymentText('amount');info.appendChild(amountLabel);
+  var amount=document.createElement('div');amount.className='payment-confirm-amount';amount.textContent=fmt(getTotalActuel());info.appendChild(amount);
+  var referenceLabel=document.createElement('label');referenceLabel.className='flbl';referenceLabel.htmlFor='digital-payment-reference';referenceLabel.textContent=paymentText('reference');info.appendChild(referenceLabel);
+  var reference=document.createElement('input');reference.id='digital-payment-reference';reference.className='finp';reference.maxLength=100;reference.placeholder=paymentText('referencePlaceholder');info.appendChild(reference);
+  var warning=document.createElement('div');warning.className='payment-confirm-warning';warning.textContent=paymentText('warning');info.appendChild(warning);
+  var actions=document.createElement('div');actions.className='payment-confirm-actions';
+  var cancel=document.createElement('button');cancel.className='btn-cancel';cancel.textContent=paymentText('cancel');cancel.onclick=function(){overlay.remove();};
+  var confirmButton=document.createElement('button');confirmButton.className='btn-g';confirmButton.textContent=paymentText('received');confirmButton.onclick=function(){
+    var paymentMethod=provider==='moncash'?'MonCash':'NatCash';
+    overlay.remove();checkout(paymentMethod,null,0,null,{confirmed:true,reference:reference.value.trim()});
+  };
+  actions.appendChild(cancel);actions.appendChild(confirmButton);info.appendChild(actions);
+  card.appendChild(qrWrap);card.appendChild(info);overlay.appendChild(card);document.body.appendChild(overlay);
+}
+
+function salePaymentMethod(sale){
+  if(sale.payment_method)return sale.payment_method;
+  var method=String(sale.method||'').toLowerCase();
+  if(method==='espèces'||method==='especes'||method==='cash')return 'cash';
+  if(method==='moncash')return 'moncash';
+  if(method==='natcash')return 'natcash';
+  return 'other';
+}
+function salePaymentLabel(sale){
+  var method=salePaymentMethod(sale);
+  if(method==='cash')return paymentText('cash');
+  if(method==='moncash')return 'MonCash';
+  if(method==='natcash')return 'NatCash';
+  return sale.method||'';
+}
+
 // ── CHECKOUT ──
-function checkout(method, montantRecu, rendu, clientInfo){
+function checkout(method, montantRecu, rendu, clientInfo, paymentDetails){
+  if((method==='MonCash'||method==='NatCash')&&!(paymentDetails&&paymentDetails.confirmed)){beginDigitalPayment(method.toLowerCase());return;}
   if(!S.cart.length){notif('Le panier est vide !','err');return;}
   if(!checkSaleLimit()) return;
   var sub=S.cart.reduce(function(a,x){return a+x.price*x.qty;},0);
   var dp=parseFloat(document.getElementById('discInp').value)||0;
   var disc=sub*(dp/100),tax=(sub-disc)*(parseFloat(S.settings.tax)||0)/100,total=sub-disc+tax;
+  var paymentKind=salePaymentMethod({method:method});
   S.cart.forEach(function(it){var p=S.products.find(function(x){return x.id===it.id;});if(p&&p.stock!==999)p.stock=Math.max(0,p.stock-it.qty);});
   var sale={
     id:uid(), num:S.sales.length+1, date:new Date().toISOString(),
     items:S.cart.slice(), subtotal:sub, discount:disc, tax:tax, total:total,
     method:method, cashier:S.settings.cashier||'Caissier',
+    payment_method:paymentKind==='other'?null:paymentKind,
+    payment_reference:paymentDetails&&paymentDetails.reference||null,
+    confirmed_by:paymentKind!=='other'?(S.settings.cashier||'Caissier'):null,
+    confirmed_at:paymentKind!=='other'?new Date().toISOString():null,
     montantRecu: montantRecu||null,
     rendu: rendu||0,
     clientNom:  clientInfo ? clientInfo.nom  : null,
@@ -2158,7 +2389,7 @@ function showRecu(sale){
     +(sale.discount?'<div class="r-row"><span>Remise</span><span>-'+fmt(sale.discount)+'</span></div>':'')
     +(sale.tax?'<div class="r-row"><span>Taxe</span><span>'+fmt(sale.tax)+'</span></div>':'')
     +'<div class="r-div"></div><div class="r-row r-tot"><span>TOTAL</span><span>'+fmt(sale.total)+'</span></div>'
-    +'<div class="r-row"><span>Paiement</span><span>'+sale.method+'</span></div>'
+    +'<div class="r-row"><span>Paiement</span><span>'+salePaymentLabel(sale)+'</span></div>'
     +(sale.clientNom&&sale.method==='Crédit'?'<div class="r-row" style="border-top:1px dashed #ddd;margin-top:4px;padding-top:4px;"><span style="font-weight:700">Doit payer</span><span style="font-weight:700;color:#ef4444;">'+fmt(sale.total)+'</span></div>'+( sale.clientNote?'<div class="r-row"><span>Note</span><span>'+sale.clientNote+'</span></div>':''):'')
     +(sale.montantRecu?'<div class="r-row"><span>Reçu</span><span>'+fmt(sale.montantRecu)+'</span></div>':'')
     +(sale.rendu>0?'<div class="r-row r-tot" style="color:#16a34a"><span>Rendu</span><span>'+fmt(sale.rendu)+'</span></div>':'')
@@ -2468,7 +2699,7 @@ function renderRecu(){
     body.innerHTML='<div style="color:var(--text3);text-align:center;padding:40px">Aucune vente enregistrée</div>';
     return;
   }
-  var mc={'Espèces':'bdg-cash','Carte':'bdg-card','MonCash':'bdg-mc','Crédit':'bdg-cred'};
+  var mc={'Espèces':'bdg-cash','Carte':'bdg-card','MonCash':'bdg-mc','NatCash':'bdg-nc','Crédit':'bdg-cred'};
   body.innerHTML='';
   S.sales.forEach(function(s){
     var d=new Date(s.date);
@@ -2479,7 +2710,7 @@ function renderRecu(){
       +'<div class="hc-info">'
         +'<div class="hc-date">📅 '+ds+(s.locked?'<span style="font-size:11px;color:var(--text3);margin-left:4px;">🔒</span>':'')+(s.rembourse?'<span style="font-size:11px;color:#ef4444;margin-left:4px;">🔄 Remboursé</span>':'')+'</div>'
         +'<div class="hc-items">'+s.items.map(function(i){return i.name;}).join(', ')+'</div>'
-        +'<div class="hc-meth"><span class="bdg '+(mc[s.method]||'')+'">'+s.method+'</span> · '+s.cashier+'</div>'
+        +'<div class="hc-meth"><span class="bdg '+(mc[s.method]||'')+'">'+salePaymentLabel(s)+'</span> · '+s.cashier+'</div>'
       +'</div>'
       +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">'
         +'<div class="hc-tot">'+fmt(s.total)+'</div>'
@@ -2625,6 +2856,7 @@ function applyRoleRestrictions(role){
     'clients':can('clients'),'articles':can('articles'),
     'backoffice':can('backoffice'),'finance':can('finance'),'employes':can('employes'),
     'fournisseurs':can('fournisseurs'),'settings':can('settings'),
+    'payment-methods':can('settings'),
     'monplan':can('settings'),'backup':can('settings'),
     'integration':can('articles'),'fonctionnalites':can('settings')
   };
@@ -2639,6 +2871,7 @@ function applyRoleRestrictions(role){
   var rembBtn = document.getElementById('sb-rembours');
   if(rembBtn) rembBtn.style.display = can('remboursement') ? '' : 'none';
   if(role==='caissier') showView('dashboard');
+  updatePaymentMethodButtons();
   var pill = document.querySelector('.cashier-pill');
   if(pill) pill.textContent = (S.settings.cashier||'') + ' · ' + getRoleLabel(role);
   renderDashboard();
@@ -3222,12 +3455,18 @@ function recuFromSale(){ if(S.viewSale){closeMov('saleMov');showRecu(S.viewSale)
 // ── BACK OFFICE ──
 function renderBoV(){
   var per=document.getElementById('bo-per')?document.getElementById('bo-per').value:'all';
+  var paymentFilter=document.getElementById('bo-payment-filter')?document.getElementById('bo-payment-filter').value:'all';
   var now=new Date();
-  var list=S.sales.filter(function(s){ var d=new Date(s.date); if(per==='today')return d.toDateString()===now.toDateString(); if(per==='week'){var w=new Date(now);w.setDate(now.getDate()-7);return d>=w;} if(per==='month'){var m=new Date(now);m.setDate(now.getDate()-30);return d>=m;} return true; });
-  var mc={'Espèces':'bdg-cash','Carte':'bdg-card','MonCash':'bdg-mc','Crédit':'bdg-cred'};
+  var periodSales=S.sales.filter(function(s){ var d=new Date(s.date); if(per==='today')return d.toDateString()===now.toDateString(); if(per==='week'){var w=new Date(now);w.setDate(now.getDate()-7);return d>=w;} if(per==='month'){var m=new Date(now);m.setDate(now.getDate()-30);return d>=m;} return true; });
+  var totals={cash:0,moncash:0,natcash:0};
+  periodSales.forEach(function(s){var kind=salePaymentMethod(s);if(Object.prototype.hasOwnProperty.call(totals,kind))totals[kind]+=Number(s.total)||0;});
+  var totalEl=document.getElementById('bo-payment-totals');
+  if(totalEl)totalEl.innerHTML=[['cash',paymentText('cash')],['moncash','MonCash'],['natcash','NatCash']].map(function(entry){return '<div style="border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:12px;background:var(--surface)"><strong>'+entry[1]+'</strong>: '+fmt(totals[entry[0]])+'</div>';}).join('');
+  var list=periodSales.filter(function(s){return paymentFilter==='all'||salePaymentMethod(s)===paymentFilter;});
+  var mc={'Espèces':'bdg-cash','Carte':'bdg-card','MonCash':'bdg-mc','NatCash':'bdg-nc','Crédit':'bdg-cred'};
   var body=document.getElementById('boVB');
   if(!list.length){body.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px">Aucune vente</td></tr>';return;}
-  body.innerHTML=list.map(function(s){var d=new Date(s.date);var ds=d.toLocaleDateString('fr-FR')+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});return '<tr><td><strong>#'+s.num+'</strong></td><td>'+ds+'</td><td>'+s.items.map(function(i){return i.name+' ×'+i.qty;}).join(', ')+'</td><td><span class="bdg '+(mc[s.method]||'')+'">'+s.method+'</span></td><td>'+(s.discount?fmt(s.discount):'-')+'</td><td>'+(s.rendu>0?fmt(s.rendu):'-')+'</td><td><strong>'+fmt(s.total)+'</strong></td><td>'+(s.cashier||'')+'</td></tr>';}).join('');
+  body.innerHTML=list.map(function(s){var d=new Date(s.date);var ds=d.toLocaleDateString('fr-FR')+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});return '<tr><td><strong>#'+s.num+'</strong></td><td>'+ds+'</td><td>'+s.items.map(function(i){return i.name+' ×'+i.qty;}).join(', ')+'</td><td><span class="bdg '+(mc[s.method]||'')+'">'+salePaymentLabel(s)+'</span></td><td>'+(s.discount?fmt(s.discount):'-')+'</td><td>'+(s.rendu>0?fmt(s.rendu):'-')+'</td><td><strong>'+fmt(s.total)+'</strong></td><td>'+(s.cashier||'')+'</td></tr>';}).join('');
 }
 function renderBoS(){
   var f=document.getElementById('bo-stf')?document.getElementById('bo-stf').value:'all';
@@ -3240,9 +3479,9 @@ function renderBoS(){
 // ── EXPORT ──
 function dateStr(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function dlFile(content,filename,mime){var blob=new Blob([content],{type:mime});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();URL.revokeObjectURL(a.href);}
-function exportSalesCSV(){var cur=S.settings.currency||'HTG';var rows=[['#','Date','Articles','Methode','Remise','Rendu','Total','Caissier']];S.sales.forEach(function(s){var d=new Date(s.date);rows.push([s.num,d.toLocaleDateString('fr-FR'),s.items.map(function(i){return i.name+'(x'+i.qty+')';}).join('|'),s.method,(s.discount||0).toFixed(0),(s.rendu||0).toFixed(0),s.total.toFixed(0),s.cashier||'']);});var csv='\uFEFF'+rows.map(function(r){return r.map(function(v){return '"'+(v+'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');dlFile(csv,'ventes-'+dateStr()+'.csv','text/csv;charset=utf-8');notif('✅ CSV exporté','ok');}
+function exportSalesCSV(){var cur=S.settings.currency||'HTG';var rows=[['#','Date','Articles','Methode','Remise','Rendu','Total','Caissier']];S.sales.forEach(function(s){var d=new Date(s.date);rows.push([s.num,d.toLocaleDateString('fr-FR'),s.items.map(function(i){return i.name+'(x'+i.qty+')';}).join('|'),salePaymentLabel(s),(s.discount||0).toFixed(0),(s.rendu||0).toFixed(0),s.total.toFixed(0),s.cashier||'']);});var csv='\uFEFF'+rows.map(function(r){return r.map(function(v){return '"'+(v+'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');dlFile(csv,'ventes-'+dateStr()+'.csv','text/csv;charset=utf-8');notif('✅ CSV exporté','ok');}
 function exportInventoryCSV(){var rows=[['Nom','Categorie','Prix','Cout','Stock','Statut']];S.products.forEach(function(p){rows.push([p.name,p.category,p.price,p.cost||0,p.stock===999?'Illimite':p.stock,p.stock===0?'Epuise':p.stock<=(p.lowStock||5)?'Bas':'OK']);});var csv='\uFEFF'+rows.map(function(r){return r.map(function(v){return '"'+(v+'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');dlFile(csv,'inventaire-'+dateStr()+'.csv','text/csv;charset=utf-8');notif('✅ CSV inventaire exporté','ok');}
-function exportSalesPDF(){var biz=S.settings.bizname||'Konektem';var total=S.sales.reduce(function(a,s){return a+s.total;},0);var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;font-size:12px;margin:20px;}table{width:100%;border-collapse:collapse;}th{background:#16a34a;color:#fff;padding:7px;text-align:left;font-size:11px;}td{padding:6px;border-bottom:1px solid #eee;}</style></head><body><h2>'+biz+' — Rapport Ventes</h2><table><thead><tr><th>#</th><th>Date</th><th>Articles</th><th>Méthode</th><th>Total</th><th>Caissier</th></tr></thead><tbody>'+S.sales.map(function(s){return '<tr><td>'+s.num+'</td><td>'+new Date(s.date).toLocaleDateString('fr-FR')+'</td><td>'+s.items.map(function(i){return i.name+' ×'+i.qty;}).join(', ')+'</td><td>'+s.method+'</td><td>'+s.total.toLocaleString('fr-HT')+' HTG</td><td>'+(s.cashier||'')+'</td></tr>';}).join('')+'</tbody><tfoot><tr><td colspan="4"><strong>TOTAL</strong></td><td><strong>'+total.toLocaleString('fr-HT')+' HTG</strong></td><td></td></tr></tfoot></table></body></html>';var win=window.open('','_blank');if(win){win.document.write(html);win.document.close();win.print();}else notif('Autorisez les popups','err');}
+function exportSalesPDF(){var biz=S.settings.bizname||'Konektem';var total=S.sales.reduce(function(a,s){return a+s.total;},0);var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;font-size:12px;margin:20px;}table{width:100%;border-collapse:collapse;}th{background:#16a34a;color:#fff;padding:7px;text-align:left;font-size:11px;}td{padding:6px;border-bottom:1px solid #eee;}</style></head><body><h2>'+biz+' — Rapport Ventes</h2><table><thead><tr><th>#</th><th>Date</th><th>Articles</th><th>Méthode</th><th>Total</th><th>Caissier</th></tr></thead><tbody>'+S.sales.map(function(s){return '<tr><td>'+s.num+'</td><td>'+new Date(s.date).toLocaleDateString('fr-FR')+'</td><td>'+s.items.map(function(i){return i.name+' ×'+i.qty;}).join(', ')+'</td><td>'+salePaymentLabel(s)+'</td><td>'+s.total.toLocaleString('fr-HT')+' HTG</td><td>'+(s.cashier||'')+'</td></tr>';}).join('')+'</tbody><tfoot><tr><td colspan="4"><strong>TOTAL</strong></td><td><strong>'+total.toLocaleString('fr-HT')+' HTG</strong></td><td></td></tr></tfoot></table></body></html>';var win=window.open('','_blank');if(win){win.document.write(html);win.document.close();win.print();}else notif('Autorisez les popups','err');}
 function exportBackup(){var backup={version:'3.0',date:new Date().toISOString(),bizname:S.settings.bizname||'Konektem',data:JSON.parse(JSON.stringify(S))};var json=JSON.stringify(backup,null,2);dlFile(json,'konektem-backup-'+dateStr()+'.json','application/json');notif('✅ Backup téléchargé','ok');}
 function importBackup(inp){var file=inp.files[0];if(!file)return;var r=new FileReader();r.onload=function(e){try{var backup=JSON.parse(e.target.result);if(!backup.data)throw new Error('Fichier invalide');if(!confirm('Restaurer? DONNÉES ACTUELLES REMPLACÉES!'))return;S=Object.assign({},S,backup.data);if(!S.employees)S.employees=[];if(!S.connections)S.connections=[];if(!S.clients)S.clients=[];save();location.reload();}catch(err){notif('❌ Erreur backup: '+err.message,'err');}inp.value='';};r.readAsText(file);}
 
@@ -3337,9 +3576,11 @@ function genRapportJournalier(){
   var today=new Date().toDateString();
   var ventes=S.sales.filter(function(s){return !s.isRetour&&new Date(s.date).toDateString()===today;});
   var totalV=ventes.reduce(function(a,s){return a+s.total;},0);
-  var methods={};ventes.forEach(function(s){methods[s.method]=(methods[s.method]||0)+s.total;});
-  var rapport='📊 RAPPORT — '+(S.settings.bizname||'Konektem')+'\n'+new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'\n━━━━━━━━━━━━━━━━━━━━\n✅ Ventes: '+ventes.length+' · '+totalV.toLocaleString('fr-HT')+' HTG\n';
-  Object.entries(methods).forEach(function(m){rapport+='  '+m[0]+': '+m[1].toLocaleString('fr-HT')+' HTG\n';});
+  var methods={cash:0,moncash:0,natcash:0},otherMethods={};
+  ventes.forEach(function(s){var kind=salePaymentMethod(s);if(Object.prototype.hasOwnProperty.call(methods,kind))methods[kind]+=Number(s.total)||0;else otherMethods[s.method]=(otherMethods[s.method]||0)+(Number(s.total)||0);});
+  var rapport='📊 RAPPORT — '+(S.settings.bizname||'Konektem')+'\n'+new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'\n━━━━━━━━━━━━━━━━━━━━\n✅ Ventes: '+ventes.length+' · '+fmt(totalV)+'\n';
+  rapport+='  '+paymentText('cash')+': '+fmt(methods.cash)+'\n  MonCash: '+fmt(methods.moncash)+'\n  NatCash: '+fmt(methods.natcash)+'\n';
+  Object.entries(otherMethods).forEach(function(m){rapport+='  '+m[0]+': '+fmt(m[1])+'\n';});
   rapport+='━━━━━━━━━━━━━━━━━━━━\nKonektem POS · RIVAYO-TECH';
   var old=document.getElementById('rapport-mov');if(old)old.remove();
   var mov=document.createElement('div');mov.id='rapport-mov';mov.className='mov show';
@@ -3670,7 +3911,7 @@ function viewSale(saleId){
     + (s.discount ? '<div class="r-row"><span>Remise</span><span>-'+ fmt(s.discount) +'</span></div>' : '')
     + (s.tax ? '<div class="r-row"><span>Taxe</span><span>'+ fmt(s.tax) +'</span></div>' : '')
     + '<div class="r-row r-tot"><span>TOTAL</span><span>'+ fmt(s.total) +'</span></div>'
-    + '<div class="r-row"><span>Paiement</span><span>'+ (s.method||'') +'</span></div>'
+    + '<div class="r-row"><span>Paiement</span><span>'+ salePaymentLabel(s) +'</span></div>'
     + (s.rendu ? '<div class="r-row"><span>Monnaie rendue</span><span>'+ fmt(s.rendu) +'</span></div>' : '')
     + (s.rembourse ? '<div class="r-sub" style="color:#ef4444;font-weight:700;">🔄 REMBOURSÉ</div>' : '')
     + '</div>';
