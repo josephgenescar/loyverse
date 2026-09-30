@@ -13,6 +13,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Konektem – Caisse Intelligente</title>
+<meta name="description" content="Konektem aide les commerces haïtiens à gérer leurs ventes, leur stock et leur caisse depuis une seule application.">
+<link rel="canonical" href="https://konektem.netlify.app/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://konektem.netlify.app/">
+<meta property="og:title" content="Konektem – Caisse Intelligente">
+<meta property="og:description" content="Gérez vos ventes, votre stock et votre caisse avec Konektem.">
+<meta property="og:image" content="https://konektem.netlify.app/og-konektem.jpg.jpeg">
+<meta property="og:image:secure_url" content="https://konektem.netlify.app/og-konektem.jpg.jpeg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="520">
+<meta property="og:image:height" content="408">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Konektem – Caisse Intelligente">
+<meta name="twitter:description" content="Gérez vos ventes, votre stock et votre caisse avec Konektem.">
+<meta name="twitter:image" content="https://konektem.netlify.app/og-konektem.jpg.jpeg">
 <link rel="icon" href="data:,">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <meta name="google-site-verification" content="googlee2ec7beb24a27b5d"/>
@@ -578,7 +593,7 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
     </div>
     <div class="plan-card featured">
       <div class="plan-name">Premium</div>
-      <div class="plan-price"><span class="curr">$</span> 10 <span class="per">/ mois</span></div>
+      <div class="plan-price"><span class="curr">$</span> 20 <span class="per">/ mois</span></div>
       <div class="plan-desc">Articles illimités, tout inclus.</div>
       <div class="plan-feats">
         <div class="pf-feat"><div class="pf-check gold"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Articles illimités</div>
@@ -665,8 +680,8 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
     <div class="pm-title">Passez au niveau supérieur</div>
     <div class="pm-sub">Articles illimités · API boutique · Back Office complet</div>
     <div class="pm-plans">
-      <div class="pm-plan sel" id="plan-mens-card" onclick="selPlan(this,'mensuel')"><div class="pm-plan-name">Mensuel</div><div class="pm-plan-price" id="landing-prix-mens">10 <span class="pm-plan-per">USD/mois</span></div></div>
-      <div class="pm-plan" id="plan-ann-card" onclick="selPlan(this,'annuel')"><div class="pm-plan-name">Annuel</div><div class="pm-plan-price" id="landing-prix-ann">100 <span class="pm-plan-per">USD/an</span></div><div class="pm-plan-save">💰 Économisez 20 USD</div></div>
+      <div class="pm-plan sel" id="plan-mens-card" onclick="selPlan(this,'mensuel')"><div class="pm-plan-name">Mensuel</div><div class="pm-plan-price" id="landing-prix-mens">20 <span class="pm-plan-per">USD/mois</span></div></div>
+      <div class="pm-plan" id="plan-ann-card" onclick="selPlan(this,'annuel')"><div class="pm-plan-name">Annuel</div><div class="pm-plan-price" id="landing-prix-ann">100 <span class="pm-plan-per">USD/an</span></div><div class="pm-plan-save">💰 Économisez 140 USD</div></div>
     </div>
     <div class="pm-feats">
       <div class="pm-feat"><span class="pm-ck">✓</span> Articles et ventes illimités</div>
@@ -678,7 +693,7 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
     <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px;font-size:12px;color:rgba(255,255,255,.6);text-align:center;margin-bottom:13px">
       💳 Paiement : <strong style="color:#fbbf24">MonCash</strong> oswa <strong style="color:#60a5fa">PayPal</strong>
     </div>
-    <button class="pm-btn" id="pm-btn" onclick="landingDoPremium()">Activer Premium — 10 USD/mois →</button>
+    <button class="pm-btn" id="pm-btn" onclick="landingDoPremium()">Activer Premium — 20 USD/mois →</button>
     <button class="pm-btn" id="landing-paypal-btn" onclick="landingDoPayPal()" style="margin-top:8px;background:#0070ba;">🅿️ Peye ak PayPal</button>
   </div>
 </div>
@@ -1284,8 +1299,8 @@ function migrateLegacyAccount(email,pass,btn,loginError){
 
 // PREMIUM
 var landingSelPlan = 'mensuel';
-var landingSelPrix = 10;
-var LANDING_PRIX_MENS    = 10;
+var landingSelPrix = 20;
+var LANDING_PRIX_MENS    = 20;
 var LANDING_PRIX_ANN     = 100;
 var LANDING_MONCASH_NUM  = '509-4886-8964'; // ← Chanje ak nimewo ou
 var LANDING_NATCASH_NUM  = '509-4068-3108';

@@ -439,7 +439,7 @@ function selPlan(el,id,txt){
 var MONCASH_NUM  = '+50948868964'; // ← Remplace ak nimewo MonCash ou
 var NATCASH_NUM  = '+50940683108'; // ← Nimewo Natcash
 var WHATSAPP_NUM = '+50948868964';    // ← Remplace ak nimewo WhatsApp ou
-var PRIX_MENSUEL = 10;
+var PRIX_MENSUEL = 20;
 var PRIX_ANNUEL  = 100;
 
 function getCurrentUserEmail(){
@@ -544,7 +544,7 @@ function resetPmBtn(plan, prix){
   if(!pmBtn) return;
   pmBtn.disabled = false;
   pmBtn.style.opacity = '1';
-  var txt = (plan==='annuel') ? '100 USD/an' : '10 USD/mois';
+  var txt = (plan==='annuel') ? '100 USD/an' : '20 USD/mois';
   pmBtn.textContent = 'Activer Premium — ' + txt + ' →';
 }
 

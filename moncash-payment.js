@@ -197,8 +197,8 @@ exports.handler = async function(event){
     if(event.httpMethod === 'POST' && (!action || action === 'create')){
       var body = JSON.parse(event.body || '{}');
       var userEmail = body.email    || '';
-      var plan      = body.plan     || 'mensuel';
-      var amount    = body.amount   || (plan === 'annuel' ? 100 : 10);
+      var plan      = body.plan === 'annuel' ? 'annuel' : 'mensuel';
+      var amount    = plan === 'annuel' ? 100 : 20;
       var orderId   = 'KNK-' + Date.now() + '-' + Math.random().toString(36).slice(2,6).toUpperCase();
       var siteUrl   = process.env.SITE_URL || 'https://konektem.netlify.app';
       var returnUrl = siteUrl + '/payment-return.html?order=' + orderId + '&email=' + encodeURIComponent(userEmail) + '&plan=' + plan;

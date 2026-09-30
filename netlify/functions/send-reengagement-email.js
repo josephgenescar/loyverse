@@ -79,13 +79,13 @@ function createEmail(user) {
   const paymentUrl = `${siteUrl}/index.html#premium`;
   return {
     subject: 'Konektem vous invite à reprendre votre activité',
-    text: `Bonjour ${user.bizname || 'cher client'},\n\nNous vous invitons à revenir sur Konektem, votre plateforme de gestion de caisse, de stock et de ventes.\n\nAvec Konektem, vous pouvez gérer votre activité plus facilement, suivre vos produits et consulter vos rapports.\n\nPour activer Premium : 10 USD par mois ou 100 USD par an. Vous pouvez payer sur ${paymentUrl}, ou envoyer le paiement par MonCash au +50948868964 ou par Natcash au +50940683108. Après le paiement, envoyez la capture de confirmation sur WhatsApp au +50948868964.\n\nPayPal est également disponible depuis la page Premium.\n\nPour ne plus recevoir ces rappels, répondez UNSUBSCRIBE.`,
+    text: `Bonjour ${user.bizname || 'cher client'},\n\nNous vous invitons à revenir sur Konektem, votre plateforme de gestion de caisse, de stock et de ventes.\n\nAvec Konektem, vous pouvez gérer votre activité plus facilement, suivre vos produits et consulter vos rapports.\n\nPour activer Premium : 20 USD par mois ou 100 USD par an. Vous pouvez payer sur ${paymentUrl}, ou envoyer le paiement par MonCash au +50948868964 ou par Natcash au +50940683108. Après le paiement, envoyez la capture de confirmation sur WhatsApp au +50948868964.\n\nPayPal est également disponible depuis la page Premium.\n\nPour ne plus recevoir ces rappels, répondez UNSUBSCRIBE.`,
     html: `<div style="font-family:Arial,sans-serif;max-width:600px;color:#17251d;line-height:1.6">
       <div style="display:none;max-height:0;overflow:hidden;color:#fff">Reprenez la gestion de votre activité avec Konektem.</div>
       <h2 style="color:#15803d">Bonjour ${name} !</h2>
       <p>Nous vous invitons à revenir sur <strong>Konektem</strong>, votre plateforme de gestion de caisse, de stock et de ventes.</p>
       <p>Gérez votre activité plus facilement, suivez vos produits et consultez vos rapports depuis une seule plateforme.</p>
-      <p><strong>Premium :</strong> 10 USD par mois ou 100 USD par an.</p>
+      <p><strong>Premium :</strong> 20 USD par mois ou 100 USD par an.</p>
       <p><a href="${paymentUrl}" style="display:inline-block;background:#15803d;color:white;padding:12px 18px;text-decoration:none;border-radius:6px">Revenir sur Konektem</a></p>
       <p><strong>MonCash :</strong> <strong>+50948868964</strong><br><strong>Natcash :</strong> <strong>+50940683108</strong></p>
       <p>Après le paiement, envoyez la capture de confirmation sur WhatsApp au <strong>+50948868964</strong>.</p>

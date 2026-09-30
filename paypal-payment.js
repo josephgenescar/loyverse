@@ -46,7 +46,7 @@ exports.handler=async function(event){
     const token=await accessToken();
     const headers={Authorization:'Bearer '+token,'Content-Type':'application/json','Prefer':'return=representation'};
     if(event.httpMethod==='POST' && (!action || action==='create')){
-      const plan=body.plan==='annuel'?'annuel':'mensuel', amount=plan==='annuel'?100:10;
+      const plan=body.plan==='annuel'?'annuel':'mensuel', amount=plan==='annuel'?100:20;
       const siteUrl=(process.env.SITE_URL||'https://konektem.netlify.app').trim().replace(/^['"]|['"]$/g,'').replace(/\/+$/,'');
       try{ new URL(siteUrl); }catch(e){ throw new Error('SITE_URL pa yon URL valid nan Netlify'); }
       const orderBody={
