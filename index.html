@@ -29,628 +29,248 @@
 <meta name="twitter:description" content="Gérez vos ventes, votre stock et votre caisse avec Konektem.">
 <meta name="twitter:image" content="https://konektem.netlify.app/og-konektem.jpg.jpeg">
 <link rel="icon" href="data:,">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <meta name="google-site-verification" content="googlee2ec7beb24a27b5d"/>
 <meta name="msvalidate.01" content="D39B96255FB1375030F240561F77BB78" />
-<style>
-:root{
-  --g1:#0D1F2D;--g2:#0B3D2E;
-  --green:#22c55e;--green2:#16a34a;--green3:#4ade80;
-  --purple:#8b5cf6;--purple2:#7c3aed;--purple3:#a78bfa;
-  --blue:#3b82f6;--blue2:#2563eb;--blue3:#60a5fa;
-  --orange:#f97316;--orange2:#ea580c;--orange3:#fb923c;
-  --pink:#ec4899;--pink2:#db2777;--pink3:#f472b6;
-  --white:#fff;--white80:rgba(255,255,255,.8);--white50:rgba(255,255,255,.5);
-  --white20:rgba(255,255,255,.2);--white10:rgba(255,255,255,.1);--white06:rgba(255,255,255,.06);
-  --border:rgba(255,255,255,.12);
-  --gold:#f59e0b;--gold2:#fbbf24;--red:#ef4444;
-  --r:14px;--rsm:9px;--rxs:6px;
-  --glass-bg:rgba(255,255,255,.05);
-  --glass-border:rgba(255,255,255,.1);
-  --glass-shadow:0 8px 32px rgba(0,0,0,.3);
-}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html{scroll-behavior:smooth;}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135deg,#0D1F2D 0%,#1e1b4b 25%,#0f172a 50%,#1e3a5f 75%,#0D1F2D 100%);color:var(--white);overflow-x:hidden;min-height:100vh;}
-body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 20% 0%,rgba(139,92,246,.15) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 100%,rgba(59,130,246,.12) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 50% 50%,rgba(34,197,94,.1) 0%,transparent 60%);}
-body::after{content:'';position:fixed;inset:0;z-index:0;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");opacity:.03;pointer-events:none;}
-section,nav,footer{position:relative;z-index:1;}
-
-/* NAV */
-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 5%;border-bottom:1px solid var(--glass-border);backdrop-filter:blur(30px) saturate(180%);background:rgba(13,31,45,.4);position:sticky;top:0;z-index:100;box-shadow:0 4px 30px rgba(0,0,0,.2);}
-.nav-logo{display:flex;align-items:center;gap:10px;}
-.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.3px;background:linear-gradient(135deg,var(--purple3),var(--blue3),var(--green3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.logo-text .em{color:var(--green3);}
-.nav-links{display:flex;gap:28px;}
-.nav-links a{color:var(--white80);font-size:14px;font-weight:500;text-decoration:none;transition:color .2s;}
-.nav-links a:hover{color:var(--white);}
-.nav-cta{display:flex;gap:8px;}
-.lang-select{padding:8px 10px;border:1px solid var(--glass-border);border-radius:var(--rxs);color:var(--white80);background:rgba(255,255,255,.06);font-size:12px;font-weight:700;cursor:pointer;outline:none;}
-.lang-select option{background:#0d1f2d;color:#fff;}
-.btn-ghost{padding:8px 18px;border:1px solid var(--glass-border);border-radius:var(--rxs);color:var(--white80);font-size:13px;font-weight:600;cursor:pointer;background:rgba(255,255,255,.05);backdrop-filter:blur(10px);font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s;}
-.btn-ghost:hover{border-color:var(--green);color:var(--white);background:rgba(255,255,255,.1);}
-.btn-primary{padding:9px 20px;border:none;border-radius:var(--rxs);background:linear-gradient(135deg,var(--purple),var(--blue));color:var(--white);font-size:13px;font-weight:800;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s;box-shadow:0 4px 20px rgba(139,92,246,.3);}
-.btn-primary:hover{background:linear-gradient(135deg,var(--purple2),var(--blue2));transform:translateY(-1px);box-shadow:0 6px 25px rgba(139,92,246,.4);}
-
-/* HERO */
-.hero{text-align:center;padding:90px 5% 60px;max-width:860px;margin:0 auto;}
-.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;color:var(--purple3);margin-bottom:28px;backdrop-filter:blur(10px);}
-.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--purple3);}
-.hero h1{font-family:'Syne',sans-serif;font-size:clamp(34px,6vw,66px);font-weight:800;line-height:1.08;letter-spacing:-1.5px;margin-bottom:22px;text-shadow:0 4px 30px rgba(139,92,246,.2);}
-.hero h1 .hl{background:linear-gradient(135deg,var(--purple3),var(--blue3),var(--green3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:none;}
-.hero-sub{font-size:clamp(15px,2.2vw,19px);color:var(--white80);line-height:1.6;max-width:600px;margin:0 auto 36px;}
-.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;}
-.btn-hero{padding:14px 30px;border-radius:var(--rsm);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all .25s;border:none;}
-.btn-hero.green{background:linear-gradient(135deg,var(--purple),var(--blue));color:var(--white);box-shadow:0 8px 30px rgba(139,92,246,.3);}
-.btn-hero.green:hover{background:linear-gradient(135deg,var(--purple2),var(--blue2));transform:translateY(-2px);box-shadow:0 12px 40px rgba(139,92,246,.4);}
-.btn-hero.outline{background:rgba(255,255,255,.05);color:var(--white);border:1.5px solid var(--glass-border);backdrop-filter:blur(10px);}
-.btn-hero.outline:hover{border-color:var(--purple);color:var(--purple3);background:rgba(255,255,255,.1);}
-.hero-note{font-size:12px;color:var(--white50);}
-.hero-note span{color:var(--purple3);font-weight:700;}
-
-/* PREVIEW */
-.preview-wrap{max-width:1000px;margin:0 auto;padding:0 5% 80px;position:relative;}
-.preview-glow{position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(ellipse,rgba(139,92,246,.2) 0%,transparent 70%);pointer-events:none;}
-.preview-frame{background:rgba(255,255,255,.03);border:1px solid var(--glass-border);border-radius:20px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05);backdrop-filter:blur(20px);}
-.pf-bar{background:linear-gradient(135deg,rgba(139,92,246,.9),rgba(59,130,246,.8));height:46px;display:flex;align-items:center;padding:0 18px;gap:12px;}
-.pf-dots{display:flex;gap:6px;}
-.pf-dot{width:10px;height:10px;border-radius:50%;}
-.pf-title{color:rgba(255,255,255,.9);font-size:12px;font-weight:800;margin:0 auto;font-family:'Syne',sans-serif;}
-.pf-body{display:grid;grid-template-columns:1fr 270px;height:340px;}
-.pf-left{padding:14px;display:flex;flex-direction:column;gap:10px;border-right:1px solid var(--glass-border);}
-.pf-search{background:rgba(255,255,255,.05);border:1px solid var(--glass-border);border-radius:7px;padding:8px 12px;font-size:11px;color:var(--white50);}
-.pf-cats{display:flex;gap:5px;}
-.pf-cat{padding:4px 11px;border-radius:20px;font-size:10px;font-weight:700;}
-.pf-cat.active{background:linear-gradient(135deg,var(--purple),var(--blue));color:var(--white);}
-.pf-cat.inactive{background:rgba(255,255,255,.05);color:var(--white50);}
-.pf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;flex:1;}
-.pf-card{background:rgba(255,255,255,.04);border:1px solid var(--glass-border);border-radius:7px;padding:8px 6px;text-align:center;display:flex;flex-direction:column;gap:4px;transition:all .2s;}
-.pf-card:hover{background:rgba(255,255,255,.08);border-color:rgba(139,92,246,.3);transform:translateY(-2px);}
-.pf-card-img{height:38px;background:rgba(255,255,255,.05);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px;}
-.pf-card-name{font-size:8px;font-weight:700;color:var(--white80);}
-.pf-card-price{font-size:10px;font-weight:800;color:var(--purple3);}
-.pf-right{padding:12px;display:flex;flex-direction:column;gap:8px;}
-.pf-order-title{font-size:11px;font-weight:800;color:var(--white80);}
-.pf-items{display:flex;flex-direction:column;gap:5px;flex:1;}
-.pf-item{background:rgba(255,255,255,.04);border:1px solid var(--glass-border);border-radius:5px;padding:6px 8px;display:flex;align-items:center;gap:7px;}
-.pf-item-img{width:20px;height:20px;border-radius:3px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:10px;}
-.pf-item-name{font-size:10px;font-weight:700;flex:1;color:var(--white80);}
-.pf-item-price{font-size:10px;font-weight:800;color:var(--purple3);}
-.pf-total{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:7px;padding:9px;display:flex;justify-content:space-between;align-items:center;}
-.pf-total-label{font-size:10px;font-weight:800;color:var(--white80);}
-.pf-total-val{font-size:15px;font-weight:800;color:var(--purple3);font-family:'Syne',sans-serif;}
-.pf-paybtns{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
-.pf-pay{border:none;border-radius:4px;padding:6px;font-size:9px;font-weight:800;cursor:pointer;}
-.pf-pay.g{background:linear-gradient(135deg,var(--purple),var(--blue));color:var(--white);}
-.pf-pay.b{background:linear-gradient(135deg,var(--blue),var(--green));color:var(--white);}
-.pf-pay.o{background:linear-gradient(135deg,var(--orange),var(--pink));color:var(--white);}
-.pf-pay.p{background:linear-gradient(135deg,var(--pink),var(--purple));color:var(--white);}
-
-/* TRIAL BANNER */
-.trial-banner{background:rgba(255,255,255,.03);border:1px solid var(--glass-border);border-radius:var(--r);padding:26px 30px;max-width:900px;margin:0 auto 80px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,.2);}
-.tb-left h3{font-size:19px;font-weight:800;margin-bottom:5px;}
-.tb-left p{font-size:13px;color:var(--white80);line-height:1.5;}
-.tb-stats{display:flex;gap:22px;}
-.tb-stat .num{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--purple3);}
-.tb-stat .lab{font-size:11px;color:var(--white50);margin-top:2px;}
-
-/* SECTION */
-.section{padding:80px 5%;max-width:1100px;margin:0 auto;}
-.section-badge{display:inline-block;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:700;color:var(--purple3);letter-spacing:.5px;margin-bottom:16px;backdrop-filter:blur(10px);}
-.section h2{font-family:'Syne',sans-serif;font-size:clamp(26px,4vw,40px);font-weight:800;letter-spacing:-.8px;line-height:1.15;margin-bottom:14px;}
-.section-sub{font-size:15px;color:var(--white80);line-height:1.6;max-width:540px;margin-bottom:44px;}
-.divider{height:1px;background:linear-gradient(90deg,transparent,var(--glass-border),transparent);margin:60px 0;}
-
-/* SECTORS */
-.sectors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:13px;}
-.sector-card{background:rgba(255,255,255,.03);border:1px solid var(--glass-border);border-radius:var(--r);padding:22px;transition:all .25s;backdrop-filter:blur(10px);}
-.sector-card:hover{background:rgba(255,255,255,.06);border-color:rgba(139,92,246,.3);transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.2);}
-.sc-ico{width:46px;height:46px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:13px;}
-.sc-ico.g{background:linear-gradient(135deg,rgba(34,197,94,.15),rgba(59,130,246,.15));}
-.sc-ico.b{background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(139,92,246,.15));}
-.sc-ico.p{background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(236,72,153,.15));}
-.sc-ico.o{background:linear-gradient(135deg,rgba(249,115,22,.15),rgba(34,197,94,.15));}
-.sc-name{font-size:14px;font-weight:800;margin-bottom:5px;}
-.sc-desc{font-size:12px;color:var(--white50);line-height:1.5;}
-.sc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:11px;}
-.sc-tag{background:rgba(255,255,255,.05);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;color:var(--white50);}
-
-/* FEATURES */
-.features-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
-.feat-card{background:rgba(255,255,255,.03);border:1px solid var(--glass-border);border-radius:var(--r);padding:22px;transition:all .2s;backdrop-filter:blur(10px);}
-.feat-card:hover{border-color:rgba(139,92,246,.25);background:rgba(255,255,255,.06);}
-.feat-icon{font-size:20px;margin-bottom:11px;}
-.feat-title{font-size:14px;font-weight:800;margin-bottom:5px;}
-.feat-desc{font-size:13px;color:var(--white50);line-height:1.6;}
-.feat-card.hl{background:rgba(139,92,246,.07);border-color:rgba(139,92,246,.25);}
-.feat-card.hl .feat-title{color:var(--purple3);}
-
-/* PRICING */
-.pricing-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;align-items:start;}
-.plan-card{background:rgba(255,255,255,.03);border:1px solid var(--glass-border);border-radius:var(--r);padding:26px;transition:all .2s;backdrop-filter:blur(10px);}
-.plan-card.featured{background:rgba(139,92,246,.08);border-color:rgba(139,92,246,.4);position:relative;}
-.plan-card.featured::before{content:'Recommandé';position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--purple),var(--blue));color:var(--white);font-size:11px;font-weight:800;padding:3px 13px;border-radius:20px;}
-.plan-name{font-size:12px;font-weight:700;color:var(--white50);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;}
-.plan-price{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;line-height:1;margin-bottom:4px;}
-.plan-price .curr{font-size:17px;vertical-align:top;margin-top:5px;display:inline-block;}
-.plan-price .per{font-size:13px;font-weight:400;color:var(--white50);}
-.plan-desc{font-size:13px;color:var(--white50);margin-bottom:20px;line-height:1.5;}
-.plan-feats{display:flex;flex-direction:column;gap:9px;margin-bottom:22px;}
-.pf-feat{display:flex;align-items:flex-start;gap:7px;font-size:13px;color:var(--white80);}
-.pf-check{width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-.pf-check.g{background:rgba(139,92,246,.2);}
-.pf-check.gold{background:rgba(245,158,11,.2);}
-.pf-check.x{background:rgba(255,255,255,.05);}
-.pf-check svg{width:8px;height:8px;}
-.plan-btn{width:100%;padding:12px;border-radius:var(--rsm);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;border:none;transition:all .2s;}
-.plan-btn.free{background:rgba(255,255,255,.05);color:var(--white);border:1px solid var(--glass-border);}
-.plan-btn.free:hover{background:rgba(255,255,255,.1);}
-.plan-btn.premium{background:linear-gradient(135deg,var(--purple),var(--blue));color:var(--white);}
-.plan-btn.premium:hover{background:linear-gradient(135deg,var(--purple2),var(--blue2));transform:translateY(-1px);box-shadow:0 8px 28px rgba(139,92,246,.3);}
-.plan-btn.enterprise{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--g1);}
-.plan-btn.enterprise:hover{opacity:.9;transform:translateY(-1px);}
-
-/* CTA & FOOTER */
-.cta-section{text-align:center;padding:80px 5% 100px;max-width:700px;margin:0 auto;}
-.cta-section h2{font-family:'Syne',sans-serif;font-size:clamp(26px,4vw,46px);font-weight:800;letter-spacing:-.8px;margin-bottom:16px;}
-.cta-section p{font-size:15px;color:var(--white80);margin-bottom:34px;line-height:1.6;}
-footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;backdrop-filter:blur(20px);}
-.footer-right{font-size:12px;color:var(--white50);}
-
-/* SCREEN OVERLAY */
-.screen{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(12px);padding:16px;overflow-y:auto;}
-.screen.hidden{display:none;}
-
-/* AUTH CARD */
-.auth-card{background:linear-gradient(145deg,rgba(18,38,54,.92),rgba(8,17,29,.96));border:1px solid rgba(245,199,107,.28);border-radius:24px;padding:34px;width:100%;max-width:440px;box-shadow:0 40px 100px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.12);position:relative;backdrop-filter:blur(30px);}
-.auth-logo{text-align:center;margin-bottom:22px;}
-.auth-title{font-size:21px;font-weight:800;font-family:'Syne',sans-serif;text-align:center;margin-bottom:5px;}
-.auth-sub{font-size:13px;color:var(--white50);text-align:center;margin-bottom:24px;}
-.auth-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
-.auth-label{font-size:11px;font-weight:700;color:var(--white50);text-transform:uppercase;letter-spacing:.3px;}
-.auth-input{background:rgba(3,17,27,.6);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;padding:13px 14px;color:var(--white);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s,width .2s;width:100%;}
-.auth-input:focus{border-color:#f5c76b;background:rgba(3,17,27,.82);box-shadow:0 0 0 4px rgba(245,199,107,.1);}
-.auth-input::placeholder{color:rgba(255,255,255,.22);}
-.auth-btn{width:100%;padding:13px;border:none;border-radius:var(--rsm);background:linear-gradient(135deg,var(--green),var(--green2));color:var(--g1);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:4px;transition:all .2s;}
-.auth-btn:hover{background:linear-gradient(135deg,var(--green3),var(--green));transform:translateY(-1px);box-shadow:0 8px 25px rgba(34,197,94,.3);}
-.auth-btn:disabled{opacity:.5;cursor:not-allowed;}
-.auth-switch{text-align:center;font-size:13px;color:var(--white50);margin-top:16px;}
-.auth-switch a{color:var(--green3);cursor:pointer;font-weight:700;}
-.auth-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.05);border:none;color:var(--white);width:27px;height:27px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
-.trial-info-box{background:linear-gradient(135deg,rgba(245,158,11,.13),rgba(45,212,191,.06));border:1px solid rgba(245,199,107,.3);border-radius:12px;padding:13px 14px;display:flex;align-items:center;gap:9px;margin-bottom:18px;backdrop-filter:blur(10px);}
-.ti-text{flex:1;font-size:12px;color:rgba(255,255,255,.65);}
-.ti-text strong{display:block;font-size:13px;color:var(--gold2);margin-bottom:1px;}
-.ti-prog{height:4px;background:rgba(245,158,11,.2);border-radius:2px;margin-top:7px;overflow:hidden;}
-.ti-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;width:100%;}
-
-/* PREMIUM CARD */
-.premium-card{background:rgba(255,255,255,.03);border:1px solid rgba(34,197,94,.3);border-radius:20px;padding:34px;width:100%;max-width:500px;box-shadow:0 40px 100px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.05);position:relative;backdrop-filter:blur(30px);}
-.pm-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.05);border:none;color:var(--white);width:27px;height:27px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
-.pm-badge{display:inline-block;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:11px;font-weight:800;padding:3px 13px;border-radius:20px;margin-bottom:11px;}
-.pm-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:5px;}
-.pm-sub{font-size:13px;color:var(--white50);margin-bottom:20px;}
-.pm-plans{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px;}
-.pm-plan{border:1.5px solid var(--glass-border);border-radius:var(--rsm);padding:14px;cursor:pointer;transition:all .2s;}
-.pm-plan.sel{border-color:var(--green);background:rgba(34,197,94,.08);}
-.pm-plan-name{font-size:11px;font-weight:700;color:var(--white50);margin-bottom:3px;}
-.pm-plan-price{font-size:18px;font-weight:800;font-family:'Syne',sans-serif;}
-.pm-plan-per{font-size:11px;color:var(--white50);}
-.pm-plan-save{font-size:11px;color:var(--green3);font-weight:700;margin-top:3px;}
-.pm-feats{display:flex;flex-direction:column;gap:7px;margin-bottom:20px;}
-.pm-feat{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--white80);}
-.pm-ck{color:var(--green3);}
-.pm-btn{width:100%;padding:13px;border:none;border-radius:var(--rsm);background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s;}
-.pm-btn:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(34,197,94,.4);}
-
-/* ════ CONTACT ENTREPRISE CARD ════ */
-.contact-card{background:rgba(255,255,255,.03);border:1px solid rgba(245,158,11,.25);border-radius:20px;padding:30px;width:100%;max-width:500px;box-shadow:0 40px 100px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.05);position:relative;max-height:92vh;overflow-y:auto;backdrop-filter:blur(30px);}
-.contact-card::-webkit-scrollbar{width:3px;}
-.contact-card::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
-.cc-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.05);border:none;color:var(--white);width:27px;height:27px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
-.cc-badge{display:inline-block;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:11px;font-weight:800;padding:3px 13px;border-radius:20px;margin-bottom:11px;}
-.cc-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:5px;}
-.cc-sub{font-size:13px;color:var(--white50);margin-bottom:22px;line-height:1.5;}
-.cc-row{display:flex;gap:10px;}
-.cc-row .auth-field{flex:1;}
-.contact-result{display:none;padding:11px 13px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;line-height:1.5;}
-.contact-result.ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:#86efac;display:block;}
-.contact-result.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#fca5a5;display:block;}
-.cc-privacy{text-align:center;font-size:11px;color:rgba(255,255,255,.3);margin-top:10px;}
-.cc-submit{width:100%;padding:13px;border:none;border-radius:var(--rsm);background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:4px;transition:all .2s;}
-.cc-submit:hover{opacity:.9;transform:translateY(-1px);}
-.cc-submit:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-
-/* RESPONSIVE */
-@media(max-width:900px){
-  .pf-grid{grid-template-columns:repeat(3,1fr);}
-  .sectors-grid,.features-grid{grid-template-columns:1fr 1fr;}
-  .pricing-grid{grid-template-columns:1fr 1fr;}
-  .nav-links{gap:16px;}
-}
-@media(max-width:768px){
-  .nav-links{display:none;}
-  .pf-body{grid-template-columns:1fr;height:auto;}
-  .pf-right{display:none;}
-  .pf-grid{grid-template-columns:repeat(4,1fr);}
-  .trial-banner{flex-direction:column;text-align:center;gap:14px;}
-  .tb-stats{justify-content:center;}
-  .pricing-grid{grid-template-columns:1fr;max-width:400px;margin:0 auto;}
-}
-@media(max-width:640px){
-  nav{padding:12px 4%;}
-  .nav-cta .btn-ghost{display:none;}
-  .hero{padding:56px 5% 32px;}
-  .hero h1{font-size:30px;letter-spacing:-1px;}
-  .hero-actions{flex-direction:column;align-items:center;}
-  .btn-hero{width:100%;max-width:300px;padding:13px;}
-  .pf-grid{grid-template-columns:repeat(3,1fr);gap:5px;}
-  .pf-card-img{height:30px;font-size:14px;}
-  .pf-card-name{font-size:7px;}
-  .section{padding:46px 5%;}
-  .section h2{font-size:24px;}
-  .section-sub{margin-bottom:26px;}
-  .sectors-grid{grid-template-columns:1fr 1fr;gap:9px;}
-  .sc-tags{display:none;}
-  .features-grid{grid-template-columns:1fr;}
-  .cta-section{padding:46px 5% 70px;}
-  footer{flex-direction:column;text-align:center;padding:22px 5%;}
-  .screen{align-items:flex-end;padding:0;}
-  .auth-card{border-radius:18px 18px 0 0;max-width:100%;max-height:92vh;overflow-y:auto;}
-  .premium-card,.contact-card{border-radius:18px 18px 0 0;max-width:100%;padding:22px 16px;}
-  .cc-row{flex-direction:column;gap:0;}
-  .pm-plans{grid-template-columns:1fr 1fr;}
-}
-@media(max-width:380px){
-  .hero h1{font-size:25px;}
-  .pf-grid{grid-template-columns:repeat(2,1fr);}
-  .sectors-grid{grid-template-columns:1fr;}
-  .pm-plans{grid-template-columns:1fr;}
-}
-</style>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/landing.css">
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="kt-icon-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="11" width="7" height="10" rx="1.5"/><rect x="3" y="14" width="8" height="7" rx="1.5"/></symbol>
+  <symbol id="kt-icon-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1"/><circle cx="19" cy="20" r="1"/><path d="M2 3h2l2.4 11.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6L22 7H5"/></symbol>
+  <symbol id="kt-icon-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="M3 8v9l9 5 9-5V8M12 13v9m-4-17 9 5"/></symbol>
+  <symbol id="kt-icon-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="kt-icon-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></symbol>
+  <symbol id="kt-icon-wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v18H6.5A2.5 2.5 0 0 1 4 18.5z"/><path d="M4 6h13a3 3 0 0 1 3 3v2h-5a3 3 0 0 0 0 6h5"/><circle cx="15" cy="14" r=".75"/></symbol>
+  <symbol id="kt-icon-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 3 6-7"/></symbol>
+  <symbol id="kt-icon-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.8 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.8-1l-1.7.7-1.4-2.4 1.4-1.1a8 8 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.8-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.8 1l1.7-.7 1.4 2.4-1.4 1.1a8 8 0 0 1-.1 1.9Z"/></symbol>
+  <symbol id="kt-icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+  <symbol id="kt-icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="kt-icon-receipt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v18l3-2 3 2 2-2 3 2 2-2 3 2V3l-3 2-3-2-2 2-3-2-3 2z"/><path d="M9 9h6m-6 4h6"/></symbol>
+  <symbol id="kt-icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="kt-icon-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h11v12H3zM14 10h4l3 3v5h-7z"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="18" cy="18" r="1.5"/></symbol>
+  <symbol id="kt-icon-plug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v5m8-5v5M6 8h12v2a6 6 0 0 1-6 6v5m0-5a6 6 0 0 1-6-6z"/></symbol>
+  <symbol id="kt-icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></symbol>
+  <symbol id="kt-icon-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3m8 0h3a1 1 0 0 1 1 1v3M4 16v3a1 1 0 0 0 1 1h3m8 0h3a1 1 0 0 0 1-1v-3M7 12h10M9 9v6m6-6v6"/></symbol>
+  <symbol id="kt-icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="kt-icon-minus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></symbol>
+  <symbol id="kt-icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></symbol>
+  <symbol id="kt-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12M6 6l12 12"/></symbol>
+  <symbol id="kt-icon-chevron-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="kt-icon-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="kt-icon-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="kt-icon-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+  <symbol id="kt-icon-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12h4"/></symbol>
+  <symbol id="kt-icon-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 4.3 1.7c-1.1 1.1-1.9 1.4-1.9 3M12 17.5v.1"/></symbol>
+  <symbol id="kt-icon-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9a7 7 0 0 1 11.8-2L20 12M4 12l2.7 5a7 7 0 0 0 11.8-2"/></symbol>
+  <symbol id="kt-icon-printer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6zM18 12h.01"/></symbol>
+  <symbol id="kt-icon-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17l5-5-5-5m5 5H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></symbol>
+  <symbol id="kt-icon-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16.2A4.5 4.5 0 0 0 18 7.5a6 6 0 0 0-11.5 1A4 4 0 0 0 7 16.5h11"/></symbol>
+  <symbol id="kt-icon-wifi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9a11 11 0 0 1 14 0M8 12a6.5 6.5 0 0 1 8 0m-5 7h.01"/></symbol>
+  <symbol id="kt-icon-banknote" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 9h.01M18 15h.01"/></symbol>
+  <symbol id="kt-icon-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></symbol>
+  <symbol id="kt-icon-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="kt-icon-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m10.3 3.9-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3.1l-8-14a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4m0 4h.01"/></symbol>
+  <symbol id="kt-icon-store" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v10h18V10M2 10l2-7h16l2 7"/><path d="M2 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 20v-6h6v6"/></symbol>
+  <symbol id="kt-icon-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8m-8 4h8"/></symbol>
+  <symbol id="kt-icon-filter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M7 12h10m-7 7h4"/></symbol>
+  <symbol id="kt-icon-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4m4-5 5 5 5-5m-5 5V3"/></symbol>
+  <symbol id="kt-icon-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h-4L8 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-4z"/><circle cx="12" cy="13" r="3"/></symbol>
+  <symbol id="kt-icon-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18m0-18a15 15 0 0 0 0 18"/></symbol>
+  <symbol id="kt-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></symbol>
+  <symbol id="kt-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 15.4A8.5 8.5 0 0 1 8.6 3.6 8.5 8.5 0 1 0 20.4 15.4Z"/></symbol>
+  <symbol id="kt-icon-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="5"/><path d="m11.5 11.5 9-9 2 2-3 3 2 2-3 3-2-2-3.5 3.5"/></symbol>
+</svg>
 
 <!-- NAV -->
-<nav>
-  <div class="nav-logo">
-    <svg width="32" height="32" viewBox="0 0 34 34" fill="none">
-      <circle cx="17" cy="17" r="16" stroke="#22c55e" stroke-width="1.5" opacity=".4"/>
-      <path d="M5 17 A12 12 0 0 1 29 17" stroke="#22c55e" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <path d="M8 22 A12 12 0 0 0 26 22" stroke="#4ade80" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-dasharray="3 3"/>
-      <circle cx="17" cy="17" r="4" fill="#22c55e"/>
-      <circle cx="6" cy="17" r="2.5" fill="#4ade80" opacity=".8"/>
-      <circle cx="28" cy="17" r="2.5" fill="#4ade80" opacity=".8"/>
-      <line x1="8.5" y1="17" x2="13" y2="17" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="21" y1="17" x2="25.5" y2="17" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>
-    <div class="logo-text">Konekte<span class="em">m</span></div>
-  </div>
-  <div class="nav-links">
+<nav class="site-nav">
+  <a class="nav-logo" href="/" aria-label="Konektem">
+    <svg class="brand-mark" width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true"><circle cx="17" cy="17" r="15.5" stroke="currentColor" stroke-width="1.5" opacity=".45"/><path d="M5 17a12 12 0 0 1 24 0M8 22a12 12 0 0 0 18 0" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><circle cx="17" cy="17" r="3.5" fill="currentColor"/><circle cx="6" cy="17" r="2" fill="currentColor"/><circle cx="28" cy="17" r="2" fill="currentColor"/></svg>
+    <span class="logo-text">Konekte<span class="em">m</span></span>
+  </a>
+  <div class="nav-links" data-i18n-aria-label="mainNavigation" aria-label="Navigation principale">
     <a href="#fonctionnalites" data-i18n="features">Fonctionnalités</a>
     <a href="#secteurs" data-i18n="sectors">Secteurs</a>
     <a href="#tarifs" data-i18n="pricing">Tarifs</a>
+    <a href="#faq" data-i18n="faq">FAQ</a>
   </div>
   <div class="nav-cta">
-    <select class="lang-select" id="landing-lang" aria-label="Language" onchange="setLandingLanguage(this.value)"><option value="fr">FR</option><option value="en">EN</option><option value="es">ES</option></select>
+    <select class="lang-select" id="landing-lang" data-i18n-aria-label="languageLabel" aria-label="Langue" onchange="setLandingLanguage(this.value)"><option value="fr">FR</option><option value="en">EN</option><option value="es">ES</option></select>
     <button class="btn-ghost" data-i18n="signin" onclick="showScreen('signin')">Se connecter</button>
     <button class="btn-primary" data-i18n="freeTrial" onclick="showScreen('signup')">Essai gratuit</button>
   </div>
 </nav>
 
-<!-- HERO -->
-<section class="hero" style="padding:60px 5% 40px;max-width:1000px;margin:0 auto;">
-  <div class="hero-badge"><span class="dot"></span><span data-i18n="badge">Logiciel de caisse gratuit pour Haïti</span></div>
-  <h1 style="font-size:clamp(30px,5.5vw,58px);line-height:1.1;margin-bottom:20px;">
-    <span data-i18n="heroTitleStart">Logiciel de caisse</span><br><span class="hl" data-i18n="heroTitleFree">gratuit</span> <span data-i18n="heroTitleEnd">et Gestion de Stock</span>
-  </h1>
-  <p class="hero-sub" data-i18n="heroSub">Transformez votre smartphone ou tablette en logiciel de caisse puissant. Gérez facilement les ventes, la gestion des stocks et des employés ; fidélisez vos clients et augmentez vos revenus.</p>
-  <div class="hero-actions">
-    <button class="btn-hero green" data-i18n="startFree" onclick="showScreen('signup')">Démarrer gratuitement →</button>
-    <button class="btn-hero outline" data-i18n="signin" onclick="showScreen('signin')">Se connecter</button>
-  </div>
-  <p class="hero-note"><span data-i18n="trialNote">7 jours d'essai complet gratuit</span> · <span data-i18n="noCard">Aucune carte bancaire requise</span></p>
-</section>
-
-<!-- DEVICE ILLUSTRATION — POS Setup style Loyverse -->
-<div style="position:relative;z-index:1;padding:20px 5% 60px;max-width:900px;margin:0 auto;text-align:center;">
-
-  <!-- Background klè style Loyverse (fon vèt klè) -->
-  <div style="background:linear-gradient(180deg,rgba(220,252,231,.12) 0%,rgba(220,252,231,.04) 100%);border-radius:24px;padding:40px 30px 30px;position:relative;overflow:visible;">
-
-    <!-- Glow vèt anwo -->
-    <div style="position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:500px;height:180px;background:radial-gradient(ellipse,rgba(34,197,94,.18) 0%,transparent 70%);pointer-events:none;z-index:0;"></div>
-
-    <!-- KONTEYNE PRENSIPAL: Scanner | Tablèt+Base | Kat -->
-    <div style="display:flex;align-items:flex-end;justify-content:center;gap:0;position:relative;z-index:1;min-height:280px;">
-
-      <!-- ══ SCANNER BARCODE (agòch) ══ -->
-      <div style="flex-shrink:0;margin-right:-10px;margin-bottom:30px;position:relative;z-index:2;">
-        <!-- Kò scanner -->
-        <div style="width:52px;background:linear-gradient(160deg,#2a2a2a 0%,#1a1a1a 100%);border-radius:10px 10px 14px 14px;padding:10px 8px 14px;box-shadow:4px 4px 16px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08);">
-          <!-- Logo ti kare -->
-          <div style="width:28px;height:28px;background:#111;border-radius:6px;margin:0 auto 8px;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;">
-            <div style="font-size:14px;">📷</div>
-          </div>
-          <!-- LED vèt -->
-          <div style="width:6px;height:6px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;margin:0 auto 6px;"></div>
-          <!-- Kò oval anba -->
-          <div style="width:36px;height:55px;background:linear-gradient(180deg,#222 0%,#333 100%);border-radius:8px 8px 12px 12px;margin:0 auto;border:1px solid rgba(255,255,255,.06);"></div>
-        </div>
-        <!-- Estab scanner -->
-        <div style="width:52px;height:8px;background:linear-gradient(180deg,#333,#222);border-radius:0 0 6px 6px;"></div>
+<main>
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="hero-badge"><span class="dot" aria-hidden="true"></span><span data-i18n="badge">Le point de vente conçu pour les commerces haïtiens</span></div>
+      <h1><span data-i18n="heroTitleStart">La caisse claire et rapide</span><br><span class="hl" data-i18n="heroTitleFree">pour votre commerce.</span></h1>
+      <p class="hero-sub" data-i18n="heroSub">Vendez, suivez votre stock et pilotez votre activité depuis votre téléphone ou votre tablette — même quand la connexion ralentit.</p>
+      <div class="hero-actions">
+        <button class="btn-hero green" data-i18n="startFree" onclick="showScreen('signup')">Démarrer l’essai gratuit</button>
+        <button class="btn-hero outline" data-i18n="signin" onclick="showScreen('signin')">Se connecter</button>
       </div>
+      <p class="hero-note"><svg class="icon-inline" aria-hidden="true"><use href="#kt-icon-shield"/></svg><span data-i18n="trialNote">7 jours d’essai · Sans carte bancaire</span></p>
+      <div class="hero-meta"><span class="meta-dot" aria-hidden="true"></span><span data-i18n="heroTrust">Vos ventes restent disponibles hors ligne et se synchronisent au retour du réseau.</span></div>
+    </div>
 
-      <!-- ══ TABLÈT + BASE/DOCK (sant) ══ -->
-      <div style="flex-shrink:0;position:relative;z-index:3;">
-
-        <!-- BASE/DOCK nwa (anba tablèt) -->
-        <div style="position:relative;">
-          <!-- Pye/Support -->
-          <div style="width:220px;margin:0 auto;">
-            <!-- Tablèt ekran -->
-            <div style="background:#111;border-radius:12px 12px 4px 4px;padding:8px;box-shadow:0 0 0 2px #333, 0 20px 60px rgba(0,0,0,.7), 0 4px 20px rgba(0,0,0,.4);position:relative;">
-              <!-- Kamera tablèt -->
-              <div style="width:6px;height:6px;border-radius:50%;background:#222;border:1px solid #333;margin:0 auto 6px;"></div>
-              <!-- EKRAN APP -->
-              <div style="background:#fff;border-radius:6px;overflow:hidden;height:170px;">
-                <!-- Topbar app vèt -->
-                <div style="background:#16a34a;padding:5px 8px;display:flex;align-items:center;justify-content:space-between;">
-                  <div style="color:#fff;font-size:9px;font-weight:800;letter-spacing:.5px;">KONEKTEM</div>
-                  <div style="color:rgba(255,255,255,.8);font-size:8px;">14:32</div>
-                </div>
-                <!-- Barre categori -->
-                <div style="background:#f8f8f8;padding:4px 6px;display:flex;gap:3px;border-bottom:1px solid #eee;">
-                  <div style="background:#22c55e;border-radius:10px;padding:2px 7px;font-size:7px;font-weight:800;color:#fff;">Tous</div>
-                  <div style="background:#eee;border-radius:10px;padding:2px 7px;font-size:7px;color:#666;">Plats</div>
-                  <div style="background:#eee;border-radius:10px;padding:2px 7px;font-size:7px;color:#666;">Boissons</div>
-                  <div style="background:#eee;border-radius:10px;padding:2px 7px;font-size:7px;color:#666;">Desserts</div>
-                </div>
-                <!-- Grille produits -->
-                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:4px;background:#f5f5f5;height:105px;overflow:hidden;">
-                  <div style="background:#fff;border-radius:4px;padding:4px 2px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);">
-                    <div style="font-size:16px;">🍔</div>
-                    <div style="font-size:6px;color:#333;font-weight:600;margin-top:2px;">Burger</div>
-                    <div style="font-size:7px;color:#16a34a;font-weight:700;">450</div>
-                  </div>
-                  <div style="background:#fff;border-radius:4px;padding:4px 2px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);">
-                    <div style="font-size:16px;">🍕</div>
-                    <div style="font-size:6px;color:#333;font-weight:600;margin-top:2px;">Pizza</div>
-                    <div style="font-size:7px;color:#16a34a;font-weight:700;">800</div>
-                  </div>
-                  <div style="background:#fff;border-radius:4px;padding:4px 2px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);">
-                    <div style="font-size:16px;">🌮</div>
-                    <div style="font-size:6px;color:#333;font-weight:600;margin-top:2px;">Taco</div>
-                    <div style="font-size:7px;color:#16a34a;font-weight:700;">350</div>
-                  </div>
-                  <div style="background:#fff;border-radius:4px;padding:4px 2px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);">
-                    <div style="font-size:16px;">🥗</div>
-                    <div style="font-size:6px;color:#333;font-weight:600;margin-top:2px;">Salade</div>
-                    <div style="font-size:7px;color:#16a34a;font-weight:700;">300</div>
-                  </div>
-                  <div style="background:#fff;border-radius:4px;padding:4px 2px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);">
-                    <div style="font-size:16px;">🥤</div>
-                    <div style="font-size:6px;color:#333;font-weight:600;margin-top:2px;">Jus</div>
-                    <div style="font-size:7px;color:#16a34a;font-weight:700;">150</div>
-                  </div>
-                  <div style="background:#fff;border-radius:4px;padding:4px 2px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);">
-                    <div style="font-size:16px;">☕</div>
-                    <div style="font-size:6px;color:#333;font-weight:600;margin-top:2px;">Café</div>
-                    <div style="font-size:7px;color:#16a34a;font-weight:700;">200</div>
-                  </div>
-                  <div style="background:#fff;border-radius:4px;padding:4px 2px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);">
-                    <div style="font-size:16px;">🍰</div>
-                    <div style="font-size:6px;color:#333;font-weight:600;margin-top:2px;">Gâteau</div>
-                    <div style="font-size:7px;color:#16a34a;font-weight:700;">400</div>
-                  </div>
-                  <div style="background:#fff;border-radius:4px;padding:4px 2px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);border:1.5px solid #22c55e;">
-                    <div style="font-size:16px;">🍗</div>
-                    <div style="font-size:6px;color:#333;font-weight:600;margin-top:2px;">Poulet</div>
-                    <div style="font-size:7px;color:#16a34a;font-weight:700;">600</div>
-                  </div>
-                </div>
-                <!-- Barre total anba -->
-                <div style="background:#22c55e;padding:4px 8px;display:flex;justify-content:space-between;align-items:center;">
-                  <div style="color:#fff;font-size:8px;font-weight:700;">TOTAL</div>
-                  <div style="color:#fff;font-size:9px;font-weight:800;">1 800 HTG</div>
-                  <div style="background:#fff;border-radius:4px;padding:2px 6px;font-size:7px;font-weight:800;color:#16a34a;">PAYER ›</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Bòd anba tablèt -->
-            <div style="height:6px;background:linear-gradient(180deg,#222,#1a1a1a);border-radius:0 0 4px 4px;width:220px;"></div>
-
-            <!-- BASE DOCK -->
-            <div style="background:linear-gradient(180deg,#1e1e1e 0%,#151515 100%);border-radius:4px 4px 10px 10px;padding:10px 0 6px;width:240px;margin:0 auto;box-shadow:0 8px 30px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.05);">
-              <!-- Slot enprimant -->
-              <div style="width:160px;height:3px;background:#111;border-radius:2px;margin:0 auto 6px;box-shadow:inset 0 1px 2px rgba(0,0,0,.8);"></div>
-              <div style="width:180px;height:2px;background:rgba(255,255,255,.04);border-radius:1px;margin:0 auto;"></div>
-              <!-- Logo Konektem -->
-              <div style="text-align:center;margin-top:5px;">
-                <div style="display:inline-block;width:8px;height:8px;border-radius:50%;background:rgba(34,197,94,.4);box-shadow:0 0 6px rgba(34,197,94,.3);"></div>
-              </div>
-              <!-- Pye estab -->
-              <div style="width:260px;height:8px;background:linear-gradient(180deg,#181818,#121212);border-radius:0 0 10px 10px;margin:6px auto 0;box-shadow:0 4px 12px rgba(0,0,0,.4);"></div>
+    <div class="hero-preview">
+      <div class="hero-device" data-i18n-aria-label="demoLabel" aria-label="Aperçu de la caisse Konektem">
+        <div class="device-bar">
+          <div class="device-brand"><span class="device-brand-mark" aria-hidden="true">K</span><span>Konektem</span><span class="device-mode" data-i18n="demoMode">Caisse</span></div>
+          <div class="device-status"><span class="status-dot" aria-hidden="true"></span><span data-i18n="demoReady">Prête à vendre</span></div>
+        </div>
+        <div class="mock-pos">
+          <div class="mock-products">
+            <div class="mock-pos-heading"><div><strong data-i18n="demoCatalog">Catalogue</strong><span data-i18n="demoCatalogSub">Choisissez un article</span></div><div class="mock-search"><svg class="icon-inline" aria-hidden="true"><use href="#kt-icon-search"/></svg><span data-i18n="demoSearch">Rechercher</span></div></div>
+            <div class="mock-categories"><span class="mock-category active" data-i18n="demoAll">Tout</span><span class="mock-category" data-i18n="demoDrinks">Boissons</span><span class="mock-category" data-i18n="demoGrocery">Épicerie</span></div>
+            <div class="mock-product-grid">
+              <div class="mock-product"><div class="mock-product-art art-coffee"><svg aria-hidden="true"><use href="#kt-icon-package"/></svg></div><span class="mock-product-name" data-i18n="demoCoffee">Café local</span><strong>200 HTG</strong></div>
+              <div class="mock-product"><div class="mock-product-art art-juice"><svg aria-hidden="true"><use href="#kt-icon-package"/></svg></div><span class="mock-product-name" data-i18n="demoJuice">Jus frais</span><strong>150 HTG</strong></div>
+              <div class="mock-product"><div class="mock-product-art art-rice"><svg aria-hidden="true"><use href="#kt-icon-package"/></svg></div><span class="mock-product-name" data-i18n="demoRice">Riz local</span><strong>95 HTG</strong></div>
+              <div class="mock-product"><div class="mock-product-art art-soap"><svg aria-hidden="true"><use href="#kt-icon-package"/></svg></div><span class="mock-product-name" data-i18n="demoSoap">Savon</span><strong>250 HTG</strong></div>
             </div>
           </div>
+          <aside class="mock-order">
+            <div class="mock-order-heading"><strong data-i18n="demoOrder">Commande</strong><span>2</span></div>
+            <div class="mock-order-line"><div><strong data-i18n="demoCoffee">Café local</strong><small>1 × 200 HTG</small></div><b>200</b></div>
+            <div class="mock-order-line"><div><strong data-i18n="demoJuice">Jus frais</strong><small>2 × 150 HTG</small></div><b>300</b></div>
+            <div class="mock-order-total"><span data-i18n="demoTotal">Total</span><strong>500 HTG</strong></div>
+            <div class="mock-checkout" data-i18n="demoCheckout">Encaisser</div>
+          </aside>
         </div>
       </div>
-
-      <!-- ══ KAT KONTAKTLESS (adwat) ══ -->
-      <div style="flex-shrink:0;margin-left:10px;margin-bottom:25px;position:relative;z-index:2;">
-        <!-- Terminal kontaktless -->
-        <div style="width:64px;background:linear-gradient(160deg,#f0f0f0 0%,#ddd 100%);border-radius:8px;padding:8px 6px;box-shadow:2px 4px 16px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.8);margin-bottom:6px;">
-          <!-- Ecran ti terminal -->
-          <div style="background:#e8f5e9;border-radius:4px;height:28px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;border:1px solid #c8e6c9;">
-            <div style="font-size:8px;color:#2e7d32;font-weight:700;">✓ OK</div>
-          </div>
-          <!-- Ikòn NFC/WiFi -->
-          <div style="text-align:center;margin-bottom:4px;">
-            <div style="font-size:12px;">📶</div>
-          </div>
-          <!-- Bouton ble -->
-          <div style="width:20px;height:5px;background:#1565c0;border-radius:3px;margin:0 auto;box-shadow:0 1px 4px rgba(21,101,192,.5);"></div>
-        </div>
-        <!-- Kat VISA -->
-        <div style="width:76px;background:linear-gradient(135deg,#1565c0 0%,#0d47a1 50%,#1976d2 100%);border-radius:6px;padding:8px 7px;box-shadow:2px 4px 14px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.15);transform:rotate(-8deg);margin-left:-6px;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-            <!-- Chip -->
-            <div style="width:14px;height:11px;background:linear-gradient(135deg,#ffd700,#ffb300);border-radius:2px;border:0.5px solid rgba(255,255,255,.3);"></div>
-            <!-- Ikòn wifi NFC -->
-            <div style="font-size:9px;color:rgba(255,255,255,.7);">📶</div>
-          </div>
-          <!-- Nimewo kat -->
-          <div style="font-size:5.5px;color:rgba(255,255,255,.7);letter-spacing:.5px;margin-bottom:6px;">•••• •••• •••• 4821</div>
-          <!-- VISA logo -->
-          <div style="text-align:right;">
-            <div style="font-size:10px;font-weight:900;color:#fff;font-style:italic;letter-spacing:-1px;">VISA</div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- fin flex konteyne -->
-
-    <!-- Légende anba -->
-    <div style="display:flex;justify-content:center;gap:20px;margin-top:24px;flex-wrap:wrap;">
-      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.55);">
-        <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;"></div>Vente rapide
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.55);">
-        <div style="width:8px;height:8px;border-radius:50%;background:#3b82f6;"></div>Scan barcode
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.55);">
-        <div style="width:8px;height:8px;border-radius:50%;background:#f59e0b;"></div>Paiement MonCash & Carte
+      <div class="hero-device-legend" data-i18n-aria-label="heroLegend" aria-label="Fonctions de la caisse">
+        <div><span class="legend-dot green-dot" aria-hidden="true"></span>Vente rapide</div>
+        <div><span class="legend-dot blue-dot" aria-hidden="true"></span>Scan code-barres</div>
+        <div><span class="legend-dot amber-dot" aria-hidden="true"></span>Paiement MonCash et carte</div>
       </div>
     </div>
+  </section>
 
-  </div>
-</div>
-
-<!-- TRIAL BANNER -->
-<div style="padding:0 5%;max-width:1100px;margin:0 auto">
-  <div class="trial-banner">
-    <div class="tb-left">
-      <h3>🎁 7 jours d'essai gratuit — Sans carte bancaire</h3>
-      <p>Accédez à toutes les fonctionnalités Premium pendant 7 jours.</p>
+  <section class="trust-strip" data-i18n-aria-label="trustLabel" aria-label="Paiements et protection">
+    <div class="trust-intro" data-i18n="trustIntro">Pensé pour les réalités du terrain</div>
+    <div class="trust-items">
+      <div class="trust-item"><span class="trust-wordmark moncash">MonCash</span><span data-i18n="trustMonCash">Paiement QR</span></div>
+      <div class="trust-item"><span class="trust-wordmark natcash">NatCash</span><span data-i18n="trustNatCash">Paiement QR</span></div>
+      <div class="trust-item"><span class="trust-wordmark paypal">PayPal</span><span data-i18n="trustPayPal">Abonnement</span></div>
+      <div class="trust-item"><svg class="trust-icon" aria-hidden="true"><use href="#kt-icon-wifi"/></svg><span data-i18n="trustOffline">Caisse hors ligne</span></div>
+      <div class="trust-item"><svg class="trust-icon" aria-hidden="true"><use href="#kt-icon-shield"/></svg><span data-i18n="trustSecure">Données protégées</span></div>
     </div>
-    <div class="tb-stats">
-      <div class="tb-stat"><div class="num">7</div><div class="lab">Jours gratuits</div></div>
-      <div class="tb-stat"><div class="num">∞</div><div class="lab">Articles</div></div>
-      <div class="tb-stat"><div class="num">9</div><div class="lab">Secteurs</div></div>
-    </div>
-  </div>
-</div>
+  </section>
 
-<!-- SECTEURS -->
-<section class="section" id="secteurs">
-  <div class="section-badge">SECTEURS</div>
-  <h2>Une application, tous les métiers</h2>
-  <p class="section-sub">Konektem s'adapte automatiquement à votre secteur d'activité.</p>
-  <div class="sectors-grid">
-    <div class="sector-card"><div class="sc-ico g">🛒</div><div class="sc-name">Marché & Épicerie</div><div class="sc-desc">Alimentation, boissons, produits du quotidien.</div><div class="sc-tags"><span class="sc-tag">Stock temps réel</span><span class="sc-tag">Photos produits</span></div></div>
-    <div class="sector-card"><div class="sc-ico b">💊</div><div class="sc-name">Pharmacie & Médecine</div><div class="sc-desc">DCI, dosage, péremption, ordonnance requise.</div><div class="sc-tags"><span class="sc-tag">DCI / Dosage</span><span class="sc-tag">Péremption</span></div></div>
-    <div class="sector-card"><div class="sc-ico p">📱</div><div class="sc-name">Électronique & Tech</div><div class="sc-desc">SKU, numéros de série, garanties, réparations.</div><div class="sc-tags"><span class="sc-tag">SKU / Référence</span><span class="sc-tag">Garanties</span></div></div>
-    <div class="sector-card"><div class="sc-ico o">🍽️</div><div class="sc-name">Restaurant & Alimentation</div><div class="sc-desc">Tables, menus, sur place / à emporter / livraison.</div><div class="sc-tags"><span class="sc-tag">Tables</span><span class="sc-tag">Menus</span></div></div>
-  </div>
-</section>
-
-<div class="divider" style="max-width:1100px;margin:0 auto"></div>
-
-<!-- FEATURES -->
-<section class="section" id="fonctionnalites">
-  <div class="section-badge">FONCTIONNALITÉS</div>
-  <h2>Tout ce qu'il vous faut pour vendre mieux</h2>
-  <p class="section-sub">Caisse, stock, clients et back-office dans une seule application.</p>
-  <div class="features-grid">
-    <div class="feat-card hl"><div class="feat-icon">🔗</div><div class="feat-title">Intégration Boutique API</div><div class="feat-desc">Connectez votre site — produits importés automatiquement avec photos et prix.</div></div>
-    <div class="feat-card"><div class="feat-icon">📷</div><div class="feat-title">Photos Réelles</div><div class="feat-desc">Téléchargez des vraies photos depuis votre téléphone ou ordinateur.</div></div>
-    <div class="feat-card"><div class="feat-icon">📊</div><div class="feat-title">Back Office Complet</div><div class="feat-desc">Rapports, graphiques, top produits, analyse par caissier.</div></div>
-    <div class="feat-card"><div class="feat-icon">📱</div><div class="feat-title">4 Modes de Paiement</div><div class="feat-desc">Espèces, carte, MonCash et crédit — tous les modes haïtiens.</div></div>
-    <div class="feat-card"><div class="feat-icon">🧾</div><div class="feat-title">Reçus Imprimables</div><div class="feat-desc">Reçus professionnels avec logo et message personnalisé.</div></div>
-    <div class="feat-card"><div class="feat-icon">👥</div><div class="feat-title">Clients & Équipe</div><div class="feat-desc">Carnet de clients, historique d'achats, suivi par caissier.</div></div>
-  </div>
-</section>
-
-<div class="divider" style="max-width:1100px;margin:0 auto"></div>
-
-<!-- TARIFS -->
-<section class="section" id="tarifs">
-  <div class="section-badge">TARIFS</div>
-  <h2>Simple et transparent</h2>
-  <p class="section-sub">Commencez gratuitement. Passez au Premium quand vous grandissez.</p>
-  <div class="pricing-grid">
-    <div class="plan-card">
-      <div class="plan-name">Essai Gratuit</div>
-      <div class="plan-price"><span class="curr">USD</span> 0 <span class="per">/ 7 jours</span></div>
-      <div class="plan-desc">Toutes les fonctionnalités pendant 7 jours sans carte.</div>
-      <div class="plan-feats">
-        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Tous les secteurs</div>
-        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Jusqu'à 50 articles</div>
-        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Jusqu'à 30 ventes</div>
-        <div class="pf-feat"><div class="pf-check x"><svg viewBox="0 0 10 10"><path d="M2 2L8 8M8 2L2 8" stroke="#475569" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div><span style="color:var(--white50)">Intégration API boutique</span></div>
+  <section class="trial-wrap" data-i18n-aria-label="trialLabel" aria-label="Essai gratuit">
+    <div class="trial-banner">
+      <div class="tb-left"><span class="tb-icon" aria-hidden="true"><svg><use href="#kt-icon-calendar"/></svg></span><div><h3>7 jours pour tout prendre en main</h3><p>Testez la caisse, le stock et les rapports sans carte bancaire.</p></div></div>
+      <div class="tb-stats">
+        <div class="tb-stat"><div class="num">7</div><div class="lab">Jours d’essai</div></div>
+        <div class="tb-stat"><div class="num">50</div><div class="lab">Articles maximum</div></div>
+        <div class="tb-stat"><div class="num">30</div><div class="lab">Ventes maximum</div></div>
       </div>
-      <button class="plan-btn free" onclick="showScreen('signup')">Commencer gratuitement</button>
     </div>
-    <div class="plan-card featured">
-      <div class="plan-name">Premium</div>
-      <div class="plan-price"><span class="curr">$</span> 20 <span class="per">/ mois</span></div>
-      <div class="plan-desc">Articles illimités, tout inclus.</div>
-      <div class="plan-feats">
-        <div class="pf-feat"><div class="pf-check gold"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Articles illimités</div>
-        <div class="pf-feat"><div class="pf-check gold"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Ventes illimitées</div>
-        <div class="pf-feat"><div class="pf-check gold"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Intégration API boutique</div>
-        <div class="pf-feat"><div class="pf-check gold"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Back Office complet</div>
-        <div class="pf-feat"><div class="pf-check gold"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Support prioritaire WhatsApp</div>
-      </div>
-      <button class="plan-btn premium" onclick="showScreen('premium')">Passer au Premium →</button>
-    </div>
-    <div class="plan-card">
-      <div class="plan-name">Entreprise</div>
-      <div class="plan-price" style="font-size:24px">Sur mesure</div>
-      <div class="plan-desc">Pour chaînes et franchises avec plusieurs points de vente.</div>
-      <div class="plan-feats">
-        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Multi-boutiques</div>
-        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Tableau de bord centralisé</div>
-        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>API personnalisée</div>
-        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>Formation & onboarding</div>
-        <div class="pf-feat"><div class="pf-check g"><svg viewBox="0 0 10 10"><path d="M1.5 5L4 7.5L8.5 2.5" stroke="#22c55e" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>SLA garanti</div>
-      </div>
-      <!-- ★ BOUTON CONNECTÉ À SUPABASE -->
-      <button class="plan-btn enterprise" onclick="ouvrirContact()">Nous contacter</button>
-    </div>
-  </div>
-</section>
+  </section>
 
-<!-- CTA -->
-<section class="cta-section">
-  <h2>Prêt à connecter votre boutique ?</h2>
-  <p>Rejoignez les commerçants haïtiens qui modernisent leur gestion de vente.</p>
-  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-    <button class="btn-hero green" onclick="showScreen('signup')">Créer mon compte gratuit →</button>
-    <button class="btn-hero outline" onclick="showScreen('signin')">J'ai déjà un compte</button>
-  </div>
-</section>
+  <section class="section sectors-section" id="secteurs">
+    <div class="section-badge">SECTEURS</div>
+    <div class="section-heading"><h2>Une caisse, plusieurs métiers</h2><p class="section-sub">Choisissez votre activité pour découvrir une configuration adaptée.</p></div>
+    <div class="sectors-grid">
+      <button class="sector-card is-selected" type="button" data-sector="market" aria-pressed="true" onclick="selectLandingSector(this)"><span class="sc-ico g"><svg aria-hidden="true"><use href="#kt-icon-store"/></svg></span><span class="sc-name">Marché & Épicerie</span><span class="sc-desc">Alimentation, boissons et produits du quotidien.</span><span class="sc-tags"><span class="sc-tag">Stock en temps réel</span><span class="sc-tag">Photos produits</span></span><span class="sc-arrow" aria-hidden="true"><svg><use href="#kt-icon-chevron-right"/></svg></span></button>
+      <button class="sector-card" type="button" data-sector="pharmacy" aria-pressed="false" onclick="selectLandingSector(this)"><span class="sc-ico b"><svg aria-hidden="true"><use href="#kt-icon-shield"/></svg></span><span class="sc-name">Pharmacie & Médecine</span><span class="sc-desc">Suivez les références, les lots et les dates de péremption.</span><span class="sc-tags"><span class="sc-tag">Lots & dates</span><span class="sc-tag">Références</span></span><span class="sc-arrow" aria-hidden="true"><svg><use href="#kt-icon-chevron-right"/></svg></span></button>
+      <button class="sector-card" type="button" data-sector="electronics" aria-pressed="false" onclick="selectLandingSector(this)"><span class="sc-ico p"><svg aria-hidden="true"><use href="#kt-icon-package"/></svg></span><span class="sc-name">Électronique & Tech</span><span class="sc-desc">Gardez le suivi des références, séries et garanties.</span><span class="sc-tags"><span class="sc-tag">SKU / Référence</span><span class="sc-tag">Garanties</span></span><span class="sc-arrow" aria-hidden="true"><svg><use href="#kt-icon-chevron-right"/></svg></span></button>
+      <button class="sector-card" type="button" data-sector="restaurant" aria-pressed="false" onclick="selectLandingSector(this)"><span class="sc-ico o"><svg aria-hidden="true"><use href="#kt-icon-receipt"/></svg></span><span class="sc-name">Restaurant & Alimentation</span><span class="sc-desc">Organisez menus et commandes sur place ou à emporter.</span><span class="sc-tags"><span class="sc-tag">Menus</span><span class="sc-tag">Commandes</span></span><span class="sc-arrow" aria-hidden="true"><svg><use href="#kt-icon-chevron-right"/></svg></span></button>
+    </div>
+    <p class="sector-selection"><svg class="icon-inline" aria-hidden="true"><use href="#kt-icon-check"/></svg><span data-i18n="sectorSelection">Configuration sélectionnée :</span><strong id="sector-selection-name">Marché & Épicerie</strong></p>
+  </section>
 
-<footer>
-  <div style="display:flex;align-items:center;gap:8px">
-    <svg width="24" height="24" viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="16" stroke="#22c55e" stroke-width="1.5" opacity=".4"/><path d="M5 17 A12 12 0 0 1 29 17" stroke="#22c55e" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="17" cy="17" r="4" fill="#22c55e"/></svg>
-    <div class="logo-text" style="font-size:16px">Konekte<span class="em">m</span></div>
-  </div>
-  <div class="footer-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;"><span>© 2025 Konektem · Haïti · Tous droits réservés</span><span style="font-size:11px;color:rgba(255,255,255,.3);">Créé par <strong style="color:rgba(255,255,255,.5);">RIVAYO-TECH ENTREPRISE</strong></span></div>
+  <section class="section feature-section" id="fonctionnalites">
+    <div class="section-badge">FONCTIONNALITÉS</div>
+    <div class="section-heading"><h2>Les bons outils, sans détour</h2><p class="section-sub">Une expérience de vente simple, avec les détails qui comptent au quotidien.</p></div>
+    <div class="features-grid">
+      <article class="feat-card feat-card-large hl"><span class="feat-icon"><svg aria-hidden="true"><use href="#kt-icon-cart"/></svg></span><h3 class="feat-title">Caisse rapide, catalogue visuel</h3><p class="feat-desc">Retrouvez les produits par photo, ajoutez-les au panier et terminez la vente en quelques gestes.</p><div class="feature-mini-row"><span class="mini-pill" data-i18n="featureTouch">Pensée pour le tactile</span><span class="mini-pill" data-i18n="featureReceipt">Reçu imprimable</span></div></article>
+      <article class="feat-card"><span class="feat-icon"><svg aria-hidden="true"><use href="#kt-icon-package"/></svg></span><h3 class="feat-title">Stock sous contrôle</h3><p class="feat-desc">Suivez les quantités, repérez les stocks bas et consultez les mouvements.</p></article>
+      <article class="feat-card"><span class="feat-icon"><svg aria-hidden="true"><use href="#kt-icon-wallet"/></svg></span><h3 class="feat-title">Paiements adaptés</h3><p class="feat-desc">Enregistrez espèces, carte et crédit, avec confirmation QR MonCash ou NatCash.</p></article>
+      <article class="feat-card"><span class="feat-icon"><svg aria-hidden="true"><use href="#kt-icon-chart"/></svg></span><h3 class="feat-title">Chiffres lisibles</h3><p class="feat-desc">Consultez ventes, dépenses, tendances et produits les plus vendus.</p></article>
+      <article class="feat-card"><span class="feat-icon"><svg aria-hidden="true"><use href="#kt-icon-users"/></svg></span><h3 class="feat-title">Clients & équipe</h3><p class="feat-desc">Retrouvez les clients, les achats et l’activité de chaque caissier.</p></article>
+      <article class="feat-card"><span class="feat-icon"><svg aria-hidden="true"><use href="#kt-icon-cloud"/></svg></span><h3 class="feat-title">Continuez sans réseau</h3><p class="feat-desc">Gardez la caisse accessible hors ligne et synchronisez vos données au retour de la connexion.</p></article>
+    </div>
+  </section>
+
+  <section class="how-section" id="comment-ca-marche">
+    <div class="how-inner"><div class="eyebrow" data-i18n="howEyebrow">PRISE EN MAIN</div><h2 data-i18n="howTitle">De l’inscription à la première vente</h2><p class="how-sub" data-i18n="howSub">Pas de matériel spécial à installer. Votre téléphone ou tablette suffit pour démarrer.</p>
+      <div class="steps-grid">
+        <article class="step-card"><span class="step-index">01</span><div class="step-icon"><svg aria-hidden="true"><use href="#kt-icon-user"/></svg></div><h3 data-i18n="stepOneTitle">Créez votre espace</h3><p data-i18n="stepOneText">Indiquez le nom de votre commerce et choisissez votre secteur.</p></article>
+        <article class="step-card"><span class="step-index">02</span><div class="step-icon"><svg aria-hidden="true"><use href="#kt-icon-package"/></svg></div><h3 data-i18n="stepTwoTitle">Ajoutez vos produits</h3><p data-i18n="stepTwoText">Créez votre catalogue et ajoutez vos prix et vos photos.</p></article>
+        <article class="step-card"><span class="step-index">03</span><div class="step-icon"><svg aria-hidden="true"><use href="#kt-icon-cart"/></svg></div><h3 data-i18n="stepThreeTitle">Vendez et suivez</h3><p data-i18n="stepThreeText">Encaissez, imprimez vos reçus et consultez vos résultats.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section pricing-section" id="tarifs">
+    <div class="section-badge">TARIFS</div>
+    <div class="section-heading"><h2>Des tarifs simples, sans surprise</h2><p class="section-sub">Démarrez gratuitement. Passez à Premium quand votre activité grandit.</p></div>
+    <div class="billing-control" role="group" data-i18n-aria-label="billingLabel" aria-label="Période de facturation"><span data-i18n="billingLabel">Afficher les tarifs</span><div class="billing-switch"><button type="button" class="billing-option" data-billing="monthly" aria-pressed="false" onclick="setPricingPeriod('monthly')" data-i18n="billingMonthly">Mensuel</button><button type="button" class="billing-option active" data-billing="yearly" aria-pressed="true" onclick="setPricingPeriod('yearly')"><span data-i18n="billingYearly">Annuel</span><span class="saving-chip" data-i18n="billingSaving">Économisez 140 USD</span></button></div></div>
+    <div class="pricing-grid">
+      <article class="plan-card">
+        <div class="plan-topline"><span class="plan-name">Essai gratuit</span><svg class="plan-mark" aria-hidden="true"><use href="#kt-icon-clock"/></svg></div>
+        <div class="plan-price"><span class="curr">USD</span><span class="price-amount">0</span><span class="per" data-i18n="priceTrialPeriod">/ 7 jours</span></div>
+        <p class="plan-desc">7 jours pour tester, jusqu’à 50 articles et 30 ventes.</p>
+        <ul class="plan-feats"><li><svg aria-hidden="true"><use href="#kt-icon-check"/></svg><span data-i18n="trialBenefitSectors">Tous les secteurs</span></li><li><svg aria-hidden="true"><use href="#kt-icon-check"/></svg><span data-i18n="trialBenefitProducts">Jusqu’à 50 articles</span></li><li><svg aria-hidden="true"><use href="#kt-icon-check"/></svg><span data-i18n="trialBenefitSales">Jusqu’à 30 ventes</span></li><li class="muted"><svg aria-hidden="true"><use href="#kt-icon-close"/></svg><span data-i18n="trialBenefitIntegration">Intégration API boutique</span></li></ul>
+        <button class="plan-btn free" onclick="showScreen('signup')">Commencer gratuitement</button>
+      </article>
+      <article class="plan-card featured">
+        <div class="featured-label" data-i18n="annualFeatured">Meilleure valeur annuelle</div>
+        <div class="plan-topline"><span class="plan-name">Premium</span><svg class="plan-mark" aria-hidden="true"><use href="#kt-icon-chart"/></svg></div>
+        <div class="plan-price"><span class="curr">USD</span><span class="price-amount" id="landing-premium-amount">100</span><span class="per" id="landing-premium-period" data-i18n="priceYear">/ an</span></div>
+        <p class="plan-desc">Articles et ventes illimités, avec toutes les fonctions Premium.</p>
+        <p class="price-equivalent" id="landing-premium-equivalent" data-i18n="annualEquivalent">Soit 8,33 USD par mois, facturé annuellement.</p>
+        <ul class="plan-feats"><li><svg aria-hidden="true"><use href="#kt-icon-check"/></svg><span data-i18n="premiumBenefitProducts">Articles et ventes illimités</span></li><li><svg aria-hidden="true"><use href="#kt-icon-check"/></svg><span data-i18n="premiumBenefitIntegrations">Intégrations boutique et import CSV</span></li><li><svg aria-hidden="true"><use href="#kt-icon-check"/></svg><span data-i18n="premiumBenefitBackOffice">Rapports et back-office complet</span></li><li><svg aria-hidden="true"><use href="#kt-icon-check"/></svg><span data-i18n="premiumBenefitSupport">Support prioritaire WhatsApp</span></li></ul>
+        <button class="plan-btn premium" onclick="choosePremiumPlan()">Passer au Premium</button>
+      </article>
+      <article class="plan-card enterprise">
+        <div class="plan-topline"><span class="plan-name">Entreprise</span><svg class="plan-mark" aria-hidden="true"><use href="#kt-icon-store"/></svg></div>
+        <div class="plan-price custom-price" data-i18n="enterprisePrice">Sur mesure</div>
+        <p class="plan-desc">Pour chaînes et franchises avec plusieurs points de vente.</p>
+        <ul class="plan-feats"><li><svg aria-hidden="true"><use href="#kt-icon-check"/></svg><span data-i18n="enterpriseBenefitLocations">Plusieurs boutiques</span></li><li><svg aria-hidden="true"><use href="#kt-icon-check"/></svg><span data-i18n="enterpriseBenefitDashboard">Tableau de bord centralisé</span></li><li><svg aria-hidden="true"><use href="#kt-icon-check"/></svg><span data-i18n="enterpriseBenefitSupport">Accompagnement personnalisé</span></li></ul>
+        <button class="plan-btn enterprise" onclick="ouvrirContact()">Nous contacter</button>
+      </article>
+    </div>
+    <p class="pricing-footnote" data-i18n="pricingFootnote">Les paiements de vente disponibles dans la caisse : espèces, carte, crédit, MonCash et NatCash par QR.</p>
+  </section>
+
+  <section class="faq-section" id="faq">
+    <div class="faq-inner"><div class="eyebrow" data-i18n="faqEyebrow">QUESTIONS FRÉQUENTES</div><h2 data-i18n="faqTitle">Les réponses avant de vous lancer</h2><p class="faq-sub" data-i18n="faqSub">Tout ce qu’il faut savoir pour démarrer avec Konektem.</p>
+      <div class="faq-list">
+        <details class="faq-item"><summary data-i18n="faqTrialQuestion">Que comprend l’essai gratuit ?</summary><p data-i18n="faqTrialAnswer">L’essai dure 7 jours et permet d’ajouter jusqu’à 50 articles et d’enregistrer jusqu’à 30 ventes.</p></details>
+        <details class="faq-item"><summary data-i18n="faqPaymentsQuestion">Quels moyens de paiement puis-je enregistrer ?</summary><p data-i18n="faqPaymentsAnswer">Espèces, carte et crédit sont enregistrés dans la caisse. MonCash et NatCash utilisent le QR du commerçant et une confirmation manuelle. PayPal sert aux abonnements Premium.</p></details>
+        <details class="faq-item"><summary data-i18n="faqOfflineQuestion">La caisse fonctionne-t-elle sans Internet ?</summary><p data-i18n="faqOfflineAnswer">Après le premier chargement, la caisse conserve ses données localement et peut enregistrer les ventes hors ligne. La synchronisation reprend lorsque le réseau revient.</p></details>
+        <details class="faq-item"><summary data-i18n="faqHardwareQuestion">Ai-je besoin d’un équipement particulier ?</summary><p data-i18n="faqHardwareAnswer">Non. Un téléphone ou une tablette suffit. Une imprimante thermique compatible peut être utilisée pour les reçus.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section"><div class="cta-inner"><div class="eyebrow" data-i18n="ctaEyebrow">VOTRE COMMERCE, À VOTRE RYTHME</div><h2>Prêt à mieux piloter votre commerce ?</h2><p>Rejoignez les commerçants haïtiens qui organisent leurs ventes et leur stock avec Konektem.</p><div class="cta-actions"><button class="btn-hero green" data-i18n="ctaCreateAccount" onclick="showScreen('signup')">Créer mon compte gratuit</button><button class="btn-hero outline" data-i18n="ctaSignIn" onclick="showScreen('signin')">J’ai déjà un compte</button></div></div></section>
+</main>
+
+<footer class="site-footer">
+  <a class="footer-brand" href="/" aria-label="Konektem"><svg class="brand-mark" width="28" height="28" viewBox="0 0 34 34" fill="none" aria-hidden="true"><circle cx="17" cy="17" r="15.5" stroke="currentColor" stroke-width="1.5" opacity=".45"/><path d="M5 17a12 12 0 0 1 24 0M8 22a12 12 0 0 0 18 0" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><circle cx="17" cy="17" r="3.5" fill="currentColor"/></svg><span class="logo-text">Konekte<span class="em">m</span></span></a>
+  <div class="footer-right"><span data-i18n="footerCopyright">© 2026 Konektem · Haïti · Tous droits réservés</span><span class="footer-credit"><span data-i18n="footerBuiltBy">Créé par</span> <strong>RIVAYO-TECH ENTREPRISE</strong></span></div>
 </footer>
+<a class="whatsapp-float" href="https://wa.me/50948868964" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><span class="whatsapp-label" data-i18n="whatsappContact">Écrire sur WhatsApp</span></a>
 
 <!-- MODAL: SIGN UP -->
 <div class="screen hidden" id="screen-signup">
   <div class="auth-card">
-    <button class="auth-close" onclick="hideScreen('signup')">✕</button>
+    <button class="auth-close" aria-label="Fermer" onclick="hideScreen('signup')"><svg aria-hidden="true"><use href="#kt-icon-close"/></svg></button>
     <div class="auth-logo"><svg width="40" height="40" viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="16" stroke="#22c55e" stroke-width="1.5" opacity=".4"/><path d="M5 17 A12 12 0 0 1 29 17" stroke="#22c55e" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="17" cy="17" r="4" fill="#22c55e"/><circle cx="6" cy="17" r="2.5" fill="#4ade80" opacity=".8"/><circle cx="28" cy="17" r="2.5" fill="#4ade80" opacity=".8"/><line x1="8.5" y1="17" x2="13" y2="17" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/><line x1="21" y1="17" x2="25.5" y2="17" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></svg></div>
     <div class="auth-title">Créer votre compte</div>
     <div class="auth-sub">7 jours d'essai gratuit · Aucune carte requise</div>
-    <div class="trial-info-box"><span style="font-size:18px">🎁</span><div class="ti-text"><strong>Essai Premium — 7 jours gratuits</strong>Toutes les fonctionnalités incluses<div class="ti-prog"><div class="ti-fill"></div></div></div></div>
-    <div class="auth-field"><label class="auth-label">Nom complet</label><input class="auth-input" id="su-name" placeholder="Jean-Baptiste Pierre"></div>
-    <div class="auth-field"><label class="auth-label">Email</label><input class="auth-input" id="su-email" type="email" placeholder="jean@exemple.com"></div>
+    <div class="trial-info-box"><span class="ti-icon" aria-hidden="true"><svg><use href="#kt-icon-calendar"/></svg></span><div class="ti-text"><strong>Essai Premium — 7 jours gratuits</strong><span class="trial-info-detail">Toutes les fonctionnalités incluses</span><div class="ti-prog"><div class="ti-fill"></div></div></div></div>
+    <div class="auth-field"><label class="auth-label">Nom complet</label><input class="auth-input" id="su-name" placeholder="Nom de votre commerce"></div>
+    <div class="auth-field"><label class="auth-label">Email</label><input class="auth-input" id="su-email" type="email" placeholder="nom@exemple.com"></div>
 
-    <div class="auth-field"><label class="auth-label">Téléphone <span style="color:#ef4444">*</span></label><input class="auth-input" id="su-phone" type="tel" placeholder="509 4886 8964" required></div>
+    <div class="auth-field"><label class="auth-label">Téléphone <span style="color:#ef4444">*</span></label><input class="auth-input" id="su-phone" type="tel" placeholder="+509 0000 0000" required></div>
 
     <div class="auth-field"><label class="auth-label">Mot de passe</label><input class="auth-input" id="su-pass" type="password" placeholder="6 caractères minimum" minlength="6"></div>
     <button class="auth-btn" onclick="doSignup()">Créer mon compte gratuit →</button>
@@ -661,11 +281,11 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
 <!-- MODAL: SIGN IN -->
 <div class="screen hidden" id="screen-signin">
   <div class="auth-card">
-    <button class="auth-close" onclick="hideScreen('signin')">✕</button>
+    <button class="auth-close" aria-label="Fermer" onclick="hideScreen('signin')"><svg aria-hidden="true"><use href="#kt-icon-close"/></svg></button>
     <div class="auth-logo"><svg width="40" height="40" viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="16" stroke="#22c55e" stroke-width="1.5" opacity=".4"/><path d="M5 17 A12 12 0 0 1 29 17" stroke="#22c55e" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="17" cy="17" r="4" fill="#22c55e"/></svg></div>
     <div class="auth-title">Bon retour !</div>
     <div class="auth-sub">Connectez-vous à votre espace Konektem</div>
-    <div class="auth-field"><label class="auth-label">Email</label><input class="auth-input" id="si-email" type="email" placeholder="jean@exemple.com"></div>
+    <div class="auth-field"><label class="auth-label">Email</label><input class="auth-input" id="si-email" type="email" placeholder="nom@exemple.com"></div>
     <div class="auth-field"><label class="auth-label">Mot de passe</label><input class="auth-input" id="si-pass" type="password" placeholder="Votre mot de passe"></div>
     <button class="auth-btn" onclick="doSignin()">Se connecter →</button>
     <div class="auth-switch">Pas encore de compte ? <a onclick="switchAuth('signup')">Créer un compte</a></div>
@@ -675,13 +295,13 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
 <!-- MODAL: PREMIUM -->
 <div class="screen hidden" id="screen-premium">
   <div class="premium-card">
-    <button class="pm-close" onclick="hideScreen('premium')">✕</button>
-    <div class="pm-badge">⭐ PREMIUM</div>
+    <button class="pm-close" aria-label="Fermer" onclick="hideScreen('premium')"><svg aria-hidden="true"><use href="#kt-icon-close"/></svg></button>
+    <div class="pm-badge"><svg aria-hidden="true"><use href="#kt-icon-check"/></svg> PREMIUM</div>
     <div class="pm-title">Passez au niveau supérieur</div>
     <div class="pm-sub">Articles illimités · API boutique · Back Office complet</div>
     <div class="pm-plans">
       <div class="pm-plan sel" id="plan-mens-card" onclick="selPlan(this,'mensuel')"><div class="pm-plan-name">Mensuel</div><div class="pm-plan-price" id="landing-prix-mens">20 <span class="pm-plan-per">USD/mois</span></div></div>
-      <div class="pm-plan" id="plan-ann-card" onclick="selPlan(this,'annuel')"><div class="pm-plan-name">Annuel</div><div class="pm-plan-price" id="landing-prix-ann">100 <span class="pm-plan-per">USD/an</span></div><div class="pm-plan-save">💰 Économisez 140 USD</div></div>
+      <div class="pm-plan" id="plan-ann-card" onclick="selPlan(this,'annuel')"><div class="pm-plan-name">Annuel</div><div class="pm-plan-price" id="landing-prix-ann">100 <span class="pm-plan-per">USD/an</span></div><div class="pm-plan-save">Économisez 140 USD</div></div>
     </div>
     <div class="pm-feats">
       <div class="pm-feat"><span class="pm-ck">✓</span> Articles et ventes illimités</div>
@@ -690,25 +310,25 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
       <div class="pm-feat"><span class="pm-ck">✓</span> Import CSV illimité</div>
       <div class="pm-feat"><span class="pm-ck">✓</span> Support prioritaire WhatsApp</div>
     </div>
-    <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px;font-size:12px;color:rgba(255,255,255,.6);text-align:center;margin-bottom:13px">
-      💳 Paiement : <strong style="color:#fbbf24">MonCash</strong> oswa <strong style="color:#60a5fa">PayPal</strong>
+    <div class="pm-payment-note" style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px;font-size:12px;color:rgba(255,255,255,.6);text-align:center;margin-bottom:13px">
+      Paiement de l’abonnement : <strong style="color:#fbbf24">MonCash</strong> ou <strong style="color:#60a5fa">PayPal</strong>
     </div>
     <button class="pm-btn" id="pm-btn" onclick="landingDoPremium()">Activer Premium — 20 USD/mois →</button>
-    <button class="pm-btn" id="landing-paypal-btn" onclick="landingDoPayPal()" style="margin-top:8px;background:#0070ba;">🅿️ Peye ak PayPal</button>
+    <button class="pm-btn" id="landing-paypal-btn" onclick="landingDoPayPal()" style="margin-top:8px;background:#0070ba;">Payer avec PayPal</button>
   </div>
 </div>
 
 <!-- MODAL: APERÇU -->
 <div class="screen hidden" id="screen-preview">
   <div class="auth-card" style="max-width:460px">
-    <button class="auth-close" onclick="hideScreen('preview')">✕</button>
+    <button class="auth-close" aria-label="Fermer" onclick="hideScreen('preview')"><svg aria-hidden="true"><use href="#kt-icon-close"/></svg></button>
     <div class="auth-title" style="margin-bottom:6px">Aperçu de Konektem</div>
     <div class="auth-sub" style="margin-bottom:16px">Ce que vous obtenez dès l'inscription</div>
     <div style="display:flex;flex-direction:column;gap:9px">
-      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:9px;padding:12px;display:flex;align-items:center;gap:10px"><span style="font-size:19px">🛒</span><div><div style="font-weight:700;font-size:13px;margin-bottom:1px">Caisse Point de Vente</div><div style="font-size:12px;color:rgba(255,255,255,.5)">Ventes rapides avec photos réelles</div></div></div>
-      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:9px;padding:12px;display:flex;align-items:center;gap:10px"><span style="font-size:19px">📦</span><div><div style="font-weight:700;font-size:13px;margin-bottom:1px">Gestion du Stock</div><div style="font-size:12px;color:rgba(255,255,255,.5)">Alertes stock bas, suivi temps réel</div></div></div>
-      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:9px;padding:12px;display:flex;align-items:center;gap:10px"><span style="font-size:19px">🔗</span><div><div style="font-weight:700;font-size:13px;margin-bottom:1px">Intégration API Boutique</div><div style="font-size:12px;color:rgba(255,255,255,.5)">Produits importés automatiquement</div></div></div>
-      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:9px;padding:12px;display:flex;align-items:center;gap:10px"><span style="font-size:19px">📊</span><div><div style="font-weight:700;font-size:13px;margin-bottom:1px">Back Office & Rapports</div><div style="font-size:12px;color:rgba(255,255,255,.5)">Graphiques, top produits, analyses</div></div></div>
+      <div class="preview-item"><span class="preview-item-icon"><svg aria-hidden="true"><use href="#kt-icon-cart"/></svg></span><div><div class="preview-item-title">Caisse Point de Vente</div><div class="preview-item-desc">Ventes rapides avec photos réelles</div></div></div>
+      <div class="preview-item"><span class="preview-item-icon"><svg aria-hidden="true"><use href="#kt-icon-package"/></svg></span><div><div class="preview-item-title">Gestion du stock</div><div class="preview-item-desc">Alertes stock bas, suivi temps réel</div></div></div>
+      <div class="preview-item"><span class="preview-item-icon"><svg aria-hidden="true"><use href="#kt-icon-globe"/></svg></span><div><div class="preview-item-title">Intégration API boutique</div><div class="preview-item-desc">Produits importés automatiquement</div></div></div>
+      <div class="preview-item"><span class="preview-item-icon"><svg aria-hidden="true"><use href="#kt-icon-chart"/></svg></span><div><div class="preview-item-title">Back Office & Rapports</div><div class="preview-item-desc">Graphiques, top produits, analyses</div></div></div>
     </div>
     <button class="auth-btn" style="margin-top:16px" onclick="hideScreen('preview');showScreen('signup')">Démarrer l'essai gratuit →</button>
   </div>
@@ -719,8 +339,8 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
 ════════════════════════════════════════ -->
 <div class="screen hidden" id="screen-contact">
   <div class="contact-card">
-    <button class="cc-close" onclick="fermerContact()">✕</button>
-    <div class="cc-badge">🏢 ENTREPRISE</div>
+    <button class="cc-close" aria-label="Fermer" onclick="fermerContact()"><svg aria-hidden="true"><use href="#kt-icon-close"/></svg></button>
+    <div class="cc-badge"><svg aria-hidden="true"><use href="#kt-icon-store"/></svg> ENTREPRISE</div>
     <div class="cc-title">Contactez-nous</div>
     <div class="cc-sub">Notre équipe vous répond dans les 24 heures pour discuter de vos besoins multi-boutiques.</div>
 
@@ -750,7 +370,7 @@ footer{border-top:1px solid var(--glass-border);padding:38px 5%;display:flex;ali
       <textarea class="auth-input" id="c-msg" placeholder="Décrivez vos besoins : secteur, intégrations souhaitées..." rows="3" style="resize:vertical;min-height:75px;font-family:'Plus Jakarta Sans',sans-serif"></textarea>
     </div>
     <button class="cc-submit" id="c-btn" onclick="soumettreContact()">Envoyer ma demande →</button>
-    <div class="cc-privacy">🔒 Données sécurisées via Supabase · Aucun spam</div>
+    <div class="cc-privacy"><svg aria-hidden="true"><use href="#kt-icon-shield"/></svg> Données sécurisées via Supabase · Aucun spam</div>
   </div>
 </div>
 
@@ -761,9 +381,9 @@ var LANDING_LANGS = {
   es:{features:'Funciones',sectors:'Sectores',pricing:'Precios',signin:'Iniciar sesión',freeTrial:'Prueba gratuita',badge:'Software de caja gratuito para Haití',heroTitleStart:'Software de caja',heroTitleFree:'gratuito',heroTitleEnd:'y gestión de inventario',heroSub:'Convierte tu teléfono o tableta en un potente sistema de punto de venta. Gestiona ventas, inventario y empleados mientras aumentas tus ingresos.',startFree:'Comenzar gratis →',trialNote:'7 días de prueba gratuita',noCard:'No requiere tarjeta bancaria'}
 };
 var LANDING_EXTENDED = {
-  fr:{trialTitle:'🎁 7 jours d’essai gratuit — Sans carte bancaire',trialSub:'Accédez à toutes les fonctionnalités Premium pendant 7 jours.',freeDays:'Jours gratuits',articles:'Articles',sectorsCount:'Secteurs',sectorTitle:'Une application, tous les métiers',sectorSub:'Konektem s’adapte automatiquement à votre secteur d’activité.',featureTitle:'Tout ce qu’il vous faut pour vendre mieux',featureSub:'Caisse, stock, clients et back-office dans une seule application.',pricingTitle:'Simple et transparent',pricingSub:'Commencez gratuitement. Passez au Premium quand vous grandissez.',freePlan:'Essai gratuit',freePlanSub:'Toutes les fonctionnalités pendant 7 jours sans carte.',premiumPlanSub:'Articles illimités, tout inclus.',enterpriseSub:'Pour chaînes et franchises avec plusieurs points de vente.',ctaTitle:'Prêt à connecter votre boutique ?',ctaSub:'Rejoignez les commerçants haïtiens qui modernisent leur gestion de vente.',signupTitle:'Créer votre compte',signupSub:'7 jours d’essai gratuit · Aucune carte requise',signinTitle:'Bon retour !',signinSub:'Connectez-vous à votre espace Konektem',signinPrompt:'Pas encore de compte ?',signinLink:'Créer un compte',signupPrompt:'Déjà un compte ?',signupLink:'Se connecter',signinCta:'Se connecter →',signupCta:'Créer mon compte gratuit →',previewTitle:'Aperçu de Konektem',previewSub:'Ce que vous obtenez dès l’inscription',previewStart:'Démarrer l’essai gratuit →',quickSale:'Vente rapide',scanBarcode:'Scan barcode',contactless:'Paiement MonCash & Carte',passwordMin:'6 caractères minimum'},
-  en:{trialTitle:'🎁 7-day free trial — No credit card',trialSub:'Access all Premium features for 7 days.',freeDays:'Free days',articles:'Products',sectorsCount:'Industries',sectorTitle:'One app for every business',sectorSub:'Konektem automatically adapts to your industry.',featureTitle:'Everything you need to sell better',featureSub:'POS, inventory, customers and back office in one app.',pricingTitle:'Simple and transparent',pricingSub:'Start free. Upgrade to Premium as you grow.',freePlan:'Free trial',freePlanSub:'All features for 7 days with no card.',premiumPlanSub:'Unlimited products, everything included.',enterpriseSub:'For chains and franchises with multiple locations.',ctaTitle:'Ready to connect your store?',ctaSub:'Join merchants modernizing the way they manage sales.',signupTitle:'Create your account',signupSub:'7-day free trial · No card required',signinTitle:'Welcome back!',signinSub:'Sign in to your Konektem workspace',signinPrompt:'No account yet?',signinLink:'Create an account',signupPrompt:'Already have an account?',signupLink:'Sign in',signinCta:'Sign in →',signupCta:'Create my free account →',previewTitle:'Konektem overview',previewSub:'What you get as soon as you sign up',previewStart:'Start free trial →',quickSale:'Quick sale',scanBarcode:'Barcode scan',contactless:'MonCash & card payment',passwordMin:'6 characters minimum'},
-  es:{trialTitle:'🎁 7 días de prueba gratis — Sin tarjeta',trialSub:'Accede a todas las funciones Premium durante 7 días.',freeDays:'Días gratis',articles:'Productos',sectorsCount:'Sectores',sectorTitle:'Una aplicación para todos los negocios',sectorSub:'Konektem se adapta automáticamente a tu sector.',featureTitle:'Todo lo que necesitas para vender mejor',featureSub:'Caja, inventario, clientes y back office en una sola aplicación.',pricingTitle:'Simple y transparente',pricingSub:'Comienza gratis. Pásate a Premium cuando crezcas.',freePlan:'Prueba gratuita',freePlanSub:'Todas las funciones durante 7 días sin tarjeta.',premiumPlanSub:'Productos ilimitados, todo incluido.',enterpriseSub:'Para cadenas y franquicias con varios puntos de venta.',ctaTitle:'¿Listo para conectar tu negocio?',ctaSub:'Únete a los comercios que modernizan su gestión de ventas.',signupTitle:'Crear tu cuenta',signupSub:'7 días de prueba gratis · Sin tarjeta',signinTitle:'¡Bienvenido de nuevo!',signinSub:'Inicia sesión en tu espacio Konektem',signinPrompt:'¿Aún no tienes cuenta?',signinLink:'Crear cuenta',signupPrompt:'¿Ya tienes una cuenta?',signupLink:'Iniciar sesión',signinCta:'Iniciar sesión →',signupCta:'Crear mi cuenta gratis →',previewTitle:'Vista general de Konektem',previewSub:'Lo que obtienes al registrarte',previewStart:'Comenzar prueba gratis →',quickSale:'Venta rápida',scanBarcode:'Escaneo de código',contactless:'Pago MonCash y tarjeta',passwordMin:'6 caracteres mínimo'}
+  fr:{trialTitle:'7 jours d’essai gratuit — Sans carte bancaire',trialSub:'Testez la caisse, le stock et les rapports sans carte bancaire.',freeDays:'Jours d’essai',articles:'Articles maximum',sectorsCount:'Ventes maximum',sectorTitle:'Une caisse, plusieurs métiers',sectorSub:'Choisissez votre activité pour découvrir une configuration adaptée.',featureTitle:'Les bons outils, sans détour',featureSub:'Une expérience de vente simple, avec les détails qui comptent au quotidien.',pricingTitle:'Des tarifs simples, sans surprise',pricingSub:'Démarrez gratuitement. Passez à Premium quand votre activité grandit.',freePlan:'Essai gratuit',freePlanSub:'7 jours pour tester, jusqu’à 50 articles et 30 ventes.',premiumPlanSub:'Articles et ventes illimités, avec toutes les fonctions Premium.',enterpriseSub:'Pour chaînes et franchises avec plusieurs points de vente.',ctaTitle:'Prêt à mieux piloter votre commerce ?',ctaSub:'Rejoignez les commerçants haïtiens qui organisent leurs ventes et leur stock avec Konektem.',signupTitle:'Créer votre compte',signupSub:'7 jours d’essai gratuit · Aucune carte requise',signinTitle:'Bon retour !',signinSub:'Connectez-vous à votre espace Konektem',signinPrompt:'Pas encore de compte ?',signinLink:'Créer un compte',signupPrompt:'Déjà un compte ?',signupLink:'Se connecter',signinCta:'Se connecter →',signupCta:'Créer mon compte gratuit →',previewTitle:'Aperçu de Konektem',previewSub:'Ce que vous obtenez dès l’inscription',previewStart:'Démarrer l’essai gratuit →',quickSale:'Vente rapide',scanBarcode:'Scan code-barres',contactless:'Paiement MonCash et carte',passwordMin:'6 caractères minimum'},
+  en:{trialTitle:'7-day free trial — No credit card',trialSub:'Try the register, inventory and reports with no card required.',freeDays:'Trial days',articles:'Maximum products',sectorsCount:'Maximum sales',sectorTitle:'One register, many industries',sectorSub:'Choose your business type to discover a tailored setup.',featureTitle:'The right tools, without the clutter',featureSub:'A simple sales experience with the details that matter every day.',pricingTitle:'Simple pricing, no surprises',pricingSub:'Start free. Upgrade to Premium as your business grows.',freePlan:'Free trial',freePlanSub:'7 days to try it, with up to 50 products and 30 sales.',premiumPlanSub:'Unlimited products and sales with all Premium features.',enterpriseSub:'For chains and franchises with multiple locations.',ctaTitle:'Ready to manage your business better?',ctaSub:'Join Haitian merchants organizing sales and inventory with Konektem.',signupTitle:'Create your account',signupSub:'7-day free trial · No card required',signinTitle:'Welcome back!',signinSub:'Sign in to your Konektem workspace',signinPrompt:'No account yet?',signinLink:'Create an account',signupPrompt:'Already have an account?',signupLink:'Sign in',signinCta:'Sign in →',signupCta:'Create my free account →',previewTitle:'Konektem overview',previewSub:'What you get as soon as you sign up',previewStart:'Start free trial →',quickSale:'Quick sale',scanBarcode:'Barcode scan',contactless:'MonCash and card payment',passwordMin:'6 characters minimum'},
+  es:{trialTitle:'7 días de prueba gratis — Sin tarjeta',trialSub:'Prueba la caja, el inventario y los informes sin tarjeta.',freeDays:'Días de prueba',articles:'Máximo de productos',sectorsCount:'Máximo de ventas',sectorTitle:'Una caja, muchos sectores',sectorSub:'Elige tu tipo de negocio para descubrir una configuración adaptada.',featureTitle:'Las herramientas adecuadas, sin complicaciones',featureSub:'Una experiencia de venta sencilla con lo que importa cada día.',pricingTitle:'Precios simples y transparentes',pricingSub:'Empieza gratis. Pásate a Premium cuando crezca tu negocio.',freePlan:'Prueba gratuita',freePlanSub:'7 días para probar, con hasta 50 productos y 30 ventas.',premiumPlanSub:'Productos y ventas ilimitados con todas las funciones Premium.',enterpriseSub:'Para cadenas y franquicias con varios puntos de venta.',ctaTitle:'¿Listo para gestionar mejor tu negocio?',ctaSub:'Únete a los comercios haitianos que organizan sus ventas e inventario con Konektem.',signupTitle:'Crear tu cuenta',signupSub:'7 días de prueba gratis · Sin tarjeta',signinTitle:'¡Bienvenido de nuevo!',signinSub:'Inicia sesión en tu espacio Konektem',signinPrompt:'¿Aún no tienes cuenta?',signinLink:'Crear cuenta',signupPrompt:'¿Ya tienes una cuenta?',signupLink:'Iniciar sesión',signinCta:'Iniciar sesión →',signupCta:'Crear mi cuenta gratis →',previewTitle:'Vista general de Konektem',previewSub:'Lo que obtienes al registrarte',previewStart:'Comenzar prueba gratis →',quickSale:'Venta rápida',scanBarcode:'Escaneo de código',contactless:'Pago MonCash y tarjeta',passwordMin:'6 caracteres mínimo'}
 };
 function setLandingText(selector,text,index){var nodes=document.querySelectorAll(selector);if(index===undefined){nodes.forEach(function(n){n.textContent=text;});}else if(nodes[index])nodes[index].textContent=text;}
 function applyLandingExtendedLanguage(lang){
@@ -801,9 +421,9 @@ function applyLandingExtendedLanguage(lang){
     es:['Mercado & Supermercado','Farmacia & Medicina','Electrónica & Tech','Restaurante & Alimentación']
   };
   var sectorDescMap = {
-    fr:['Alimentation, boissons, produits du quotidien.','DCI, dosage, péremption, ordonnance requise.','SKU, numéros de série, garanties, réparations.','Tables, menus, sur place / à emporter / livraison.'],
-    en:['Food, beverages, daily essentials.','DCI, dosage, expiry dates, prescriptions required.','SKU, serial numbers, warranties, repairs.','Tables, menus, dine-in / takeout / delivery.'],
-    es:['Alimentos, bebidas, productos de uso diario.','DCI, dosificación, vencimiento, receta requerida.','SKU, números de serie, garantías, reparaciones.','Mesas, menús, consumo en local / para llevar / entrega.']
+    fr:['Alimentation, boissons et produits du quotidien.','Suivez les références, les lots et les dates de péremption.','Gardez le suivi des références, séries et garanties.','Organisez menus et commandes sur place ou à emporter.'],
+    en:['Food, drinks and everyday essentials.','Track product references, batches and expiry dates.','Keep track of references, serial numbers and warranties.','Organize menus and dine-in or takeaway orders.'],
+    es:['Alimentos, bebidas y productos de uso diario.','Controla referencias, lotes y fechas de vencimiento.','Lleva el control de referencias, series y garantías.','Organiza menús y pedidos para comer allí o para llevar.']
   };
   var sectorTagsMap = {
     fr:['Stock temps réel','DCI / Dosage','SKU / Référence','Tables','Photos produits','Péremption','Garanties','Menus'],
@@ -817,14 +437,14 @@ function applyLandingExtendedLanguage(lang){
   var featTitles = document.querySelectorAll('.feat-title');
   var featDesc = document.querySelectorAll('.feat-desc');
   var featTitleMap = {
-    fr:['Intégration Boutique API','Photos Réelles','Back Office Complet','4 Modes de Paiement','Reçus Imprimables','Clients & Équipe'],
-    en:['Boutique API Integration','Real Photos','Complete Back Office','4 Payment Modes','Printable Receipts','Customers & Team'],
-    es:['Integración de API de tienda','Fotos reales','Back Office completo','4 métodos de pago','Recibos imprimibles','Clientes y equipo']
+    fr:['Caisse rapide, catalogue visuel','Stock sous contrôle','Paiements adaptés','Chiffres lisibles','Clients & équipe','Continuez sans réseau'],
+    en:['Fast checkout, visual catalog','Inventory under control','Payment options that fit','Clear business insights','Customers and team','Keep going offline'],
+    es:['Caja rápida y catálogo visual','Inventario bajo control','Pagos adaptados','Cifras claras','Clientes y equipo','Sigue sin conexión']
   };
   var featDescMap = {
-    fr:['Connectez votre site — produits importés automatiquement avec photos et prix.','Téléchargez des vraies photos depuis votre téléphone ou ordinateur.','Rapports, graphiques, top produits, analyse par caissier.','Espèces, carte, MonCash et crédit — tous les modes haïtiens.','Reçus professionnels avec logo et message personnalisé.','Carnet de clients, historique d’achats, suivi par caissier.'],
-    en:['Connect your website — products imported automatically with photos and prices.','Upload real photos directly from your phone or computer.','Reports, charts, top products, cashier analysis.','Cash, card, MonCash and credit — all Haitian payment methods.','Professional receipts with logo and custom message.','Customer list, purchase history, cashier tracking.'],
-    es:['Conecta tu sitio web: productos importados automáticamente con fotos y precios.','Sube fotos reales desde tu teléfono o computadora.','Informes, gráficos, productos top, análisis por cajero.','Efectivo, tarjeta, MonCash y crédito — todos los métodos haitianos.','Recibos profesionales con logo y mensaje personalizado.','Agenda de clientes, historial de compras, seguimiento por cajero.']
+    fr:['Retrouvez les produits par photo, ajoutez-les au panier et terminez la vente en quelques gestes.','Suivez les quantités, repérez les stocks bas et consultez les mouvements.','Enregistrez espèces, carte et crédit, avec confirmation QR MonCash ou NatCash.','Consultez ventes, dépenses, tendances et produits les plus vendus.','Retrouvez les clients, les achats et l’activité de chaque caissier.','Gardez la caisse accessible hors ligne et synchronisez vos données au retour de la connexion.'],
+    en:['Find products by photo, add them to the cart and complete sales in a few taps.','Track quantities, spot low stock and review stock movements.','Record cash, card and credit, with MonCash or NatCash QR confirmation.','Review sales, expenses, trends and best-selling products.','View customers, purchases and each cashier’s activity.','Keep the register available offline and sync data when the connection returns.'],
+    es:['Encuentra productos por foto, añádelos al carrito y completa la venta en unos toques.','Controla cantidades, detecta poco stock y consulta los movimientos.','Registra efectivo, tarjeta y crédito, con confirmación QR de MonCash o NatCash.','Consulta ventas, gastos, tendencias y productos más vendidos.','Consulta clientes, compras y actividad de cada cajero.','Mantén la caja disponible sin conexión y sincroniza los datos cuando vuelva la red.']
   };
   featTitles.forEach(function(el, idx){ if(featTitleMap[lang] && featTitleMap[lang][idx]) el.textContent = featTitleMap[lang][idx]; });
   featDesc.forEach(function(el, idx){ if(featDescMap[lang] && featDescMap[lang][idx]) el.textContent = featDescMap[lang][idx]; });
@@ -847,6 +467,234 @@ function applyLandingExtendedLanguage(lang){
   if(lang === 'en'){ ctaButtons.forEach(function(el){ if(el.textContent.indexOf('Essai') > -1 || el.textContent.indexOf('gratuit') > -1 || el.textContent.indexOf('Se connecter') > -1 || el.textContent.indexOf('Démarrer') > -1 || el.textContent.indexOf('Créer') > -1 || el.textContent.indexOf('Compte') > -1) { el.textContent = el.classList.contains('outline') ? 'Sign in' : 'Free trial'; } }); }
   if(lang === 'es'){ ctaButtons.forEach(function(el){ if(el.textContent.indexOf('Essai') > -1 || el.textContent.indexOf('gratuit') > -1 || el.textContent.indexOf('Se connecter') > -1 || el.textContent.indexOf('Démarrer') > -1 || el.textContent.indexOf('Create') > -1 || el.textContent.indexOf('Sign') > -1) { el.textContent = el.classList.contains('outline') ? 'Iniciar sesión' : 'Prueba gratuita'; } }); }
 }
+var LANDING_TRANSLATIONS = {
+  fr:{
+    faq:'FAQ',languageLabel:'Langue',heroTitleStart:'La caisse claire et rapide',heroTitleFree:'pour votre commerce.',
+    heroTrust:'Vos ventes restent disponibles hors ligne et se synchronisent au retour du réseau.',
+    demoLabel:'Aperçu de la caisse Konektem',demoMode:'Caisse',demoReady:'Prête à vendre',demoCatalog:'Catalogue',demoCatalogSub:'Choisissez un article',demoSearch:'Rechercher',demoAll:'Tout',demoDrinks:'Boissons',demoGrocery:'Épicerie',demoCoffee:'Café local',demoJuice:'Jus frais',demoRice:'Riz local',demoSoap:'Savon',demoOrder:'Commande',demoTotal:'Total',demoCheckout:'Encaisser',
+    trustIntro:'Pensé pour les réalités du terrain',trustMonCash:'Paiement QR',trustNatCash:'Paiement QR',trustPayPal:'Abonnement',trustOffline:'Caisse hors ligne',trustSecure:'Données protégées',
+    sectorSelection:'Configuration sélectionnée :',featureTouch:'Pensée pour le tactile',featureReceipt:'Reçu imprimable',
+    howEyebrow:'PRISE EN MAIN',howTitle:'De l’inscription à la première vente',howSub:'Pas de matériel spécial à installer. Votre téléphone ou tablette suffit pour démarrer.',
+    stepOneTitle:'Créez votre espace',stepOneText:'Indiquez le nom de votre commerce et choisissez votre secteur.',stepTwoTitle:'Ajoutez vos produits',stepTwoText:'Créez votre catalogue et ajoutez vos prix et vos photos.',stepThreeTitle:'Vendez et suivez',stepThreeText:'Encaissez, imprimez vos reçus et consultez vos résultats.',
+    billingLabel:'Afficher les tarifs',billingMonthly:'Mensuel',billingYearly:'Annuel',billingSaving:'Économisez 140 USD',priceTrialPeriod:'/ 7 jours',priceMonth:'/ mois',priceYear:'/ an',annualFeatured:'Meilleure valeur annuelle',annualEquivalent:'Soit 8,33 USD par mois, facturé annuellement.',
+    trialBenefitSectors:'Tous les secteurs',trialBenefitProducts:'Jusqu’à 50 articles',trialBenefitSales:'Jusqu’à 30 ventes',trialBenefitIntegration:'Intégration API boutique',premiumBenefitProducts:'Articles et ventes illimités',premiumBenefitIntegrations:'Intégrations boutique et import CSV',premiumBenefitBackOffice:'Rapports et back-office complet',premiumBenefitSupport:'Support prioritaire WhatsApp',
+    enterprisePrice:'Sur mesure',enterpriseBenefitLocations:'Plusieurs boutiques',enterpriseBenefitDashboard:'Tableau de bord centralisé',enterpriseBenefitSupport:'Accompagnement personnalisé',
+    pricingFootnote:'Paiements de vente disponibles : espèces, carte, crédit, MonCash et NatCash par QR. PayPal est réservé aux abonnements.',
+    faqEyebrow:'QUESTIONS FRÉQUENTES',faqTitle:'Les réponses avant de vous lancer',faqSub:'Tout ce qu’il faut savoir pour démarrer avec Konektem.',
+    faqTrialQuestion:'Que comprend l’essai gratuit ?',faqTrialAnswer:'L’essai dure 7 jours et permet d’ajouter jusqu’à 50 articles et d’enregistrer jusqu’à 30 ventes.',
+    faqPaymentsQuestion:'Quels moyens de paiement puis-je enregistrer ?',faqPaymentsAnswer:'Espèces, carte et crédit sont enregistrés dans la caisse. MonCash et NatCash utilisent le QR du commerçant et une confirmation manuelle. PayPal sert aux abonnements Premium.',
+    faqOfflineQuestion:'La caisse fonctionne-t-elle sans Internet ?',faqOfflineAnswer:'Après le premier chargement, la caisse conserve ses données localement et peut enregistrer les ventes hors ligne. La synchronisation reprend lorsque le réseau revient.',
+    faqHardwareQuestion:'Ai-je besoin d’un équipement particulier ?',faqHardwareAnswer:'Non. Un téléphone ou une tablette suffit. Une imprimante thermique compatible peut être utilisée pour les reçus.',
+    ctaEyebrow:'VOTRE COMMERCE, À VOTRE RYTHME',ctaTitle:'Prêt à mieux piloter votre commerce ?',ctaSub:'Rejoignez les commerçants haïtiens qui organisent leurs ventes et leur stock avec Konektem.',ctaCreateAccount:'Créer mon compte gratuit',ctaSignIn:'J’ai déjà un compte',footerCopyright:'© 2026 Konektem · Haïti · Tous droits réservés',footerBuiltBy:'Créé par',whatsappContact:'Écrire sur WhatsApp',
+    pwaTitle:'Installer Konektem',pwaDescription:'Utilisez Konektem hors ligne comme une application.',pwaInstall:'Installer',pwaLater:'Plus tard',pwaInstalled:'Konektem est en cours d’installation !',pwaIOS:'Installer sur iPhone/iPad',pwaIOSHelp:'Touchez Partager, puis « Sur l’écran d’accueil ».',pwaClose:'Fermer',
+    mainNavigation:'Navigation principale',trustLabel:'Paiements et protection',trialLabel:'Essai gratuit',heroLegend:'Fonctions de la caisse',pageTitle:'Konektem – Caisse intelligente',pageDescription:'Konektem aide les commerces haïtiens à gérer leurs ventes, leur stock et leur caisse depuis une seule application.'
+  },
+  en:{
+    faq:'FAQ',languageLabel:'Language',heroTitleStart:'Clear, fast checkout',heroTitleFree:'for your business.',
+    heroTrust:'Your sales stay available offline and sync when the network returns.',
+    demoLabel:'Konektem checkout preview',demoMode:'Checkout',demoReady:'Ready to sell',demoCatalog:'Catalog',demoCatalogSub:'Choose a product',demoSearch:'Search',demoAll:'All',demoDrinks:'Drinks',demoGrocery:'Grocery',demoCoffee:'Local coffee',demoJuice:'Fresh juice',demoRice:'Local rice',demoSoap:'Soap',demoOrder:'Order',demoTotal:'Total',demoCheckout:'Checkout',
+    trustIntro:'Built for business on the ground',trustMonCash:'QR payment',trustNatCash:'QR payment',trustPayPal:'Subscription',trustOffline:'Offline checkout',trustSecure:'Protected data',
+    sectorSelection:'Selected setup:',featureTouch:'Designed for touch',featureReceipt:'Printable receipt',
+    howEyebrow:'GETTING STARTED',howTitle:'From sign-up to your first sale',howSub:'No special equipment needed. Start with your phone or tablet.',
+    stepOneTitle:'Create your workspace',stepOneText:'Enter your business name and choose your industry.',stepTwoTitle:'Add your products',stepTwoText:'Build your catalog and add prices and photos.',stepThreeTitle:'Sell and keep track',stepThreeText:'Take payments, print receipts and review your results.',
+    billingLabel:'Billing period',billingMonthly:'Monthly',billingYearly:'Yearly',billingSaving:'Save USD 140',priceTrialPeriod:'/ 7 days',priceMonth:'/ month',priceYear:'/ year',annualFeatured:'Best annual value',annualEquivalent:'Equivalent to USD 8.33 per month, billed annually.',
+    trialBenefitSectors:'All industries',trialBenefitProducts:'Up to 50 products',trialBenefitSales:'Up to 30 sales',trialBenefitIntegration:'Store API integration',premiumBenefitProducts:'Unlimited products and sales',premiumBenefitIntegrations:'Store integrations and CSV import',premiumBenefitBackOffice:'Reports and complete back office',premiumBenefitSupport:'Priority WhatsApp support',
+    enterprisePrice:'Custom',enterpriseBenefitLocations:'Multiple stores',enterpriseBenefitDashboard:'Centralized dashboard',enterpriseBenefitSupport:'Personalized onboarding',
+    pricingFootnote:'Available sale payment methods: cash, card, credit, MonCash and NatCash by QR. PayPal is for subscriptions only.',
+    faqEyebrow:'FREQUENTLY ASKED QUESTIONS',faqTitle:'Answers before you get started',faqSub:'What you need to know to get started with Konektem.',
+    faqTrialQuestion:'What is included in the free trial?',faqTrialAnswer:'The trial lasts 7 days and lets you add up to 50 products and record up to 30 sales.',
+    faqPaymentsQuestion:'Which payment methods can I record?',faqPaymentsAnswer:'Cash, card and credit are recorded in the register. MonCash and NatCash use the merchant QR code and require manual confirmation. PayPal is for Premium subscriptions.',
+    faqOfflineQuestion:'Does the register work without internet?',faqOfflineAnswer:'After the first load, the register keeps data locally and can record sales offline. Sync resumes when the network returns.',
+    faqHardwareQuestion:'Do I need special equipment?',faqHardwareAnswer:'No. A phone or tablet is enough. A compatible thermal printer can be used for receipts.',
+    ctaEyebrow:'YOUR BUSINESS, AT YOUR PACE',ctaTitle:'Ready to manage your business better?',ctaSub:'Join Haitian merchants organizing sales and inventory with Konektem.',ctaCreateAccount:'Create my free account',ctaSignIn:'I already have an account',footerCopyright:'© 2026 Konektem · Haiti · All rights reserved',footerBuiltBy:'Built by',whatsappContact:'Message us on WhatsApp',
+    pwaTitle:'Install Konektem',pwaDescription:'Use Konektem offline like an app.',pwaInstall:'Install',pwaLater:'Later',pwaInstalled:'Konektem is installing!',pwaIOS:'Install on iPhone/iPad',pwaIOSHelp:'Tap Share, then “Add to Home Screen”.',pwaClose:'Close',
+    mainNavigation:'Main navigation',trustLabel:'Payments and protection',trialLabel:'Free trial',heroLegend:'Checkout features',pageTitle:'Konektem – Smart checkout',pageDescription:'Konektem helps Haitian businesses manage sales, inventory and checkout in one app.'
+  },
+  es:{
+    faq:'Preguntas frecuentes',languageLabel:'Idioma',heroTitleStart:'Una caja clara y rápida',heroTitleFree:'para tu negocio.',
+    heroTrust:'Tus ventas siguen disponibles sin conexión y se sincronizan cuando vuelve la red.',
+    demoLabel:'Vista previa de la caja Konektem',demoMode:'Caja',demoReady:'Lista para vender',demoCatalog:'Catálogo',demoCatalogSub:'Elige un producto',demoSearch:'Buscar',demoAll:'Todo',demoDrinks:'Bebidas',demoGrocery:'Abarrotes',demoCoffee:'Café local',demoJuice:'Jugo fresco',demoRice:'Arroz local',demoSoap:'Jabón',demoOrder:'Pedido',demoTotal:'Total',demoCheckout:'Cobrar',
+    trustIntro:'Pensado para el comercio del día a día',trustMonCash:'Pago por QR',trustNatCash:'Pago por QR',trustPayPal:'Suscripción',trustOffline:'Caja sin conexión',trustSecure:'Datos protegidos',
+    sectorSelection:'Configuración seleccionada:',featureTouch:'Diseñada para pantallas táctiles',featureReceipt:'Recibo imprimible',
+    howEyebrow:'PRIMEROS PASOS',howTitle:'Del registro a la primera venta',howSub:'No necesitas equipo especial. Empieza con tu teléfono o tableta.',
+    stepOneTitle:'Crea tu espacio',stepOneText:'Indica el nombre de tu negocio y elige tu sector.',stepTwoTitle:'Añade tus productos',stepTwoText:'Crea tu catálogo y añade precios y fotos.',stepThreeTitle:'Vende y lleva el control',stepThreeText:'Cobra, imprime recibos y consulta tus resultados.',
+    billingLabel:'Periodo de facturación',billingMonthly:'Mensual',billingYearly:'Anual',billingSaving:'Ahorra 140 USD',priceTrialPeriod:'/ 7 días',priceMonth:'/ mes',priceYear:'/ año',annualFeatured:'Mejor valor anual',annualEquivalent:'Equivale a 8,33 USD al mes, con facturación anual.',
+    trialBenefitSectors:'Todos los sectores',trialBenefitProducts:'Hasta 50 productos',trialBenefitSales:'Hasta 30 ventas',trialBenefitIntegration:'Integración con API de tienda',premiumBenefitProducts:'Productos y ventas ilimitados',premiumBenefitIntegrations:'Integraciones de tienda e importación CSV',premiumBenefitBackOffice:'Informes y back office completo',premiumBenefitSupport:'Soporte prioritario por WhatsApp',
+    enterprisePrice:'Personalizado',enterpriseBenefitLocations:'Varias tiendas',enterpriseBenefitDashboard:'Panel centralizado',enterpriseBenefitSupport:'Acompañamiento personalizado',
+    pricingFootnote:'Métodos de pago disponibles en caja: efectivo, tarjeta, crédito, MonCash y NatCash por QR. PayPal es solo para suscripciones.',
+    faqEyebrow:'PREGUNTAS FRECUENTES',faqTitle:'Respuestas antes de empezar',faqSub:'Lo que necesitas saber para comenzar con Konektem.',
+    faqTrialQuestion:'¿Qué incluye la prueba gratuita?',faqTrialAnswer:'La prueba dura 7 días y permite añadir hasta 50 productos y registrar hasta 30 ventas.',
+    faqPaymentsQuestion:'¿Qué métodos de pago puedo registrar?',faqPaymentsAnswer:'El efectivo, la tarjeta y el crédito se registran en la caja. MonCash y NatCash usan el QR del comercio y requieren confirmación manual. PayPal se usa para suscripciones Premium.',
+    faqOfflineQuestion:'¿La caja funciona sin Internet?',faqOfflineAnswer:'Después de la primera carga, la caja guarda los datos localmente y puede registrar ventas sin conexión. La sincronización se reanuda cuando vuelve la red.',
+    faqHardwareQuestion:'¿Necesito algún equipo especial?',faqHardwareAnswer:'No. Basta con un teléfono o una tableta. Se puede usar una impresora térmica compatible para los recibos.',
+    ctaEyebrow:'TU NEGOCIO, A TU RITMO',ctaTitle:'¿Listo para gestionar mejor tu negocio?',ctaSub:'Únete a los comercios haitianos que organizan sus ventas e inventario con Konektem.',ctaCreateAccount:'Crear mi cuenta gratis',ctaSignIn:'Ya tengo una cuenta',footerCopyright:'© 2026 Konektem · Haití · Todos los derechos reservados',footerBuiltBy:'Creado por',whatsappContact:'Escríbenos por WhatsApp',
+    pwaTitle:'Instalar Konektem',pwaDescription:'Usa Konektem sin conexión como una aplicación.',pwaInstall:'Instalar',pwaLater:'Más tarde',pwaInstalled:'¡Konektem se está instalando!',pwaIOS:'Instalar en iPhone/iPad',pwaIOSHelp:'Toca Compartir y luego «Añadir a pantalla de inicio».',pwaClose:'Cerrar',
+    mainNavigation:'Navegación principal',trustLabel:'Pagos y protección',trialLabel:'Prueba gratuita',heroLegend:'Funciones de caja',pageTitle:'Konektem – Caja inteligente',pageDescription:'Konektem ayuda a los comercios haitianos a gestionar ventas, inventario y caja desde una sola aplicación.'
+  }
+};
+function applyLandingTranslationKeys(lang){
+  var copy=LANDING_TRANSLATIONS[lang]||LANDING_TRANSLATIONS.fr;
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var key=el.getAttribute('data-i18n');
+    if(Object.prototype.hasOwnProperty.call(copy,key)) el.textContent=copy[key];
+  });
+  document.querySelectorAll('[data-i18n-aria-label]').forEach(function(el){
+    var key=el.getAttribute('data-i18n-aria-label');
+    if(Object.prototype.hasOwnProperty.call(copy,key)) el.setAttribute('aria-label',copy[key]);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el){
+    var key=el.getAttribute('data-i18n-placeholder');
+    if(Object.prototype.hasOwnProperty.call(copy,key)) el.setAttribute('placeholder',copy[key]);
+  });
+  document.title=copy.pageTitle;
+  var description=document.querySelector('meta[name="description"]');
+  if(description)description.setAttribute('content',copy.pageDescription);
+}
+var LANDING_MODAL_COPY={
+  fr:{
+    signupLabels:['Nom du commerce','Email','Téléphone','Mot de passe'],signupPlaceholders:['Nom de votre commerce','nom@exemple.com','+509 0000 0000'],
+    signinLabels:['Email','Mot de passe'],signinPlaceholders:['nom@exemple.com','Votre mot de passe'],
+    trialHeading:'Essai Premium — 7 jours gratuits',trialDetail:'Toutes les fonctionnalités incluses',
+    premiumTitle:'Passez au niveau supérieur',premiumSub:'Articles illimités · API boutique · Back Office complet',premiumPlans:['Mensuel','Annuel'],premiumSaving:'Économisez 140 USD',premiumFeatures:['Articles et ventes illimités','Intégration API boutique Piyay et sites','Back Office — rapports et graphiques','Import CSV illimité','Support prioritaire WhatsApp'],premiumPayment:'Paiement de l’abonnement :',paymentJoin:'ou',paypalButton:'Payer avec PayPal',
+    previewTitles:['Caisse Point de Vente','Gestion du stock','Intégration API boutique','Back Office et rapports'],previewDescs:['Ventes rapides avec photos réelles','Alertes stock bas, suivi en temps réel','Produits importés automatiquement','Graphiques, meilleurs produits et analyses'],
+    contactBadge:'ENTREPRISE',contactTitle:'Contactez-nous',contactSub:'Notre équipe vous répond dans les 24 heures pour discuter de vos besoins multi-boutiques.',
+    contactLabels:['Nom complet *','Email *','Téléphone','Entreprise','Nombre de boutiques','Message / Besoins spécifiques'],
+    contactPlaceholders:['Nom de votre commerce','nom@boutique.ht','+509 0000 0000','Nom de votre chaîne','Décrivez vos besoins : secteur, intégrations souhaitées...'],
+    contactOptions:['2 à 5 boutiques','6 à 10 boutiques','11 à 20 boutiques','Plus de 20 boutiques'],contactSubmit:'Envoyer ma demande →',contactPrivacy:'Données sécurisées via Supabase · Aucun spam',contactRequired:'Le nom et l’email sont obligatoires.',contactInvalid:'Adresse email invalide.',contactSending:'Envoi en cours…',contactSuccess:'Merci {name} ! Nous vous contacterons sous 24 heures.',contactSent:'Message envoyé !',contactFailure:'Erreur :',authNetworkError:'Supabase est indisponible. Vérifiez votre connexion Internet et réessayez.',signupBusy:'Création sécurisée…',signinBusy:'Connexion sécurisée…',close:'Fermer'
+  },
+  en:{
+    signupLabels:['Business name','Email','Phone','Password'],signupPlaceholders:['Your business name','name@example.com','+509 0000 0000'],
+    signinLabels:['Email','Password'],signinPlaceholders:['name@example.com','Your password'],
+    trialHeading:'Premium trial — 7 days free',trialDetail:'All features included',
+    premiumTitle:'Take your business to the next level',premiumSub:'Unlimited products · Store API · Complete back office',premiumPlans:['Monthly','Yearly'],premiumSaving:'Save USD 140',premiumFeatures:['Unlimited products and sales','Piyay store API and website integration','Back office — reports and charts','Unlimited CSV import','Priority WhatsApp support'],premiumPayment:'Subscription payment:',paymentJoin:'or',paypalButton:'Pay with PayPal',
+    previewTitles:['Point of sale','Inventory management','Store API integration','Back office and reports'],previewDescs:['Fast sales with real product photos','Low-stock alerts and real-time tracking','Products imported automatically','Charts, best sellers and analytics'],
+    contactBadge:'BUSINESS',contactTitle:'Contact us',contactSub:'Our team will respond within 24 hours to discuss your multi-store needs.',
+    contactLabels:['Full name *','Email *','Phone','Business','Number of stores','Message / Specific needs'],
+    contactPlaceholders:['Your business name','name@store.com','+509 0000 0000','Your chain name','Describe your needs: industry, desired integrations...'],
+    contactOptions:['2 to 5 stores','6 to 10 stores','11 to 20 stores','More than 20 stores'],contactSubmit:'Send my request →',contactPrivacy:'Data secured through Supabase · No spam',contactRequired:'Name and email are required.',contactInvalid:'Invalid email address.',contactSending:'Sending…',contactSuccess:'Thank you, {name}! We will contact you within 24 hours.',contactSent:'Message sent!',contactFailure:'Error:',authNetworkError:'Supabase is unavailable. Check your internet connection and try again.',signupBusy:'Creating your account securely…',signinBusy:'Signing in securely…',close:'Close'
+  },
+  es:{
+    signupLabels:['Nombre del negocio','Correo electrónico','Teléfono','Contraseña'],signupPlaceholders:['Nombre de tu negocio','nombre@ejemplo.com','+509 0000 0000'],
+    signinLabels:['Correo electrónico','Contraseña'],signinPlaceholders:['nombre@ejemplo.com','Tu contraseña'],
+    trialHeading:'Prueba Premium — 7 días gratis',trialDetail:'Todas las funciones incluidas',
+    premiumTitle:'Lleva tu negocio al siguiente nivel',premiumSub:'Productos ilimitados · API de tienda · Back office completo',premiumPlans:['Mensual','Anual'],premiumSaving:'Ahorra 140 USD',premiumFeatures:['Productos y ventas ilimitados','Integración con API de Piyay y tiendas','Back office — informes y gráficos','Importación CSV ilimitada','Soporte prioritario por WhatsApp'],premiumPayment:'Pago de la suscripción:',paymentJoin:'o',paypalButton:'Pagar con PayPal',
+    previewTitles:['Punto de venta','Gestión de inventario','Integración con API de tienda','Back office e informes'],previewDescs:['Ventas rápidas con fotos reales','Alertas de poco stock y seguimiento en tiempo real','Productos importados automáticamente','Gráficos, productos más vendidos y análisis'],
+    contactBadge:'EMPRESA',contactTitle:'Contáctanos',contactSub:'Nuestro equipo responderá en 24 horas para hablar de tus necesidades con varias tiendas.',
+    contactLabels:['Nombre completo *','Correo electrónico *','Teléfono','Empresa','Número de tiendas','Mensaje / Necesidades específicas'],
+    contactPlaceholders:['Nombre de tu negocio','nombre@tienda.com','+509 0000 0000','Nombre de tu cadena','Describe tus necesidades: sector, integraciones deseadas...'],
+    contactOptions:['De 2 a 5 tiendas','De 6 a 10 tiendas','De 11 a 20 tiendas','Más de 20 tiendas'],contactSubmit:'Enviar mi solicitud →',contactPrivacy:'Datos protegidos mediante Supabase · Sin spam',contactRequired:'El nombre y el correo son obligatorios.',contactInvalid:'Dirección de correo no válida.',contactSending:'Enviando…',contactSuccess:'¡Gracias, {name}! Nos pondremos en contacto en 24 horas.',contactSent:'¡Mensaje enviado!',contactFailure:'Error:',authNetworkError:'Supabase no está disponible. Comprueba tu conexión a Internet y vuelve a intentarlo.',signupBusy:'Creando tu cuenta de forma segura…',signinBusy:'Iniciando sesión de forma segura…',close:'Cerrar'
+  }
+};
+var LANDING_PAYMENT_COPY={
+  fr:{
+    month:'USD/mois',year:'USD/an',activate:'Activer Premium — {price} {unit} →',emailError:'Veuillez vous connecter à votre compte avant de payer.',paypalBusy:'Connexion à PayPal…',paypalUnavailable:'PayPal est indisponible pour le moment.',paypalLocal:'PayPal doit être lancé depuis Netlify, pas depuis un serveur local.',
+    paymentTitle:'Payer avec MonCash ou NatCash',plan:'Forfait :',sendTitle:'1. ENVOYER LE PAIEMENT',openApp:'Ouvrez MonCash ou NatCash',sendMoney:'Choisissez « Envoyer de l’argent »',amount:'Montant :',sendProof:'2. ENVOYER LE JUSTIFICATIF',afterPayment:'Après le paiement, envoyez une capture d’écran sur WhatsApp pour vérification :',sendWhatsApp:'Envoyer le justificatif sur WhatsApp',accountTitle:'3. CRÉER VOTRE COMPTE',accountInfo:'Après vérification du paiement, créez votre compte gratuit. Votre accès Premium sera ensuite activé.',signup:'Créer un compte gratuit →',waMessage:'Bonjour, je viens d’envoyer {price} USD pour le forfait Konektem {plan}.',paypalError:'PayPal est indisponible pour le moment.'
+  },
+  en:{
+    month:'USD/month',year:'USD/year',activate:'Activate Premium — {price} {unit} →',emailError:'Please sign in to your account before paying.',paypalBusy:'Connecting to PayPal…',paypalUnavailable:'PayPal is currently unavailable.',paypalLocal:'PayPal checkout must be opened on Netlify, not a local development server.',
+    paymentTitle:'Pay with MonCash or NatCash',plan:'Plan:',sendTitle:'1. SEND THE PAYMENT',openApp:'Open MonCash or NatCash',sendMoney:'Choose “Send money”',amount:'Amount:',sendProof:'2. SEND YOUR PAYMENT RECEIPT',afterPayment:'After paying, send a screenshot on WhatsApp so we can verify it:',sendWhatsApp:'Send receipt on WhatsApp',accountTitle:'3. CREATE YOUR ACCOUNT',accountInfo:'After we verify the payment, create your free account. Your Premium access will then be activated.',signup:'Create a free account →',waMessage:'Hello, I sent USD {price} for the Konektem {plan} plan.',paypalError:'PayPal is currently unavailable.'
+  },
+  es:{
+    month:'USD/mes',year:'USD/año',activate:'Activar Premium — {price} {unit} →',emailError:'Inicia sesión en tu cuenta antes de pagar.',paypalBusy:'Conectando con PayPal…',paypalUnavailable:'PayPal no está disponible en este momento.',paypalLocal:'El pago con PayPal debe iniciarse desde Netlify, no desde un servidor local.',
+    paymentTitle:'Pagar con MonCash o NatCash',plan:'Plan:',sendTitle:'1. ENVÍA EL PAGO',openApp:'Abre MonCash o NatCash',sendMoney:'Elige «Enviar dinero»',amount:'Importe:',sendProof:'2. ENVÍA EL COMPROBANTE',afterPayment:'Después de pagar, envía una captura por WhatsApp para verificarlo:',sendWhatsApp:'Enviar comprobante por WhatsApp',accountTitle:'3. CREA TU CUENTA',accountInfo:'Después de verificar el pago, crea tu cuenta gratis. Luego se activará tu acceso Premium.',signup:'Crear una cuenta gratis →',waMessage:'Hola, envié {price} USD por el plan Konektem {plan}.',paypalError:'PayPal no está disponible en este momento.'
+  }
+};
+function applyLandingModalCopy(lang){
+  var copy=LANDING_MODAL_COPY[lang]||LANDING_MODAL_COPY.fr;
+  function setMany(selector,values){
+    document.querySelectorAll(selector).forEach(function(el,index){
+      if(values[index]===undefined)return;
+      var textNodes=Array.prototype.filter.call(el.childNodes,function(node){return node.nodeType===3;});
+      if(textNodes.length){
+        var target=textNodes[textNodes.length-1];
+        var targetIndex=Array.prototype.indexOf.call(el.childNodes,target);
+        var hasLeadingElement=Array.prototype.slice.call(el.childNodes,0,targetIndex).some(function(node){return node.nodeType===1;});
+        target.nodeValue=(hasLeadingElement?' ':'')+values[index];
+      }
+      else el.textContent=values[index];
+    });
+  }
+  setMany('#screen-signup .auth-label',copy.signupLabels);
+  setMany('#screen-signin .auth-label',copy.signinLabels);
+  ['#su-name','#su-email','#su-phone'].forEach(function(selector,index){
+    var field=document.querySelector(selector);if(field)field.placeholder=copy.signupPlaceholders[index];
+  });
+  ['#si-email','#si-pass'].forEach(function(selector,index){
+    var field=document.querySelector(selector);if(field)field.placeholder=copy.signinPlaceholders[index];
+  });
+  var trialHeading=document.querySelector('.trial-info-box strong');
+  var trialDetail=document.querySelector('.trial-info-detail');
+  if(trialHeading)trialHeading.textContent=copy.trialHeading;
+  if(trialDetail)trialDetail.textContent=copy.trialDetail;
+  setMany('#screen-premium .pm-plan-name',copy.premiumPlans);
+  setMany('#screen-premium .pm-feat',copy.premiumFeatures);
+  var premiumTitle=document.querySelector('#screen-premium .pm-title');
+  var premiumSub=document.querySelector('#screen-premium .pm-sub');
+  var saving=document.querySelector('#screen-premium .pm-plan-save');
+  var paymentNote=document.querySelector('#screen-premium .pm-payment-note');
+  var paypal=document.getElementById('landing-paypal-btn');
+  if(premiumTitle)premiumTitle.textContent=copy.premiumTitle;
+  if(premiumSub)premiumSub.textContent=copy.premiumSub;
+  if(saving)saving.textContent=copy.premiumSaving;
+  if(paymentNote)paymentNote.innerHTML=copy.premiumPayment+' <strong style="color:#fbbf24">MonCash</strong> '+copy.paymentJoin+' <strong style="color:#60a5fa">PayPal</strong>';
+  if(paypal)paypal.textContent=copy.paypalButton;
+  setMany('#screen-preview .preview-item-title',copy.previewTitles);
+  setMany('#screen-preview .preview-item-desc',copy.previewDescs);
+  setMany('#screen-contact .cc-badge', [copy.contactBadge]);
+  setMany('#screen-contact .cc-title', [copy.contactTitle]);
+  setMany('#screen-contact .cc-sub', [copy.contactSub]);
+  setMany('#screen-contact .auth-label',copy.contactLabels);
+  ['#c-nom','#c-email','#c-tel','#c-ent','#c-msg'].forEach(function(selector,index){
+    var field=document.querySelector(selector);if(field)field.placeholder=copy.contactPlaceholders[index];
+  });
+  document.querySelectorAll('#c-nb option').forEach(function(option,index){
+    if(copy.contactOptions[index])option.textContent=copy.contactOptions[index];
+  });
+  var contactButton=document.getElementById('c-btn');
+  var contactPrivacy=document.querySelector('.cc-privacy');
+  if(contactButton)contactButton.textContent=copy.contactSubmit;
+  if(contactPrivacy)contactPrivacy.childNodes[1].nodeValue=' '+copy.contactPrivacy;
+  document.querySelectorAll('.auth-close,.pm-close,.cc-close').forEach(function(button){
+    button.setAttribute('aria-label',copy.close);
+  });
+}
+var landingBillingPeriod='yearly';
+function selectLandingSector(card){
+  if(!card)return;
+  document.querySelectorAll('.sector-card').forEach(function(item){
+    var selected=item===card;
+    item.classList.toggle('is-selected',selected);
+    item.setAttribute('aria-pressed',selected?'true':'false');
+  });
+  var name=card.querySelector('.sc-name');
+  var selectedName=document.getElementById('sector-selection-name');
+  if(name&&selectedName)selectedName.textContent=name.textContent;
+}
+function setPricingPeriod(period){
+  landingBillingPeriod=period==='monthly'?'monthly':'yearly';
+  var isYearly=landingBillingPeriod==='yearly';
+  var lang=document.documentElement.lang||'fr';
+  var copy=LANDING_TRANSLATIONS[lang]||LANDING_TRANSLATIONS.fr;
+  var amount=document.getElementById('landing-premium-amount');
+  var billingPeriod=document.getElementById('landing-premium-period');
+  var equivalent=document.getElementById('landing-premium-equivalent');
+  var monthly=document.querySelector('[data-billing="monthly"]');
+  var yearly=document.querySelector('[data-billing="yearly"]');
+  if(amount)amount.textContent=isYearly?'100':'20';
+  if(billingPeriod)billingPeriod.textContent=isYearly?copy.priceYear:copy.priceMonth;
+  if(equivalent)equivalent.textContent=isYearly?copy.annualEquivalent:'';
+  [[monthly,!isYearly],[yearly,isYearly]].forEach(function(entry){
+    if(entry[0]){
+      entry[0].classList.toggle('active',entry[1]);
+      entry[0].setAttribute('aria-pressed',entry[1]?'true':'false');
+    }
+  });
+}
+function choosePremiumPlan(){
+  var target=document.getElementById(landingBillingPeriod==='yearly'?'plan-ann-card':'plan-mens-card');
+  if(target)selPlan(target,landingBillingPeriod==='yearly'?'annuel':'mensuel');
+  showScreen('premium');
+}
 function detectLandingLanguage(){
   var saved=localStorage.getItem('konektem_language');
   if(saved&&LANDING_LANGS[saved]) return saved;
@@ -861,7 +709,13 @@ function setLandingLanguage(lang){
     var key=el.getAttribute('data-i18n');
     if(LANDING_LANGS[selected][key]) el.textContent=LANDING_LANGS[selected][key];
   });
+  applyLandingTranslationKeys(selected);
   applyLandingExtendedLanguage(selected);
+  applyLandingModalCopy(selected);
+  var selectedSector=document.querySelector('.sector-card[aria-pressed="true"] .sc-name');
+  var selectedSectorName=document.getElementById('sector-selection-name');
+  if(selectedSector&&selectedSectorName)selectedSectorName.textContent=selectedSector.textContent;
+  setPricingPeriod(landingBillingPeriod);
   var selector=document.getElementById('landing-lang');
   if(selector) selector.value=selected;
   var appData;
@@ -902,7 +756,7 @@ function ouvrirContact() {
   });
   document.getElementById('contact-result').className = 'contact-result';
   document.getElementById('c-btn').disabled = false;
-  document.getElementById('c-btn').textContent = 'Envoyer ma demande →';
+  document.getElementById('c-btn').textContent = (LANDING_MODAL_COPY[document.documentElement.lang]||LANDING_MODAL_COPY.fr).contactSubmit;
   showScreen('contact');
 }
 function fermerContact() { hideScreen('contact'); }
@@ -920,17 +774,17 @@ async function soumettreContact() {
 
   if (!nom || !email) {
     res.className = 'contact-result err';
-    res.textContent = '⚠️ Nom et email sont obligatoires.';
+    res.textContent = (LANDING_MODAL_COPY[document.documentElement.lang]||LANDING_MODAL_COPY.fr).contactRequired;
     return;
   }
   if (!email.includes('@') || !email.includes('.')) {
     res.className = 'contact-result err';
-    res.textContent = '⚠️ Adresse email invalide.';
+    res.textContent = (LANDING_MODAL_COPY[document.documentElement.lang]||LANDING_MODAL_COPY.fr).contactInvalid;
     return;
   }
 
   btn.disabled = true;
-  btn.textContent = '⏳ Envoi en cours...';
+  btn.textContent = (LANDING_MODAL_COPY[document.documentElement.lang]||LANDING_MODAL_COPY.fr).contactSending;
   res.className = 'contact-result';
 
   try {
@@ -945,15 +799,15 @@ async function soumettreContact() {
     });
 
     res.className = 'contact-result ok';
-    res.textContent = '✅ Merci ' + nom + ' ! Nous vous contacterons dans les 24 heures.';
-    btn.textContent = '✅ Message envoyé !';
+    res.textContent = (LANDING_MODAL_COPY[document.documentElement.lang]||LANDING_MODAL_COPY.fr).contactSuccess.replace('{name}',nom);
+    btn.textContent = (LANDING_MODAL_COPY[document.documentElement.lang]||LANDING_MODAL_COPY.fr).contactSent;
     setTimeout(fermerContact, 3000);
 
   } catch(e) {
     res.className = 'contact-result err';
-    res.textContent = '❌ Erreur : ' + e.message;
+    res.textContent = (LANDING_MODAL_COPY[document.documentElement.lang]||LANDING_MODAL_COPY.fr).contactFailure+' '+e.message;
     btn.disabled = false;
-    btn.textContent = 'Envoyer ma demande →';
+    btn.textContent = (LANDING_MODAL_COPY[document.documentElement.lang]||LANDING_MODAL_COPY.fr).contactSubmit;
   }
 }
 
@@ -991,7 +845,7 @@ document.querySelectorAll('.screen').forEach(function(s) {
   if (phone.length < 8) { showAuthErr('signup','Numéro de téléphone invalide (minimum 8 chiffres).'); return; }
 
   var btn = document.querySelector('#screen-signup .auth-btn');
-  if(btn){ btn.textContent = '⏳ Vérification...'; btn.disabled = true; }
+  if(btn){ btn.textContent = 'Vérification en cours...'; btn.disabled = true; }
 
   // ── Vérifier si le compte existe DANS SUPABASE ──
   fetch(SUPA_URL + '/rest/v1/konektem_users?email=eq.' + encodeURIComponent(email) + '&select=email', {
@@ -1057,7 +911,7 @@ function legacyDoSignin() {
   if (!email || !pass) { showAuthErr('signin','Remplissez email et mot de passe.'); return; }
 
   var btn = document.querySelector('#screen-signin .auth-btn');
-  if(btn){ btn.textContent = '⏳ Connexion...'; btn.disabled = true; }
+  if(btn){ btn.textContent = 'Connexion en cours...'; btn.disabled = true; }
 
   var passHash = btoa(unescape(encodeURIComponent(pass)));
 
@@ -1174,7 +1028,7 @@ function showAuthErr(form, msg) {
     var btn = document.querySelector('#screen-' + form + ' .auth-btn');
     if (btn) btn.parentNode.insertBefore(el, btn);
   }
-  el.textContent = '⚠️ ' + msg;
+  el.textContent = msg;
   el.style.display = 'block';
   setTimeout(function(){ el.style.display='none'; }, 5000);
 }
@@ -1226,7 +1080,7 @@ function doSignup(){
   if(pass.length<6){showAuthErr('signup','Mot de passe : 6 caractères minimum.');return;}
   if(!email.includes('@')||!email.includes('.')){showAuthErr('signup','Adresse email invalide.');return;}
   var btn=document.querySelector('#screen-signup .auth-btn');
-  if(btn){btn.disabled=true;btn.textContent='⏳ Création sécurisée...';}
+  if(btn){btn.disabled=true;btn.textContent=(LANDING_MODAL_COPY[document.documentElement.lang]||LANDING_MODAL_COPY.fr).signupBusy;}
   fetch(SUPA_URL+'/auth/v1/signup',{method:'POST',headers:authHeaders(),body:JSON.stringify({email:email,password:pass,data:{full_name:name,phone:phone}})})
     .then(function(r){return r.json().then(function(data){if(!r.ok)throw new Error(data.msg||data.error_description||'Impossible de créer le compte.');return data;});})
     .then(function(data){
@@ -1245,14 +1099,14 @@ function doSignin(){
   if(!email||!pass){showAuthErr('signin','Remplissez email et mot de passe.');return;}
   if(pass.length<6){showAuthErr('signin','Mot de passe : 6 caractères minimum.');return;}
   var btn=document.querySelector('#screen-signin .auth-btn');
-  if(btn){btn.disabled=true;btn.textContent='⏳ Connexion sécurisée...';}
+  if(btn){btn.disabled=true;btn.textContent=(LANDING_MODAL_COPY[document.documentElement.lang]||LANDING_MODAL_COPY.fr).signinBusy;}
   fetch(SUPA_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:authHeaders(),body:JSON.stringify({email:email,password:pass})})
     .then(function(r){return r.json().then(function(data){if(!r.ok)throw new Error(data.error_description||data.msg||'Email ou mot de passe incorrect.');return data;});})
     .then(function(data){redirectToAppWithSession(data);})
     .catch(function(err){
       if(err && (err.name==='TypeError' || err.message==='Failed to fetch')){
         if(btn){btn.disabled=false;btn.textContent='Se connecter →';}
-        showAuthErr('signin','Supabase pa disponib kounye a. Verifye koneksyon entènèt la epi re-eseye.');
+        showAuthErr('signin',(LANDING_MODAL_COPY[document.documentElement.lang]||LANDING_MODAL_COPY.fr).authNetworkError);
         return;
       }
       migrateLegacyAccount(email,pass,btn,err);
@@ -1312,15 +1166,17 @@ function loadLandingPrices(){
 }
 
 function updateLandingPriceDisplay(){
+  var language=document.documentElement.lang||'fr';
+  var copy=LANDING_PAYMENT_COPY[language]||LANDING_PAYMENT_COPY.fr;
   var fmtP = function(n){ return n.toLocaleString('en-US'); };
   var elM = document.getElementById('landing-prix-mens');
   var elA = document.getElementById('landing-prix-ann');
-  if(elM) elM.innerHTML = fmtP(LANDING_PRIX_MENS) + ' <span class="pm-plan-per">USD/mois</span>';
-  if(elA) elA.innerHTML = fmtP(LANDING_PRIX_ANN)  + ' <span class="pm-plan-per">USD/an</span>';
+  if(elM) elM.innerHTML = fmtP(LANDING_PRIX_MENS) + ' <span class="pm-plan-per">'+copy.month+'</span>';
+  if(elA) elA.innerHTML = fmtP(LANDING_PRIX_ANN)  + ' <span class="pm-plan-per">'+copy.year+'</span>';
   var btn = document.getElementById('pm-btn');
   if(btn){
     var prix = landingSelPlan === 'annuel' ? LANDING_PRIX_ANN : LANDING_PRIX_MENS;
-    btn.textContent = 'Activer Premium — ' + fmtP(prix) + ' ' + (landingSelPlan==='annuel'?'USD/an':'USD/mois') + ' →';
+    btn.textContent = copy.activate.replace('{price}',fmtP(prix)).replace('{unit}',landingSelPlan==='annuel'?copy.year:copy.month);
   }
 }
 
@@ -1329,9 +1185,11 @@ function selPlan(el, planKey) {
   el.classList.add('sel');
   landingSelPlan = planKey;
   landingSelPrix = planKey === 'annuel' ? LANDING_PRIX_ANN : LANDING_PRIX_MENS;
-  var fmtP = function(n){ return n.toLocaleString('fr-HT'); };
-  var txt = fmtP(landingSelPrix) + ' ' + (planKey==='annuel'?'USD/an':'USD/mois');
-  document.getElementById('pm-btn').textContent = 'Activer Premium — ' + txt + ' →';
+  var language=document.documentElement.lang||'fr';
+  var copy=LANDING_PAYMENT_COPY[language]||LANDING_PAYMENT_COPY.fr;
+  var fmtP = function(n){ return n.toLocaleString(language==='en'?'en-US':'fr-HT'); };
+  var unit=planKey==='annuel'?copy.year:copy.month;
+  document.getElementById('pm-btn').textContent = copy.activate.replace('{price}',fmtP(landingSelPrix)).replace('{unit}',unit);
 }
 
 function landingDoPayPal(){
@@ -1344,12 +1202,14 @@ function landingDoPayPal(){
     userEmail=payload&&(payload.email||payload.user_metadata&&payload.user_metadata.email)||'';
   }catch(e){}
   if(!userEmail || userEmail.indexOf('@') === -1){
-    window.alert('Tanpri antre yon email valid pou kont lan.');
+    var copy=LANDING_PAYMENT_COPY[document.documentElement.lang]||LANDING_PAYMENT_COPY.fr;
+    window.alert(copy.emailError);
     return;
   }
 
+  var copy=LANDING_PAYMENT_COPY[document.documentElement.lang]||LANDING_PAYMENT_COPY.fr;
   var btn = document.getElementById('landing-paypal-btn');
-  if(btn){ btn.disabled = true; btn.textContent = '⏳ Koneksyon PayPal...'; }
+  if(btn){ btn.disabled = true; btn.textContent = copy.paypalBusy; }
   fetch('/.netlify/functions/paypal-payment', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -1358,23 +1218,26 @@ function landingDoPayPal(){
     return r.text().then(function(text){
       var data = null;
       try{ data = text ? JSON.parse(text) : null; }catch(e){}
-      if(!data) throw new Error('PayPal bezwen kouri sou Netlify. Ou pa ka lanse peman an ak Live Server localhost la.');
-      if(!r.ok) throw new Error(data.error || 'PayPal pa disponib kounye a.');
+      if(!data) throw new Error(copy.paypalLocal);
+      if(!r.ok) throw new Error(data.error || copy.paypalUnavailable);
       return data;
     });
   }).then(function(data){
     if(data.success && data.redirectUrl){ window.location.href = data.redirectUrl; return; }
-    throw new Error(data.error || 'PayPal pa disponib kounye a.');
+    throw new Error(data.error || copy.paypalUnavailable);
   }).catch(function(error){
-    if(btn){ btn.disabled = false; btn.textContent = '🅿️ Peye ak PayPal'; }
-    window.alert(error.message || 'PayPal pa disponib kounye a.');
+    if(btn){ btn.disabled = false; btn.textContent = (LANDING_MODAL_COPY[document.documentElement.lang]||LANDING_MODAL_COPY.fr).paypalButton; }
+    window.alert(error.message || copy.paypalError);
   });
 }
 
 function landingDoPremium(){
+  var language=document.documentElement.lang||'fr';
+  var copy=LANDING_PAYMENT_COPY[language]||LANDING_PAYMENT_COPY.fr;
   var plan  = landingSelPlan;
   var prix  = landingSelPlan === 'annuel' ? LANDING_PRIX_ANN : LANDING_PRIX_MENS;
-  var unite = plan === 'annuel' ? 'USD/an' : 'USD/mois';
+  var unite = plan === 'annuel' ? copy.year : copy.month;
+  var planLabel=(LANDING_MODAL_COPY[language]||LANDING_MODAL_COPY.fr).premiumPlans[plan==='annuel'?1:0].toLowerCase();
 
   // Kreye modal MonCash
   var old = document.getElementById('landing-pay-mov');
@@ -1389,53 +1252,54 @@ function landingDoPremium(){
 
   // Bouton fèmen
   var btnX = document.createElement('button');
-  btnX.style.cssText = 'position:absolute;top:12px;right:12px;background:rgba(255,255,255,.12);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;';
-  btnX.textContent = '✕';
+  btnX.style.cssText = 'position:absolute;top:12px;right:12px;background:rgba(255,255,255,.12);border:none;color:#fff;width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:15px;';
+  btnX.setAttribute('aria-label',(LANDING_MODAL_COPY[language]||LANDING_MODAL_COPY.fr).close);
+  btnX.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="m18 6-12 12M6 6l12 12"/></svg>';
   btnX.onclick = function(){ mov.remove(); };
 
   // Header
   var hdr = document.createElement('div');
   hdr.style.cssText = 'text-align:center;margin-bottom:20px;';
-  hdr.innerHTML = '<div style="font-size:36px;margin-bottom:8px;">📱</div>'
-    + '<div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">Payer via MonCash ou Natcash</div>'
-    + '<div style="font-size:13px;color:rgba(255,255,255,.5);">Plan : <strong style="color:#86efac;">'+ prix +' '+ unite +'</strong></div>';
+  hdr.innerHTML = '<div style="margin-bottom:8px;color:#7de0aa;"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg></div>'
+    + '<div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">'+copy.paymentTitle+'</div>'
+    + '<div style="font-size:13px;color:rgba(255,255,255,.7);">'+copy.plan+' <strong style="color:#86efac;">'+ prix +' '+ unite +' · '+planLabel+'</strong></div>';
 
   // Section 1 — Enstriksyon
   var sec1 = document.createElement('div');
   sec1.style.cssText = 'border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;';
-  sec1.innerHTML = '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:12px;">① VOYE PEMAN NAN MONCASH OSWA NATCASH</div>'
+  sec1.innerHTML = '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:12px;">'+copy.sendTitle+'</div>'
     + '<div style="font-size:13px;color:rgba(255,255,255,.85);line-height:2;">'
-    + '1. Ouvri app <strong style="color:#fff;">MonCash oswa Natcash</strong><br>'
-    + '2. Klike <strong style="color:#fbbf24;">Envoyer de largent</strong><br>'
+    + '1. '+copy.openApp+'<br>'
+    + '2. '+copy.sendMoney+'<br>'
     + '3. MonCash : <strong style="color:#4ade80;">'+ LANDING_MONCASH_NUM +'</strong><br>'
     + '4. Natcash : <strong style="color:#4ade80;">'+ LANDING_NATCASH_NUM +'</strong><br>'
-    + '5. Montan : <strong style="color:#fbbf24;font-size:16px;">'+ prix +' USD</strong>'
+    + '5. '+copy.amount+' <strong style="color:#fbbf24;font-size:16px;">'+ prix +' USD</strong>'
     + '</div>';
 
   // Section 2 — WhatsApp screenshot
   var sec2 = document.createElement('div');
   sec2.style.cssText = 'border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;';
-  var waMsg = 'Bonjour, mwen voye ' + prix + ' USD pou plan Konektem ' + plan;
+  var waMsg = copy.waMessage.replace('{price}',prix).replace('{plan}',planLabel);
   var waUrl = 'https://wa.me/' + LANDING_WHATSAPP_NUM + '?text=' + encodeURIComponent(waMsg);
   var waLbl = document.createElement('div');
   waLbl.style.cssText = 'font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:8px;';
-  waLbl.textContent = '② VOYE SCREENSHOT BA NOU';
+  waLbl.textContent = copy.sendProof;
   var waSub = document.createElement('div');
   waSub.style.cssText = 'font-size:12px;color:rgba(255,255,255,.45);margin-bottom:10px;';
-  waSub.textContent = 'Apre peman, voye screenshot sou WhatsApp pou nou verifye:';
+  waSub.textContent = copy.afterPayment;
   var waBtn = document.createElement('a');
   waBtn.href = waUrl;
   waBtn.target = '_blank';
   waBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#25D366;border-radius:8px;color:#fff;font-weight:800;font-size:14px;text-decoration:none;';
-  waBtn.textContent = '💬 Voye screenshot sou WhatsApp';
+  waBtn.textContent = copy.sendWhatsApp;
   sec2.appendChild(waLbl); sec2.appendChild(waSub); sec2.appendChild(waBtn);
 
   // Section 3 — Kòd + note enskri
   var sec3 = document.createElement('div');
   sec3.style.cssText = 'border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:14px;background:rgba(34,197,94,.05);';
-  sec3.innerHTML = '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:6px;">③ KREYE KÒT OU ESKE OU PA GEN YON KÒT</div>'
-    + '<div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.5;margin-bottom:10px;">Apre ou peye epi nou verifye, kreye kont ou gratis — Admin ap aktive Premium ou otomatikman.</div>'
-    + '<button id="landing-signup-btn" style="width:100%;padding:11px;border:none;border-radius:8px;background:#22c55e;color:#fff;font-weight:800;font-size:13px;cursor:pointer;">Kreye kont gratis →</button>';
+  sec3.innerHTML = '<div style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.6px;margin-bottom:6px;">'+copy.accountTitle+'</div>'
+    + '<div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.5;margin-bottom:10px;">'+copy.accountInfo+'</div>'
+    + '<button id="landing-signup-btn" style="width:100%;min-height:44px;padding:11px;border:none;border-radius:8px;background:#22c55e;color:#fff;font-weight:800;font-size:13px;cursor:pointer;">'+copy.signup+'</button>';
 
   inner.appendChild(btnX);
   inner.appendChild(hdr);
@@ -1453,14 +1317,14 @@ function landingDoPremium(){
 <!-- ── PWA INSTALL POPUP ── -->
 <div id="pwa-popup" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:999;width:calc(100% - 32px);max-width:400px;">
   <div style="background:linear-gradient(135deg,#0D1F2D,#0a2e1a);border:1px solid rgba(34,197,94,.4);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,.4);">
-    <div style="font-size:36px;flex-shrink:0;">📱</div>
+    <div style="flex-shrink:0;color:#7de0aa"><svg class="trust-icon" aria-hidden="true"><use href="#kt-icon-download"/></svg></div>
     <div style="flex:1;">
-      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:2px;">Enstale Konektem</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.4;">Travay san entènèt tankou yon app natirèl</div>
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:2px;" data-i18n="pwaTitle">Installer Konektem</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.4;" data-i18n="pwaDescription">Utilisez Konektem hors ligne comme une application.</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-      <button onclick="triggerInstall()" style="padding:8px 14px;background:#22c55e;border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;">⬇️ Enstale</button>
-      <button onclick="dismissPWA()" style="padding:5px;background:none;border:none;color:rgba(255,255,255,.3);font-size:12px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">Pita</button>
+      <button onclick="triggerInstall()" style="padding:8px 14px;background:#22c55e;border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;"><span data-i18n="pwaInstall">Installer</span></button>
+      <button onclick="dismissPWA()" style="padding:5px;background:none;border:none;color:rgba(255,255,255,.6);font-size:12px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;" data-i18n="pwaLater">Plus tard</button>
     </div>
   </div>
 </div>
@@ -1491,7 +1355,8 @@ function triggerInstall(){
       // Notifikasyon siksè
       var el = document.getElementById('pwa-popup');
       if(el){
-        el.innerHTML = '<div style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);border-radius:16px;padding:14px 18px;text-align:center;color:#4ade80;font-weight:700;">✅ Konektem ap enstale!</div>';
+        var copy=LANDING_TRANSLATIONS[document.documentElement.lang]||LANDING_TRANSLATIONS.fr;
+        el.innerHTML = '<div style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);border-radius:16px;padding:14px 18px;text-align:center;color:#4ade80;font-weight:700;">' + copy.pwaInstalled + '</div>';
         setTimeout(function(){ el.style.display='none'; }, 3000);
       }
     }
@@ -1517,11 +1382,12 @@ if(isIOS && !isInStandaloneMode && !localStorage.getItem('pwa_dismissed')){
     var popup = document.getElementById('pwa-popup');
     if(!popup) return;
     popup.style.display = 'block';
+    var copy=LANDING_TRANSLATIONS[document.documentElement.lang]||LANDING_TRANSLATIONS.fr;
     popup.querySelector('div').innerHTML = '<div style="background:linear-gradient(135deg,#0D1F2D,#0a2e1a);border:1px solid rgba(34,197,94,.4);border-radius:16px;padding:16px;text-align:center;">'
-      + '<div style="font-size:28px;margin-bottom:8px;">📱</div>'
-      + '<div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:6px;">Enstale sou iPhone/iPad</div>'
-      + '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:12px;line-height:1.5">Klike <strong style="color:#fff">Partage</strong> puis <strong style="color:#fff">Ajouter ecran accueil</strong></div>'
-      + '<button onclick="dismissPWA()" style="padding:8px 20px;background:rgba(255,255,255,.1);border:none;border-radius:8px;color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;">Fermer</button>'
+      + '<div style="margin-bottom:8px;color:#7de0aa"><svg class="trust-icon" aria-hidden="true"><use href="#kt-icon-download"/></svg></div>'
+      + '<div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:6px;">' + copy.pwaIOS + '</div>'
+      + '<div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:12px;line-height:1.5">' + copy.pwaIOSHelp + '</div>'
+      + '<button onclick="dismissPWA()" style="min-height:44px;padding:8px 20px;background:rgba(255,255,255,.1);border:none;border-radius:8px;color:rgba(255,255,255,.8);font-size:13px;cursor:pointer;">' + copy.pwaClose + '</button>'
       + '</div>';
   }, 3000);
 }

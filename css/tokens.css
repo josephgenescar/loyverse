@@ -1,0 +1,51 @@
+:root {
+  --kt-ink-950: #07131d;
+  --kt-ink-900: #0c1b29;
+  --kt-ink-800: #14283a;
+  --kt-emerald-700: #087a55;
+  --kt-emerald-600: #0b9165;
+  --kt-emerald-500: #12a875;
+  --kt-emerald-100: #d7f3e8;
+  --kt-blue-800: #123d6a;
+  --kt-blue-700: #174e82;
+  --kt-red-600: #c83d42;
+  --kt-amber-600: #a96811;
+  --kt-surface: #ffffff;
+  --kt-surface-raised: #f7faf9;
+  --kt-text: #11231d;
+  --kt-text-muted: #52665f;
+  --kt-border: #d7e2dd;
+  --kt-shadow-sm: 0 1px 3px rgb(7 19 29 / 8%);
+  --kt-shadow-md: 0 8px 24px rgb(7 19 29 / 12%);
+  --kt-radius-sm: 8px;
+  --kt-radius-md: 12px;
+  --kt-radius-lg: 16px;
+  --kt-radius-xl: 24px;
+  --kt-space-1: 4px;
+  --kt-space-2: 8px;
+  --kt-space-3: 12px;
+  --kt-space-4: 16px;
+  --kt-space-5: 20px;
+  --kt-space-6: 24px;
+  --kt-space-8: 32px;
+  --kt-font-display: "Bricolage Grotesque", "Plus Jakarta Sans", sans-serif;
+  --kt-font-body: "Plus Jakarta Sans", sans-serif;
+  --kt-font-mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --kt-number-spacing: tabular-nums lining-nums;
+}
+
+:root[data-theme="light"] {
+  --kt-surface: #ffffff;
+  --kt-surface-raised: #f7faf9;
+  --kt-text: #11231d;
+  --kt-text-muted: #52665f;
+  --kt-border: #d7e2dd;
+}
+
+:root[data-theme="dark"] {
+  --kt-surface: #0c1b29;
+  --kt-surface-raised: #14283a;
+  --kt-text: #edf5f2;
+  --kt-text-muted: #b4c8c0;
+  --kt-border: #294152;
+}
